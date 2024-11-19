@@ -3,7 +3,7 @@
 *
 * nicolas.bertuol@etud.univ-pau.fr
 *
-* modified by Congduc Pham, University of Pau, France
+* 2024: modified by Congduc Pham, University of Pau, France
 */
 
 #include "BoardSettings.h"

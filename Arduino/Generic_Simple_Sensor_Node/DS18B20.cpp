@@ -45,7 +45,7 @@ void DS18B20::update_data()
   if (get_is_connected()) {
   	
     // if we use a digital pin to power the sensor...
-    if (get_is_low_power())
+    if (get_is_low_power() && get_is_power_on_when_active())
 #if (defined IRD_PCB && defined SOLAR_BAT) || defined IRD_PCBA
       power_soft_start(get_pin_power());
 #else
@@ -68,7 +68,7 @@ void DS18B20::update_data()
     // 0 refers to the first IC on the wire 
     //delay(1000);  
 	
-    if (get_is_low_power())
+    if (get_is_low_power() && get_is_power_off_when_inactive())
         digitalWrite(get_pin_power(), PWR_LOW);
         
 	  set_data(temp);

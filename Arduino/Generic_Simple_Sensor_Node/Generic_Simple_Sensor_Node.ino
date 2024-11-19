@@ -1,11 +1,9 @@
 /*
- *  INTEL_IRRIS soil humidity sensor platform
- *  support limited LoRaWAN with raw LoRa SX12XX (such as RFM9X, NiveRF, ...)
+ *  Generic Simple Sensor Node
+ *  support limited LoRaWAN with raw LoRa SX12XX (such as RFM9X, NiceRF, ...)
  *  support RAK3172 for native LoRaWAN
  *  
- *  Copyright (C) 2016-2024 Congduc Pham, University of Pau, France
- *  
- *  Contributors: Guillaume Gaillard & Jean-François Printanier
+ *  Copyright (C) 2024 Congduc Pham, University of Pau, France
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,16 +19,10 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Nov. 9th, 2024
+ * last update: Nov. 19th, 2024
  * 
  * NEW: Support for ambiant air temperature/humidity sensors (DHT22/AM2305/SHT1x/SHT2x/SHT3x)
- * NEW: Support IRD PCB v5 with RAK3172 with debug serial using pin 2 (TX only)
- * NEW: Support native LoRaWAN module RAK3172 (ABP, OTAA) with AT commands
- * 
- * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
- * https://github.com/StuartsProjects/SX12XX-LoRa
- * to support SX126X, SX127X and SX128X chips (SX128X is LoRa in 2.4GHz band)
- *  
+ * Based on INTEL_IRRIS soil humidity sensor platform – July 19th, 2024 
  */
 
 /********************************************************************
@@ -57,7 +49,7 @@ TXOnlySerial debug_serial(2);
 #endif
 
 ////////////////////////////////////////////////////////////////////
-// sends data to INTEL-IRRIS WaziGate edge-gateway
+// sends data to WaziGate edge-gateway
 #define TO_WAZIGATE
 
 ////////////////////////////////////////////////////////////////////
@@ -75,11 +67,11 @@ TXOnlySerial debug_serial(2);
 // #define MY_FREQUENCY 916800000
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – Apr 29th, 2024\n"
+#define BOOT_START_MSG  "\nGeneric Simple Sensor Node – Nov. 19th, 2024\n"
 
 ////////////////////////////////////////////////////////////////////
 // comment to have an ambiant air temperature/humidity sensor node
-//#define WITH_CAPACITIVE
+#define WITH_CAPACITIVE
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
@@ -115,11 +107,11 @@ TXOnlySerial debug_serial(2);
 // uncomment to have an additional CO2 sensor, ONLY ON IRD_PCB
 // #define CO2_SCD30_SENSOR
 // uncomment to have an ambiant air temp/hum sensor, then select which sensor model below
-#define AIR_TEMP_HUM_SENSOR
+//#define AIR_TEMP_HUM_SENSOR
 // uncomment to have an ambiant air temperature DHT22/AM2305 sensor, ONLY ON IRD_PCB
-#define DHT22_AM2305_TEMP_SENSOR
+//#define DHT22_AM2305_TEMP_SENSOR
 // uncomment to have an ambiant air humidity DHT22/AM2305 sensor, ONLY ON IRD_PCB
-#define DHT22_AM2305_HUM_SENSOR
+//#define DHT22_AM2305_HUM_SENSOR
 // uncomment to have an ambiant air temperature SHT sensor, ONLY ON IRD_PCB
 //#define SHT_TEMP_SENSOR
 // uncomment to have an ambiant air humidity SHT sensor, ONLY ON IRD_PCB
@@ -512,8 +504,6 @@ uint8_t wm1_sensor_index;
 uint8_t wm2_sensor_index;
 uint8_t soil_temp_sensor_index;
 #define SOIL_TEMP_UNDEFINED_VALUE -99.0
-
-
 double soil_temp_sensor_value=SOIL_TEMP_UNDEFINED_VALUE;
 
 //////////////////////////////////////////////////////////////////
@@ -571,6 +561,15 @@ uint32_t TXPacketCount=0;
 ///////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
+// NO TRANSMISSION TO EASILY MEASURE CONSUMPTION IN LOW-POWER WITH
+// NO REBOOT OF THE BOARD WHEN POWERED BY BATTERIES
+// EVERY STEPS ARE EXECUTED, EXCEPT THE FINAL TRANSMISSION
+// FOR LORAWAN OTAA, NO JOIN IS PERFORMED
+
+//#define TEST_LOW_POWER_NO_TRANSMIT
+///////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////
 // LOW VOLTAGE MODE
 //
 // low voltage mode is applied when the battary voltage falls below VCC_LOW
@@ -589,9 +588,9 @@ uint32_t TXPacketCount=0;
 // then get the reported Vcc, but only when the device is powered without USB
 // finally set VccCorrection to the ratio of "measured Vcc by multimeter" divided by "reported Vcc"
 
-// On typical INTEL-IRRIS soil devices (default):
+// On typical devices (default):
 const float VccCorrection = 3.0/2.9;
-//other measures on real INTEL-IRRIS soil devices
+//other measures on real INTEL-IRRIS soil devices for instance
 //const float VccCorrection = 3.64/3.54; //with 3.6 lithium battery
 //const float VccCorrection = 3.24/3.18; //with 2 AA alkaline batteries  
 ///////////////////////////////////////////////////////////////////
@@ -930,9 +929,10 @@ void lowPower(unsigned long time_ms) {
       #endif
       waiting_t = 0;
     }
-
+    
+      //TODO: should we keep this in the while loop?
       #if defined IRD_PCB && defined SOLAR_BAT
-    manage_battery(PANEL_AUTO);
+    //manage_battery(PANEL_AUTO);
       #endif
 
       #ifdef SHOW_LOW_POWER_CYCLE
@@ -989,14 +989,6 @@ void lowPower(unsigned long time_ms) {
 
 void setup() {
 
-#if defined IRD_PCB && defined SOLAR_BAT
-  manage_battery(PANEL_AUTO);
-  if (v_bat < BAT_LOW)
-  {
-    recovery_charging = 1;
-  }
-#endif
-
 #ifdef LOW_POWER
   bool low_power_status = IS_LOWPOWER;
   #ifdef __SAMD21G18A__
@@ -1004,7 +996,6 @@ void setup() {
   #endif
 #else
   bool low_power_status = IS_NOT_LOWPOWER;
-  //digitalWrite(PIN_POWER,HIGH);
 #endif
 
 #ifdef WAZISENSE
@@ -1048,6 +1039,16 @@ void setup() {
 
 #if defined IRD_PCB && defined SOLAR_BAT
   manage_battery(PANEL_AUTO);
+  PRINT_CSTSTR("WITH SOLAR_BAT: v_bat on startup is (mV) ");
+  PRINTLN_VALUE("%f", v_bat);
+
+  if (v_bat < BAT_LOW)
+    recovery_charging = 1;
+  else
+    recovery_charging = 0;
+    
+  if (recovery_charging)
+      PRINT_CSTSTR("Recovery charging\n");
 #endif
 
 #ifdef OLED_PWR_PIN
@@ -1097,6 +1098,11 @@ void setup() {
   //ST
   sensor_ptrs[sensor_index] = new DS18B20("ST", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  #ifdef AIR_TEMP_HUM_SENSOR
+  //both sensors share the same power pin which is normally A1
+  //we don't want to switch off the sensor because we need to read the air temp/hum after reading soil temperature
+  //sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
+  #endif
   #ifdef WAZISENSE
   //it is because the soil temp is attached to a mosfet sensor pin
   sensor_ptrs[sensor_index]->set_warmup_time(1500);
@@ -1131,6 +1137,11 @@ void setup() {
   sensor_ptrs[sensor_index] = new SHT_Temperature((char*)"AT", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SHT_SDA_PIN, (uint8_t) SHT_PWR_PIN, (uint8_t) SHT_SCL_PIN);
   sensor_ptrs[sensor_index]->set_n_sample( 1);
   sensor_ptrs[sensor_index]->set_warmup_time(50);
+  #ifdef SOIL_TEMP_SENSOR
+  //both sensors share the same power pin which is normally A1
+  //we don't want to switch on the sensor because the sensor is already ON for reading soil temperature
+  //sensor_ptrs[sensor_index]->set_is_power_on_when_active(false);
+  #endif  
   //we don't want to switch off the sensor because we need to read the humidity after reading temperature
   sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
   sensor_index++;
@@ -1170,7 +1181,7 @@ void setup() {
   u8x8.begin();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
   //u8x8.setFont(u8x8_font_pxplustandynewtv_r);
-  u8x8.drawString(0, 0, "PRIMA IntelIrriS");
+  u8x8.drawString(0, 0, "GenericSensorDev");
   #ifdef WAZISENSE
   u8x8.drawString(0, 1, "with WaziSense  ");
   #else
@@ -1266,6 +1277,11 @@ void setup() {
 
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
   if (lorawan_module_setup(LORAWAN_MODULE_BAUD_RATE))
+#ifdef TEST_LOW_POWER_NO_TRANSMIT  
+    if (lorawan_config_device(false))
+#else
+    if (lorawan_config_device(true))
+#endif    
 #endif
   {
     PRINT_CSTSTR("LoRa chipset found\n");
@@ -1273,9 +1289,20 @@ void setup() {
   }
   else
   {
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+    PRINT_CSTSTR("Could not join or error with LoRaWAN module\n");
+#else
     PRINT_CSTSTR("No LoRa chipset responding\n");
+#endif    
+    #if defined LOW_POWER && not defined ARDUINO_SAM_DUE
+    PRINT_CSTSTR("GO SLEEP MODE\n");
+    nextTransmissionTime=((idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
+    lowPower(nextTransmissionTime);
+    #else
+    PRINT_CSTSTR("STOP PROGRAM\n");
     while (1)
       ;
+    #endif  
   }
 
 #if defined RAW_LORA && defined WITH_SPI_COMMANDS
@@ -1533,6 +1560,7 @@ void setup() {
   last_vcc = current_vcc;
   tx_vcc = current_vcc;
 
+#if not defined SOLAR_BAT
   PRINT_CSTSTR("Battery voltage on startup is ");
   PRINTLN_VALUE("%f", current_vcc);
 
@@ -1543,16 +1571,13 @@ void setup() {
     low_voltage_indication=0;
     my_nodeConfig.low_voltage_indication=0;
     EEPROM.put(0, my_nodeConfig);
-  #endif
+  #endif  
   }
+#endif  
    
   PRINT_CSTSTR("low_voltage_indication=");
   PRINTLN_VALUE("%d", low_voltage_indication);
 #endif // endif ifdef MONITOR_BAT_VOLTAGE
-
-#if defined IRD_PCB && defined SOLAR_BAT
-  manage_battery(PANEL_AUTO);
-#endif
 
 #ifdef WITH_AES
   local_lorawan_init();
@@ -1571,12 +1596,13 @@ uint16_t internal_read_volt( void)
 }
 #endif
 
-
 #if defined IRD_PCB && defined SOLAR_BAT
   // read micro controler temperature
-  #define TEMP_INTERNAL         // comment if you want to work without the internal temperature
-  #define SOLAR_PANEL_ANA   A7  // analog input
-  #define SOLAR_PANEL_PIN   5   // mosfet command Q4
+  #define TEMP_INTERNAL          // comment if you want to work without the internal temperature
+  #define SOLAR_PANEL_ANA   A7   // analog input
+  #define SOLAR_PANEL_PIN   5    // mosfet command Q4
+  // will further be divided by 1000 (--> 1.145). WARNING: may need calibration
+  #define SOLAR_PANEL_ANA_CORRECTION  1145 
 
 //////////////////////////////////////////////////////////////
 // Function returning instantaneous voltage as read on analog input of solar panel, in mV
@@ -1584,14 +1610,16 @@ uint16_t solar_analogRead( void)
 {
   uint16_t v;
   
-  v = analogRead( SOLAR_PANEL_ANA);
+  v = analogRead(SOLAR_PANEL_ANA);
+  //PRINT_CSTSTR("solar_analogRead=");
+  //PRINTLN_VALUE("%d", v);
   v = (uint16_t) ((uint32_t) v * 3300 / 1023); // 10 bits
   v = (uint16_t) ((uint32_t) v * 5300 / 1000); // R5 430k R4 100k /5.3 15.3 V maxi
-
+  v = (uint16_t) ((uint32_t) v * SOLAR_PANEL_ANA_CORRECTION / 1000);
   return v;
 }
 
-void manage_battery( uint8_t force_on)
+void manage_battery(uint8_t force_on)
 {
   static uint8_t v_state = STATE_MOSFETS_OFF; // static declaration allow further update inside manage_battery
   
@@ -1607,7 +1635,7 @@ void manage_battery( uint8_t force_on)
     default:
       v_pv = solar_analogRead();
 
-      // connect battery for measure : pannel can consume 0.5 mA at night
+      // connect battery for measure : panel can consume 0.5 mA at night
       pinMode( SOLAR_PANEL_PIN, OUTPUT);
       digitalWrite( SOLAR_PANEL_PIN, HIGH);
       delay( TIME_C3);
@@ -1714,7 +1742,7 @@ void measure_and_send( void)
     u8x8.begin();
     u8x8.setFont(u8x8_font_chroma48medium8_r);
     // u8x8.setFont(u8x8_font_pxplustandynewtv_r);
-    u8x8.drawString(0, 0, "PRIMA IntelIrriS");
+    u8x8.drawString(0, 0, "GenericSensorDev");
   #ifdef WAZISENSE
     u8x8.drawString(0, 1, "with WaziSense  ");
   #else
@@ -1974,7 +2002,9 @@ void measure_and_send( void)
   ///////////////////////////////////////////////////////////////////////
 
 #if defined IRD_PCB && defined SOLAR_BAT
-  manage_battery( PANEL_AUTO);
+  manage_battery(PANEL_AUTO);
+  PRINT_CSTSTR("WITH SOLAR_BAT: v_bat after sensor loop is (mV) ");
+  PRINTLN_VALUE("%f", v_bat);
 #endif
 
   for (int i=0; i<number_of_sensors; i++) {
@@ -1986,9 +2016,9 @@ void measure_and_send( void)
   #if defined USE_XLPP || defined USE_LPP
   // here we transmit the last measured vcc, measured from last transmission cycle
     #if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE
-      #if (defined IRD_PCB && defined SOLAR_BAT)
+      #if defined IRD_PCB && defined SOLAR_BAT
       // if SOLAR_BAT, the min battery voltage, measured on analog pin during radio transmission, is sent
-  PRINT_CSTSTR("Adding battery voltage (IRD_PCB solar: ");
+  PRINT_CSTSTR("Adding battery voltage (IRD_PCB solar): ");
   if (last_v_bat==0) last_v_bat=v_bat;
   PRINTLN_VALUE("%f", (float) last_v_bat / 1000.0);
   // we always use channel ch=6 for last measured vcc
@@ -2004,6 +2034,7 @@ void measure_and_send( void)
         #endif
 
       #else // without solar
+  PRINT_CSTSTR("Adding battery voltage: ");
         #ifdef TEST_LOW_BAT
   // in that case (debug) we transmit the voltage measured right after TX (last_vcc)
   lpp.addAnalogInput(6, last_vcc);
@@ -2119,7 +2150,7 @@ void measure_and_send( void)
 
 #if defined IRD_PCB && defined SOLAR_BAT
   manage_battery(PANEL_ON); // use solar to reduce battery current
-  last_v_bat = v_bat;        // reset minimum battery value
+  last_v_bat = v_bat;       // reset minimum battery value
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2134,7 +2165,7 @@ void measure_and_send( void)
 
 #if defined RAW_LORA && defined WITH_ACK
   p_type=PKT_TYPE_DATA | PKT_FLAG_ACK_REQ;
-  PRINTLN_CSTSTR("%s","Will request an ACK");
+  PRINTLN_CSTSTR("Will request an ACK");
 #endif
 
 #ifdef WAZISENSE
@@ -2147,7 +2178,10 @@ void measure_and_send( void)
   digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
 #endif
 
-
+#ifdef TEST_LOW_POWER_NO_TRANSMIT
+  PRINTLN_CSTSTR("TEST_LOW_POWER_NO_TRANSMIT MODE");
+  if (1)
+#else  
 #ifdef CUSTOM_LORAWAN
   // will return sent packet length if OK, otherwise 0 if transmission error
   // we use raw format for LoRaWAN
@@ -2182,6 +2216,7 @@ void measure_and_send( void)
   // will return packet length sent if OK, otherwise 0 if transmit error
   if (LT.transmitAddressed(message, pl, p_type, DEFAULT_DEST_ADDR, node_addr, 10000, MAX_DBM, WAIT_TX))
 #endif
+#endif //TEST_LOW_POWER_NO_TRANSMIT
   {
 #ifdef MONITOR_BAT_VOLTAGE
     // not 100% reliable because the board can reboot right after transmission because of
@@ -2212,7 +2247,12 @@ void measure_and_send( void)
     }
 #endif
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
-    // nothing particular right now
+    // we cannot measure battery voltage during transmission with LoRaWAN module
+  #if defined IRD_PCB && defined SOLAR_BAT
+    last_v_bat = v_bat;
+  #elif defined MONITOR_BAT_VOLTAGE   
+    tx_vcc_read = last_vcc;
+  #endif  
 #endif
   }
   else // transmission error
@@ -2250,11 +2290,11 @@ void measure_and_send( void)
     LT.printIrqStatus();
 #endif
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
-    // nothing particular right now
+    PRINTLN_CSTSTR("SendError with LoRaWAN module");
 #endif
 
 #if defined IRD_PCB && defined SOLAR_BAT
-    manage_battery( PANEL_ON); // last_v_bat is updated in the modified LT.transmit
+    manage_battery(PANEL_ON); // last_v_bat is updated in the modified LT.transmit
 #endif
   } // end else (tx error)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2524,7 +2564,7 @@ void measure_and_send( void)
 
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
   PRINT_CSTSTR("LoRa pkt seq ");
-  PRINT_VALUE("%d", TXPacketCount?0:TXPacketCount-1);
+  PRINT_VALUE("%d", TXPacketCount==0?0:TXPacketCount-1);
   PRINTLN;
 #else
   PRINT_CSTSTR("LoRa pkt seq ");
@@ -2559,6 +2599,8 @@ void loop(void)
     // PRINTLN_VALUE("%ld",nextTransmissionTime);
     // PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
 
+    //we assume that when running on solar panel, we do not need to have the same behavior
+    //than running on alkalines (i.e. dynamically extend the measure interval) 
   #if defined IRD_PCB && defined SOLAR_BAT
     if (recovery_charging  &&  v_bat > BAT_OK) {
       recovery_charging = 0;
@@ -2585,7 +2627,6 @@ void loop(void)
 
     PRINT_CSTSTR("BATT_TX-->");
     PRINTLN_VALUE("%f", tx_vcc); // updated during last transmit
-
 
     #ifdef BYPASS_LOW_BAT
     measure_and_send();

@@ -10,7 +10,7 @@
   ////////////////////////////////////////////////////////////////////
   // uncomment for IRD PCB RAK version where the serial monitor is using software serial with pin 2 for TX
   // this is the case for the IRD PCBv5
-  //#define SOFT_SERIAL_DEBUG
+  #define SOFT_SERIAL_DEBUG
   
   ////////////////////////////////////////////////////////////////////
   // uncomment for WAZISENSE v2 board

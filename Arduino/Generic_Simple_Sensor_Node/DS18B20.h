@@ -1,7 +1,7 @@
 /*
 * Copyright (C) 2016-2023 Congduc Pham, University of Pau, France
 *
-* congduc.pham@univ-pau.fr
+* Congduc.Pham@univ-pau.fr
 */
 
 #ifndef DS18B20_H

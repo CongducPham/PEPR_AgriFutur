@@ -89,11 +89,16 @@ char* AppSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
 
 //WaziGate default
 char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
-//char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AEDABCD";
+//char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AEDABCD"; 
 
 /////////////
 //OTAA mode 
 /////////////
+
+bool otaa=false;
+//TODO: set to 1 for test, change to 3 for deployment 
+uint8_t join_retry=3;
+bool join_event=false;
 
 ///////////////////////////////////////////////////////////////////
 //ENTER HERE your device info (same order, i.e. msb)
@@ -124,7 +129,6 @@ SoftwareSerial lorawan_module_serial(rxPin,txPin); //rx,tx for Arduino side
 #endif
 
 char serial_buff[MLENGTH];
-bool otaa=false;
 
 void(*resetFunc)(void) = 0;
 
@@ -379,12 +383,24 @@ bool lorawan_module_setup(uint16_t br) {
   
   write_lorawan_module("AT+ADR=0\r\n\0");
   read_lorawan_module(okStr);
-    
+
+  return true;
+#else
+  PRINTLN_CSTSTR("LoRaWAN radio module not supported");
+  return false;
+#endif  
+}
+
+bool lorawan_config_device(bool join) {
+#ifdef RAK3172
   if (otaa) {
 
-    uint8_t join_retry=3;
-    bool join_event=false;
-    
+    if (!join) {
+      PRINTLN_CSTSTR("OTAA but forced to not join");
+      join_event=false;
+      return true;
+    }  
+      
     PRINTLN_CSTSTR("Device will be configured by OTAA");
     //Set OTAA mode
     //Set device parameters
@@ -452,11 +468,13 @@ bool lorawan_module_setup(uint16_t br) {
       }
       else {
         PRINTLN_CSTSTR("Error when joining!");
-
+        join_event=false;
         if (join_retry==0) {
-          PRINTLN_CSTSTR("Retry joining after 30s");
-          delay(30000);
-          join_retry=3;
+          PRINTLN_CSTSTR("Abort join!");
+          //It is also possible to try joining forever, not sure which approach is best
+          //PRINTLN_CSTSTR("Retry joining after 30s");
+          //delay(30000);
+          //join_retry=3;
         }
       }
     }
@@ -468,8 +486,8 @@ bool lorawan_module_setup(uint16_t br) {
     // and finally turn on automatic low power mode
     write_lorawan_module("AT+LPM=1\r\n\0");
     read_lorawan_module(okStr);    
-    
-    return true;
+
+    return true; 
   }
   else {
     PRINTLN_CSTSTR("Set device parameter for ABP mode");   
@@ -510,7 +528,7 @@ bool lorawan_module_setup(uint16_t br) {
 #else
   PRINTLN_CSTSTR("LoRaWAN radio module not supported");
   return false;
-#endif  
+#endif
 }
 
 bool lorawan_transmit(char* buf) {
@@ -535,22 +553,28 @@ bool lorawan_transmit(char* buf) {
 #ifdef FAKE_AT_LORAWAN
   delay(1000);
 #else
-  lorawan_module_serial.print(m);  
-  if (!read_lorawan_module(okStr, 10000)) {
-    //error
-    delay(200);
-    digitalWrite(BOARD_BUILTIN_LED, HIGH);
-    delay(200);
-    digitalWrite(BOARD_BUILTIN_LED, LOW);
-    delay(200);
-    digitalWrite(BOARD_BUILTIN_LED, HIGH);
-    delay(200);
-    digitalWrite(BOARD_BUILTIN_LED, LOW);
-    delay(200);
-    digitalWrite(BOARD_BUILTIN_LED, HIGH);
-    delay(200);
-    digitalWrite(BOARD_BUILTIN_LED, LOW);
-    return false;    
+  if (otaa && !join_event) {
+      PRINTLN_CSTSTR("Cannot send in OTAA mode without JOIN");
+      return false;
+  }    
+  else {
+    lorawan_module_serial.print(m);  
+    if (!read_lorawan_module(okStr, 10000)) {
+      //error
+      delay(200);
+      digitalWrite(BOARD_BUILTIN_LED, HIGH);
+      delay(200);
+      digitalWrite(BOARD_BUILTIN_LED, LOW);
+      delay(200);
+      digitalWrite(BOARD_BUILTIN_LED, HIGH);
+      delay(200);
+      digitalWrite(BOARD_BUILTIN_LED, LOW);
+      delay(200);
+      digitalWrite(BOARD_BUILTIN_LED, HIGH);
+      delay(200);
+      digitalWrite(BOARD_BUILTIN_LED, LOW);
+      return false;    
+    }
   }
 #endif
       

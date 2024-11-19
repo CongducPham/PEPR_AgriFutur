@@ -36,9 +36,11 @@ void rawAnalog::update_data()
   	
     int aux_value = 0;
     int value = 0;
+
+    pinMode(get_pin_power(), OUTPUT);
     
     // if we use a digital pin to power the sensor...
-    if (get_is_low_power())
+    if (get_is_low_power() && get_is_power_on_when_active())
 #if (defined IRD_PCB && defined SOLAR_BAT) || defined IRD_PCBA
       power_soft_start(get_pin_power());
 #else
@@ -59,8 +61,10 @@ void rawAnalog::update_data()
       delay(10);
 	}
 	
-    if (get_is_low_power())        
+    if (get_is_low_power() && get_is_power_off_when_inactive()) {       
         digitalWrite(get_pin_power(), PWR_LOW);
+        pinMode(get_pin_power(), INPUT);
+    }
         
     // getting the average
     //Serial.println(value);

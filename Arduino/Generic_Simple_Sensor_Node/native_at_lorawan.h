@@ -1,5 +1,5 @@
 /*
- *  simple lorawan lib to encode and decode lorawan packet
+ *  simple AT lorawan lib to drive a lorawan module
  *  
  *  Copyright (C) 2016-2020 Congduc Pham, University of Pau, France
  *
@@ -57,6 +57,7 @@ void write_lorawan_module(char* lcmd);
 bool read_lorawan_module(char* matchStr, uint16_t timeout=2000, bool saveAnswer=true, bool return_on_match=true);
 void lorawan_display_config();
 bool lorawan_module_setup(uint16_t br);
+bool lorawan_config_device(bool join);
 bool lorawan_transmit(char* buf);
 void lorawan_sleep(unsigned long ms);
 void lorawan_wake();
