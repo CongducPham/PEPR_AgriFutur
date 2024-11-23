@@ -126,6 +126,15 @@ TXOnlySerial debug_serial(2);
 #endif
 
 ///////////////////////////////////////////////////////////////////
+// NO TRANSMISSION TO EASILY MEASURE CONSUMPTION IN LOW-POWER WITH
+// NO REBOOT OF THE BOARD WHEN POWERED BY BATTERIES
+// EVERY STEPS ARE EXECUTED, EXCEPT THE FINAL TRANSMISSION
+// FOR LORAWAN OTAA, NO JOIN IS PERFORMED
+
+//#define TEST_LOW_POWER_NO_TRANSMIT
+///////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////
 // COMMENT OR UNCOMMENT TO CHANGE FEATURES. 
 // ONLY IF YOU KNOW WHAT YOU ARE DOING!!! OTHERWISE LEAVE AS IT IS
 // 
@@ -561,15 +570,6 @@ uint32_t TXPacketCount=0;
 ///////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
-// NO TRANSMISSION TO EASILY MEASURE CONSUMPTION IN LOW-POWER WITH
-// NO REBOOT OF THE BOARD WHEN POWERED BY BATTERIES
-// EVERY STEPS ARE EXECUTED, EXCEPT THE FINAL TRANSMISSION
-// FOR LORAWAN OTAA, NO JOIN IS PERFORMED
-
-//#define TEST_LOW_POWER_NO_TRANSMIT
-///////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////
 // LOW VOLTAGE MODE
 //
 // low voltage mode is applied when the battary voltage falls below VCC_LOW
@@ -930,9 +930,8 @@ void lowPower(unsigned long time_ms) {
       waiting_t = 0;
     }
     
-      //TODO: should we keep this in the while loop?
       #if defined IRD_PCB && defined SOLAR_BAT
-    //manage_battery(PANEL_AUTO);
+    manage_battery(PANEL_AUTO);
       #endif
 
       #ifdef SHOW_LOW_POWER_CYCLE
@@ -1101,7 +1100,7 @@ void setup() {
   #ifdef AIR_TEMP_HUM_SENSOR
   //both sensors share the same power pin which is normally A1
   //we don't want to switch off the sensor because we need to read the air temp/hum after reading soil temperature
-  //sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
+  sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
   #endif
   #ifdef WAZISENSE
   //it is because the soil temp is attached to a mosfet sensor pin
@@ -1140,7 +1139,7 @@ void setup() {
   #ifdef SOIL_TEMP_SENSOR
   //both sensors share the same power pin which is normally A1
   //we don't want to switch on the sensor because the sensor is already ON for reading soil temperature
-  //sensor_ptrs[sensor_index]->set_is_power_on_when_active(false);
+  sensor_ptrs[sensor_index]->set_is_power_on_when_active(false);
   #endif  
   //we don't want to switch off the sensor because we need to read the humidity after reading temperature
   sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
@@ -1615,7 +1614,7 @@ uint16_t solar_analogRead( void)
   //PRINTLN_VALUE("%d", v);
   v = (uint16_t) ((uint32_t) v * 3300 / 1023); // 10 bits
   v = (uint16_t) ((uint32_t) v * 5300 / 1000); // R5 430k R4 100k /5.3 15.3 V maxi
-  v = (uint16_t) ((uint32_t) v * SOLAR_PANEL_ANA_CORRECTION / 1000);
+  //v = (uint16_t) ((uint32_t) v * SOLAR_PANEL_ANA_CORRECTION / 1000);
   return v;
 }
 

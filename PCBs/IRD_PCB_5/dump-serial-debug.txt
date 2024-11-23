@@ -1,0 +1,175 @@
+INTEL-IRRIS soil humidity sensor – July 5th, 2024
+Arduino Pro Mini detected
+ATmega328P detected
+Opening serial port
+------------
+AT
+
+got answer
+OK
+ans.OK
+------------
+AT
+
+got answer
+OK
+ans.OK
+------------
+AT+LPMLVL=1
+
+got answer
+OK
+ans.OK
+------------
+AT+LPM=0
+
+got answer
+OK
+ans.OK
+------------
+AT+LPM=?
+
+got answer
+AT+LPM=0
+OK
+ans.OK
+------------
+AT+VER=?
+
+got answer
+AT+VER=RUI_4.0.6_RAK3172-E
+OK
+ans.OK
+------------
+AT+CLASS=?
+
+got answer
+AT+CLASS=A
+OK
+ans.OK
+------------
+AT+BAND=?
+
+got answer
+AT+BAND=4
+OK
+ans.OK
+------------
+AT+ADR=?
+
+got answer
+AT+ADR=0
+OK
+ans.OK
+------------
+AT+NJM=?
+
+got answer
+AT+NJM=0
+OK
+ans.OK
+OTAA not enabled
+------------
+AT+DEVADDR=?
+
+got answer
+AT+DEVADDR=26011DAA
+OK
+ans.OK
+------------
+AT+NWKSKEY=?
+
+got answer
+AT+NWKSKEY=23158D3BBC31E6AF670D195B5AED5525
+OK
+ans.OK
+------------
+AT+APPSKEY=?
+
+got answer
+AT+APPSKEY=23158D3BBC31E6AF670D195B5AED5525
+OK
+ans.OK
+Set device parameter for ABP mode
+------------
+AT+NJM=0
+
+got answer
+OK
+ans.OK
+------------
+AT+CLASS=A
+
+got answer
+OK
+ans.OK
+------------
+AT+BAND=4
+
+got answer
+OK
+ans.OK
+------------
+AT+ADR=0
+
+got answer
+OK
+ans.OK
+------------
+AT+DEVADDR=26011DAA
+
+got answer
+OK
+ans.OK
+------------
+AT+NWKSKEY=23158D3BBC31E6AF670D195B5AED5525
+
+got answer
+OK
+ans.OK
+------------
+AT+APPSKEY=23158D3BBC31E6AF670D195B5AED5525
+
+got answer
+OK
+ans.OK
+------------
+AT+LPMLVL=2
+
+got answer
+OK
+ans.OK
+------------
+AT+LPM=1
+
+got answer
+OK
+ans.OK
+LoRa chipset found
+Get back previous sx1272 config
+0 reboots have been detected and stored in EEPROM
+
+Forced to use default parameters
+Using idle period of 60
+RAK3172 successfully configured
+Battery voltage on startup is 3.42
+low_voltage_indication=0
+BATTERY-->3.41 | 3.42
+BATT_TX-->3.42
+3.42
+Sending \!SH1/185.50
+Real payload size is 12
+use LPP format for transmission to gateway
+plain payload hex
+0067073F06020155
+got answer
+OK
+ans.OK
+
+LoRa pkt size 12
+LoRa pkt seq 0
+LoRa Sent in 885
+Switch to power saving mode
+------------
+AT+SLEEP
+
