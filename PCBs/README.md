@@ -1,4 +1,4 @@
-PCB IRD v4.1
+IRD PCB v4.1
 ----
 
 This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototyping and even integration purpose. It allows much simpler wiring of the soil humidity sensor, the watermark sensors and the soil temperature sensor (placeholder for associated resistors are already there).
@@ -15,7 +15,7 @@ You can download the Gerber zipped archive and view them on an [online Gerber vi
 
 The raw PCB will of course not have the additional electronic components. While it is possible to add these component manually, in practice it is not recommended as the components are small and manually soldering them is prone to errors. 
 
-PCBA IRD v4.1
+IRD PCBA v4.1
 ----
 
 Instead, the fully assembled PCB (PCBA) with solar circuit can be ordered fully assembled from PCB manufacturers.
@@ -36,7 +36,7 @@ You can download the BOM & CPL files to order the fully assembled board from PCB
 
 Read [INTEL-IRRIS Newsletter #4](https://intel-irris.eu/intel-irris-newsletter-4) that presented a brief description with additional images.
 
-PCB IRD v5
+IRD PCB v5
 ----
 
 This PCB is the RAK3172 version of the IRD PCB v4.1.
@@ -49,9 +49,9 @@ You can download the Gerber zipped archive and view them on an [online Gerber vi
 
 - Arduino ProMini IRD PCB v5 for RAK3172 zipped Gerber archive, 2 layer board of 30.89x79.5mm [.zip](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_5/Gerber_PCB5_RAK3172_IISS_2024-06-01.zip)
 
-Because the RAK3172 module is connected to the Arduino's serial port (UART), there is a specific procedure to debug the board in order to see the text output normally printed to the serial monitor window of the Arduino IDE. See the [tutorial on using this IRD PCB v5](https://docs.google.com/viewer?url=https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/Tutorials/Intel-Irris-IOT-platform-PCBv5-PCBA.pdf). A correct output would be similar to [this output example](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_5/dump-serial-debug.txt)
+Because the RAK3172 module is connected to the Arduino's serial port (UART), there is a specific procedure to debug the board in order to see the text output normally printed to the serial monitor window of the Arduino IDE. See the [tutorial on using this IRD PCB v5](https://docs.google.com/viewer?url=https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/Tutorials/Intel-Irris-IOT-platform-PCBv5-PCBA.pdf) produced in the context of the INTEL-IRRIS project. A correct output would be similar to [this output example](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_5/dump-serial-debug.txt)
 
-PCBA IRD v5
+IRD PCBA v5
 ----
 
 The fully assembled PCB (PCBA) with solar circuit can be ordered fully assembled from PCB manufacturers.
