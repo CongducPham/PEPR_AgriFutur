@@ -115,11 +115,15 @@ Parameters
 Decoding a real image capture from XIAO ESP32S3 Sense	
 --	
 
-The PoC based on the XIAO ESP32S3 Sense board output the following encoded data in the Serial Monitor for an 128x128 grayscale BMP image:
+The PoC based on the XIAO ESP32S3 Sense board.
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32S3-LoRaCam-PoC.jpg" width="400">
+
+It can output the following encoded data in the Serial Monitor for an 128x128 grayscale BMP image:
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png" width="700">
 
-These data has been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. Then decoded with `decode_to_bmp`:
+These data has been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. Of course when LoRa transmission of the packets will be integrated, the image `.dat` file will created automatically by the gateway. After reception of the image file, it is decoded with `decode_to_bmp`:
 
 	> ./decode_to_bmp ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat 128x128-ESP32S3-test.bmp 
 	
