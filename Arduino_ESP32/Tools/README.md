@@ -13,18 +13,20 @@ In the following section, we are presenting the main tools intended to be used o
 - `decode_to_bmp`: decodes from the proposed image format back to BMP
 - `drop_img_pkt`: simple version of the previously called `XBeeSendCRANImage` to only introduce packet losses for test purposes
 
-**IMPORTANT NOTE**: to be encoded, the image must be in BMP format, in 8 bits per pixel, grey scale (256 colors), 256 colors palette, and must have the same horizontal and vertical dimension, e.g. 128x128, 240x240, ... If you create test images using various image software, but sure that the DIB header size is 40 bytes (image offset is 1078 bytes) which correspond to the common Windows format known as BITMAPINFOHEADER header (see [https://en.wikipedia.org/wiki/BMP_file_format](https://en.wikipedia.org/wiki/BMP_file_format)). With GIMP for instance, be sure to NOT include color space information (check "Do not write colour space information" option). When adding the BMP header of 14 bytes to the DIB header, the palette information starts after 54 bytes.
+**IMPORTANT NOTE**: to be encoded, the image must be in BMP format, in 8 bits per pixel, gray scale (256 colors), 256 colors palette, and must have the same horizontal and vertical dimension, e.g. 128x128, 240x240, ... If you create test images using various image software, but sure that the DIB header size is 40 bytes (image offset is 1078 bytes) which correspond to the common Windows format known as BITMAPINFOHEADER header (see [https://en.wikipedia.org/wiki/BMP_file_format](https://en.wikipedia.org/wiki/BMP_file_format)). With GIMP for instance, be sure to NOT include color space information (check "Do not write colour space information" option). When adding the BMP header of 14 bytes to the DIB header, the palette information starts after 54 bytes.
 
-**Why greyscale?**: in the current setting, the color palette information is not sent in the encoded image because that would add 256*4=1024 bytes to send. Using grey scale has the advantage that it is possible to have a "standard" greyscale palette added when decoding the image at the receiver (e.g. the gateway for instance).
+**Why grayscale?**: in the current setting, the color palette information is not sent in the encoded image because that would add 256*4=1024 bytes to send. Using gray scale has the advantage that it is possible to have a "standard" grayscale palette added when decoding the image at the receiver (e.g. the gateway for instance).
 
-**Converting to BMP with ESP32S3**: Most of OVXXXX cameras that will be connected to the ESP32S3 (such as the OV2640) have built-in JPEG encoding capabilities and therefore will easily provide the capture image in JPEG format. The ESP32 camera lib actually provides conversion functions to easily convert from JPEG to BMP (see `fmt2bmp` from [https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c](https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c) for instance). Once the image is in BMP, it is easy to apply the proposed image encoding format, transmit each generated packet with LoRa and decode back to BMP at the receiver (e.g. the gateway for instance).
+**Converting to BMP with ESP32S3**: Most of OVXXXX cameras that will be connected to the ESP32S3 (such as the OV2640) have built-in JPEG encoding capabilities and therefore will easily provide the capture image in JPEG format. With small image size and grayscale, the camera can also directly provide a frame buffer with raw image data. Anyway, the ESP32 camera lib provides conversion functions to easily convert from JPEG to BMP if needed (see usage of `fmt2bmp` in [https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c](https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c) for instance). Once the image is in BMP, it is easy to apply the proposed image encoding format, transmit each generated packet with LoRa and decode back to BMP at the receiver (e.g. the gateway for instance).
 
-**Which ESP32 Cam board?**: 
+**Which ESP32 Cam board?**: We tested several ESP32-based camera boards. The main criterion was to have enough pins left to connect an SPI LoRa radio module. 3 boards offer this capabilities: `Freenove ESP32-S3 WROOM`, `Freenove ESP32 WROVER v1.6` and `XIAO ESP32-S3 Sense`. The choice was finally set to the `XIAO ESP32-S3 Sense` which has a huge developer community and enough resource to run embedded AI processing that we want to add in the future in a quite compact format.
 
-A/ Encoding the image
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32-camera-board.png" width="600">
+
+A/ Encoding a BMP image
 ==
 
-The `JPEGencoding.c` program is used to create a `.dat` file that will contain in text format the various packets to emulate the sending of encoded image files using an optimized JPEG-like encoding technique. The author of the core components of the program is Vincent Lecuire, CRAN UMR 7039, Nancy-Université, CNRS. It has been slightly modified by C. Pham to add some useful features to automatize a number of steps. A reference to the article on the encoding technique is:
+The `JPEGencoding.c` program is used to create a `.dat` file that will contain in text format the various packets to emulate the sending of encoded image packet by the image sensor using an optimized JPEG-like encoding technique. The author of the core components of the program is Vincent Lecuire, CRAN UMR 7039, Nancy-Université, CNRS. It has been slightly modified by C. Pham to add some useful features to automatize a number of steps. A reference to the article on the encoding technique is:
 
 	Fast zonal DCT for energy conservation in wireless image sensor networks
 	Lecuire V., Makkaoui L., Moureaux J.-M.
@@ -62,7 +64,7 @@ Real encoded image file size : 1759
 Renaming in desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat
 ```
 
-The structure of the `.dat` file generated by the program is:
+In this example you can see that the image size was reduced from 16384 bytes to 1759 bytes. The encoding format allows for decoding regardless of the number of packet losses. The structure of the `.dat` file generated by the program is:
 
 ```
 XXXX: number of packets
@@ -73,7 +75,7 @@ XXXX: quality factor
 then XXXX XX XX .. .. XXXX XX XX ... 
 ```
 
-where the XXXX indicates the number of samples (XX) that in the packet. The size of the packet is therefore XXXX. This pattern is repeated until the end of the file.
+where the XXXX indicates the number of samples (XX) that are in the packet. The size of the packet is therefore XXXX. This pattern is repeated until the end of the file.
 
 The program produce a `.dat` file which name is composed of the MSS, the quality factor, the number packets and the real size in bytes, e.g.: `desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat`.
 
@@ -89,7 +91,7 @@ Here are the steps for using this program:
 
 The first parameter is the name of the `.dat` file. Typically produced by the previous `JPEGencoding`, or in a real scenario, sent by a camera node. The second parameter is a `.bmp` file containing the gray scale color palette. The program will produce:
 
-	`decode-desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat-P8-S1759.bmp`
+	decode-desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat-P8-S1759.bmp
 
 The number of packets and byte samples processed is indicated at the end of the file name so that you can compared with the initial encoded image. 
 
@@ -99,7 +101,7 @@ You can call `decode_to_bmp` with some parameters that allows it to name the dec
 
 Then the BMP image will be named:
 
-	`decode-desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat-1-0003-1-P8-S1759.bmp`
+	decode-desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat-1-0003-1-P8-S1759.bmp
 	
 Parameters
 --
@@ -123,7 +125,7 @@ These data has been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P
 	
 The produced BMP file is then:
 
-	`decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.bmp`	
+	decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.bmp
 
 It is displayed below as PNG file for GitHub with the original size of both 128x128 and scale to 400x400 for better visualization.
 
@@ -158,7 +160,7 @@ Here, the final packet drop percentage has been 25%. The final output file is th
 
 Here, since there have been some packet dropped, running `decode_to_bmp` may indicate a smaller number of generated image samples. In this particular case, the program will produce:
 
-	`decode-desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat-DP35-25-P6.dat-P6-S1286.bmp`
+	decode-desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat-DP35-25-P6.dat-P6-S1286.bmp
 	
 You can then display the image and see what is the impact of packet losses on the quality, the advantage is that you can better control the packet loss rate.
 
