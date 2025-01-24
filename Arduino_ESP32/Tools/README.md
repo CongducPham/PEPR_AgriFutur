@@ -115,7 +115,7 @@ Decoding a real image capture from XIAO ESP32S3 Sense
 
 The PoC based on the XIAO ESP32S3 Sense board output the following encoded data in the Serial Monitor for an 128x128 grayscale BMP image:
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png" width="400">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png" width="700">
 
 These data has been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. Then decoded with `decode_to_bmp`:
 
