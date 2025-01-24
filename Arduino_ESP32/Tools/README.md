@@ -123,13 +123,13 @@ These data has been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P
 	
 The produced BMP file is then:
 
-	`decode-capture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.bmp`	
+	`decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.bmp`	
 
 It is displayed below as PNG file for GitHub with the original size of both 128x128 and scale to 400x400 for better visualization.
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-capture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.png" width="128">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.png" width="128">
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-capture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.png" width="400">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.png" width="400">
 	
 C/ Emulate sending and add packet drop
 ==
