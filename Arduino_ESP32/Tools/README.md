@@ -125,7 +125,11 @@ The produced BMP file is then:
 
 	`decode-capture.bmp.M235-Q20-P6-S1158.dat-P5-S1113.bmp`	
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-capture.bmp.M235-Q20-P6-S1158.dat-P5-S1113.bmp" width="128">
+It is displayed below as PNG file for GitHub with the original size of both 128x128 and scale to 400x400 for better visualization.
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-capture.bmp.M235-Q20-P6-S1158.dat-P5-S1113.png" width="128">
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-capture.bmp.M235-Q20-P6-S1158.dat-P5-S1113.png" width="400">
 	
 C/ Emulate sending and add packet drop
 ==
