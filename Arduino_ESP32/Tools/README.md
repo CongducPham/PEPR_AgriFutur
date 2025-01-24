@@ -113,9 +113,9 @@ Parameters
 Decoding a real image capture from XIAO ESP32S3 Sense	
 --	
 
-The PoC based on the XIAO ESP32S3 Sense board output the following encoded data in the Serial Monitor:
+The PoC based on the XIAO ESP32S3 Sense board output the following encoded data in the Serial Monitor for an 128x128 grayscale BMP image:
 
-![Screenshot-ESP32S3](./Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png)
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png" width="400">
 
 These data has been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. Then decoded with `decode_to_bmp`:
 
@@ -125,6 +125,7 @@ The produced BMP file is then:
 
 	`decode-capture.bmp.M235-Q20-P6-S1158.dat-P5-S1113.bmp`	
 
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-capture.bmp.M235-Q20-P6-S1158.dat-P5-S1113.bmp" width="128">
 	
 C/ Emulate sending and add packet drop
 ==
