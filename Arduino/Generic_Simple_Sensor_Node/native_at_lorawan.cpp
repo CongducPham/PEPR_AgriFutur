@@ -398,6 +398,15 @@ bool lorawan_config_device(bool join) {
     if (!join) {
       PRINTLN_CSTSTR("OTAA but forced to not join");
       join_event=false;
+
+      // now, set the module to low power mode Stop 2 mode
+      write_lorawan_module("AT+LPMLVL=2\r\n\0");
+      read_lorawan_module(okStr);
+
+      // and finally turn on automatic low power mode
+      write_lorawan_module("AT+LPM=1\r\n\0");
+      read_lorawan_module(okStr);  
+          
       return true;
     }  
       

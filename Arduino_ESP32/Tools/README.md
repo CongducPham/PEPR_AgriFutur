@@ -7,11 +7,19 @@ In the PEPR AgriFutur project, in addition to more traditional sensors (soil hum
 
 The proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in the [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses. 
 
-In the following section, we are presenting the main tools:
+In the following section, we are presenting the main tools intended to be used on a computer to test the image tool chain:
 
 - `JPEGencoding`: encodes an 8bpp grayscale BMP image into the proposed image format
 - `decode_to_bmp`: decodes from the proposed image format back to BMP
 - `drop_img_pkt`: simple version of the previously called `XBeeSendCRANImage` to only introduce packet losses for test purposes
+
+**IMPORTANT NOTE**: to be encoded, the image must be in BMP format, in 8 bits per pixel, grey scale (256 colors), 256 colors palette, and must have the same horizontal and vertical dimension, e.g. 128x128, 240x240, ... If you create test images using various image software, but sure that the DIB header size is 40 bytes (image offset is 1078 bytes) which correspond to the common Windows format known as BITMAPINFOHEADER header (see [https://en.wikipedia.org/wiki/BMP_file_format](https://en.wikipedia.org/wiki/BMP_file_format)). With GIMP for instance, be sure to NOT include color space information (check "Do not write colour space information" option). When adding the BMP header of 14 bytes to the DIB header, the palette information starts after 54 bytes.
+
+**Why greyscale?**: in the current setting, the color palette information is not sent in the encoded image because that would add 256*4=1024 bytes to send. Using grey scale has the advantage that it is possible to have a "standard" greyscale palette added when decoding the image at the receiver (e.g. the gateway for instance).
+
+**Converting to BMP with ESP32S3**: Most of OVXXXX cameras that will be connected to the ESP32S3 (such as the OV2640) have built-in JPEG encoding capabilities and therefore will easily provide the capture image in JPEG format. The ESP32 camera lib actually provides conversion functions to easily convert from JPEG to BMP (see `fmt2bmp` from [https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c](https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c) for instance). Once the image is in BMP, it is easy to apply the proposed image encoding format, transmit each generated packet with LoRa and decode back to BMP at the receiver (e.g. the gateway for instance).
+
+**Which ESP32 Cam board?**: 
 
 A/ Encoding the image
 ==
@@ -26,8 +34,6 @@ Here are the steps for using this program:
 
 	> g++ -o JPEGencoding JPEGencoding.c
 	> ./JPEGencoding original_image_file.bmp
-
-**IMPORTANT NOTE**: the image must be in BMP format, in 8 bit per pixel, grey scale (256 colors), 256 colors palette, and have the same horizontal and vertical dimension. If you create test images using various image software, but sure that the header size is 40 bytes (image offset is 1078 bytes) which correspond to the common Windows format known as BITMAPINFOHEADER header (see [https://en.wikipedia.org/wiki/BMP_file_format](https://en.wikipedia.org/wiki/BMP_file_format)). With GIMP for instance, be sure to NOT include color space information (check "Do not write colour space information" option).
 
 Here is a typical output for the following example:
 
@@ -103,6 +109,22 @@ Parameters
 	-camid c: indicates the source camid (in case of multiple camera sensor)
 	file_to_decode: this the .dat file from encoder
 	palette_image_file: can be the original BMP file or a palette BMP file to get palette color info 	
+	
+Decoding a real image capture from XIAO ESP32S3 Sense	
+--	
+
+The PoC based on the XIAO ESP32S3 Sense board output the following encoded data in the Serial Monitor:
+
+![Screenshot-ESP32S3](./Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png)
+
+These data has been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. Then decoded with `decode_to_bmp`:
+
+	> ./decode_to_bmp ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat 128x128-ESP32S3-test.bmp 
+	
+The produced BMP file is then:
+
+	`decode-capture.bmp.M235-Q20-P6-S1158.dat-P5-S1113.bmp`	
+
 	
 C/ Emulate sending and add packet drop
 ==

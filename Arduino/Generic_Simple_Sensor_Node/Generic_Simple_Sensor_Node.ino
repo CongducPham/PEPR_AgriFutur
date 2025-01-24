@@ -1,7 +1,7 @@
 /*
  *  Generic Simple Sensor Node
  *  support limited LoRaWAN with raw LoRa SX12XX (such as RFM9X, NiceRF, ...)
- *  support RAK3172 for native LoRaWAN
+ *  full LoRaWAN with RAK3172 module
  *  
  *  Copyright (C) 2024 Congduc Pham, University of Pau, France
  *
@@ -19,8 +19,9 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Nov. 19th, 2024
+ * last update: Dec. 23rd, 2024
  * 
+ * NEW: Support for 3 DSB1820 temperature sensors
  * NEW: Support for ambiant air temperature/humidity sensors (DHT22/AM2305/SHT1x/SHT2x/SHT3x)
  * Based on INTEL_IRRIS soil humidity sensor platform – July 19th, 2024 
  */
@@ -67,7 +68,7 @@ TXOnlySerial debug_serial(2);
 // #define MY_FREQUENCY 916800000
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nGeneric Simple Sensor Node – Nov. 19th, 2024\n"
+#define BOOT_START_MSG  "\nGeneric Simple Sensor Node – Dec. 23rd, 2024\n"
 
 ////////////////////////////////////////////////////////////////////
 // comment to have an ambiant air temperature/humidity sensor node
@@ -107,15 +108,19 @@ TXOnlySerial debug_serial(2);
 // uncomment to have an additional CO2 sensor, ONLY ON IRD_PCB
 // #define CO2_SCD30_SENSOR
 // uncomment to have an ambiant air temp/hum sensor, then select which sensor model below
-//#define AIR_TEMP_HUM_SENSOR
+// #define AIR_TEMP_HUM_SENSOR
 // uncomment to have an ambiant air temperature DHT22/AM2305 sensor, ONLY ON IRD_PCB
-//#define DHT22_AM2305_TEMP_SENSOR
+// #define DHT22_AM2305_TEMP_SENSOR
 // uncomment to have an ambiant air humidity DHT22/AM2305 sensor, ONLY ON IRD_PCB
-//#define DHT22_AM2305_HUM_SENSOR
+// #define DHT22_AM2305_HUM_SENSOR
 // uncomment to have an ambiant air temperature SHT sensor, ONLY ON IRD_PCB
-//#define SHT_TEMP_SENSOR
+// #define SHT_TEMP_SENSOR
 // uncomment to have an ambiant air humidity SHT sensor, ONLY ON IRD_PCB
-//#define SHT_HUM_SENSOR
+// #define SHT_HUM_SENSOR
+// uncomment to have a customized 2 soil temperature device, ONLY ON IRD_PCB
+//#define TWO_SOIL_TEMP_SENSOR
+// uncomment to have a customized 3 soil temperature device, ONLY ON IRD_PCB
+// #define THREE_SOIL_TEMP_SENSOR
 
 // uncomment to use LPP format to send to WAZIGATE for instance
 // so uncomment LPP only with LORAWAN to WAZIGATE
@@ -256,6 +261,10 @@ unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xB1};
 // The default address in ABP mode for ambiant air temp/hum sensor devices is 26011DC1
 // if you need a different address for another watermark sensor device, use C2, C3,..., CF instead
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xC1};
+  #elif defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
+// The default address in ABP mode for dedicated soil temperature sensor devices is 26011DD1
+// if you need a different address for another dedicated soil temperature sensor device, use D2, D3,..., DF instead
+unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xD1};
   #else
 // The default address in ABP mode for capacitive soil sensor devices is 26011DAA
 // if you need a different address for another capacitive sensor device, use AB, AC,..., AF instead
@@ -298,38 +307,19 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
                              |_|             
 ********************************************************************/
 
-// RESERVED PINS on Arduino ProMini: 10, 11, 12, 13, 4 (for LoRa RST)
-
-// RESERVED PINS on WaziSense: 10, 11, 12, 13, 9 (for LoRa RST), 8 (LED1), 6 & 7 (power pins), A0 (bat level),
-// WaziSense pinout
-// sensor power
-// | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
-// Capacitive wiring (x)
-// | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
-// |     |     | x  x  x |       x |            |
-//
-// 1 tensiometer wiring (x) + soil temp DS18B20 wiring (o)
-// | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
-// |     | o o |    x    |    x    |    x  o    |
-//
-// 1st tensiometer wiring (x) + 2nd tensiometer wiring (*) + soil temp DS18B20 wiring (o)
-// | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
-// |     | o o | *  x    | *  x    | *  x  o    |
-//
-
-#ifdef WAZISENSE
-  // this is how you need to connect the analog soil humidity sensors
-  #define SH1_ANALOG_PIN A2
-  #define SH1_PWR_PIN A1
-  // this is how you need to connect the DS18B20 soil temperature sensor
-  // the analog soil humidity sensor and the DS18B20 shares the same pwr line
-  #define TEMP_DIGITAL_PIN 5
-  #define TEMP_PWR_PIN 6 //one of the sensor power pin
-#elif defined IRD_PCB
+#ifdef IRD_PCB
+  // RESERVED PINS on IRD PCBAv4.1 & PCBAv5:
+  // 0 (TX), 1 (RX), 2 & 3 (PCBAv4.1 only), 10, 11, 12, 13, 4 (LoRa RST), A1 (sensor power), A6 (NC), 
+  // A7 (bat/solar voltage), 2 (TXDebug, PCBAv5 only), 5 (solar panel ctrl), 9, A2 (Watermark)
+  //
+  // Pins that can be re-used: A0, A3, A4, A5, 3 (PCBAv5 only), 10 & 11 & 12 & 13 (normally SPI, PCBAv5 only)
+  //
   // IRD PCB v4.1/v5 pin-out, + is wired to A1
   // [CN1]                [CN3]           [CN2]           [CN5]
   // HUM                  WM1    WM2      TEMP            C02
   // GND GND +(A1) H(A0)  D8 D9  D7 D9    GND +(A1) T(D6) +(A1) GND SCL SDA
+  //
+  // D6 -- 4.7kOhms -- VccM
   //
   // this is how you need to connect the analog soil humidity sensor
   #define SH1_ANALOG_PIN A0
@@ -345,7 +335,33 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
   #define DHT22_AM2305_PWR_PIN A1
   #define SHT_SDA_PIN A4
   #define SHT_SCL_PIN A5
-  #define SHT_PWR_PIN A1  
+  #define SHT_PWR_PIN A1
+  #define TWO_TEMP_DIGITAL_PIN 7
+  #define THREE_TEMP_DIGITAL_PIN 8   
+#elif defined WAZISENSE
+  // RESERVED PINS on WaziSense: 10, 11, 12, 13, 9 (for LoRa RST), 8 (LED1), 6 & 7 (power pins), A0 (bat level),
+  // WaziSense pinout
+  // sensor power
+  // | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
+  // Capacitive wiring (x)
+  // | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
+  // |     |     | x  x  x |       x |            |
+  //
+  // 1 tensiometer wiring (x) + soil temp DS18B20 wiring (o)
+  // | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
+  // |     | o o |    x    |    x    |    x  o    |
+  //
+  // 1st tensiometer wiring (x) + 2nd tensiometer wiring (*) + soil temp DS18B20 wiring (o)
+  // | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
+  // |     | o o | *  x    | *  x    | *  x  o    |
+  //
+  // this is how you need to connect the analog soil humidity sensors
+  #define SH1_ANALOG_PIN A2
+  #define SH1_PWR_PIN A1
+  // this is how you need to connect the DS18B20 soil temperature sensor
+  // the analog soil humidity sensor and the DS18B20 shares the same pwr line
+  #define TEMP_DIGITAL_PIN 5
+  #define TEMP_PWR_PIN 6 //one of the sensor power pin 
 #else
   // this is how you need to connect the analog soil humidity sensor
   #define SH1_ANALOG_PIN A0
@@ -1095,9 +1111,13 @@ void setup() {
 #endif
 #ifdef SOIL_TEMP_SENSOR
   //ST
+  #if defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
+  sensor_ptrs[sensor_index] = new DS18B20("ST1", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
+  #else
   sensor_ptrs[sensor_index] = new DS18B20("ST", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
+  #endif
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
-  #ifdef AIR_TEMP_HUM_SENSOR
+  #if defined AIR_TEMP_HUM_SENSOR || defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
   //both sensors share the same power pin which is normally A1
   //we don't want to switch off the sensor because we need to read the air temp/hum after reading soil temperature
   sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
@@ -1108,6 +1128,23 @@ void setup() {
   #endif
   soil_temp_sensor_index=sensor_index;
   sensor_index++;
+
+  #if defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
+  sensor_ptrs[sensor_index] = new DS18B20("ST2", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TWO_TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+
+    #ifdef THREE_SOIL_TEMP_SENSOR
+  //all 3 temperature sensors share the same power pin which is normally A1
+  //we don't want to switch off the sensor because we need to read the next soil temperature
+  sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
+  sensor_index++;
+  sensor_ptrs[sensor_index] = new DS18B20("ST3", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) THREE_TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  sensor_index++; 
+    #else
+  sensor_index++;
+    #endif
+  #endif
 #endif
 #ifdef CO2_SCD30_SENSOR
   //CO2  // IRD_PCB
@@ -1601,7 +1638,7 @@ uint16_t internal_read_volt( void)
   #define SOLAR_PANEL_ANA   A7   // analog input
   #define SOLAR_PANEL_PIN   5    // mosfet command Q4
   // will further be divided by 1000 (--> 1.145). WARNING: may need calibration
-  #define SOLAR_PANEL_ANA_CORRECTION  1145 
+  #define SOLAR_PANEL_ANA_CORRECTION  1145
 
 //////////////////////////////////////////////////////////////
 // Function returning instantaneous voltage as read on analog input of solar panel, in mV
@@ -1614,7 +1651,7 @@ uint16_t solar_analogRead( void)
   //PRINTLN_VALUE("%d", v);
   v = (uint16_t) ((uint32_t) v * 3300 / 1023); // 10 bits
   v = (uint16_t) ((uint32_t) v * 5300 / 1000); // R5 430k R4 100k /5.3 15.3 V maxi
-  //v = (uint16_t) ((uint32_t) v * SOLAR_PANEL_ANA_CORRECTION / 1000);
+  v = (uint16_t) ((uint32_t) v * SOLAR_PANEL_ANA_CORRECTION / 1000);
   return v;
 }
 
@@ -1768,9 +1805,13 @@ void measure_and_send( void)
   //ch7:  ambiant air temperature (e.g. DHT/SHT)
   //ch8:  ambiant air humidity (e.g. DHT/SHT)
   //ch9:  CO2 (SCD30)
-  //ch10: v_bat outside tx (only for TEST_LOW_BAT)
-  //ch11: current_vcc (only for TEST_LOW_BAT)
-  //ch12: low voltage indication (only for TEST_LOW_BAT)
+  //ch10: soil temperature, 2nd DS18B20
+  //ch11: soil temperature, 3rd DS18B20
+  //ch12: not used
+  //...
+  //ch20: v_bat outside tx (only for TEST_LOW_BAT)
+  //ch21: current_vcc (only for TEST_LOW_BAT)
+  //ch22: low voltage indication (only for TEST_LOW_BAT)      
 #endif
   char final_str[80] = "\\!";
 
@@ -1956,11 +1997,33 @@ void measure_and_send( void)
 
     #ifdef SOIL_TEMP_SENSOR
     // the soil temperature sensor
+    #if defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
+    if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST1",3)==0) {
+      // we always use channel ch=5 for soil temperature
+      lpp.addTemperature(5, tmp_value);
+    #else
     if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST",2)==0) {
       // we always use channel ch=5 for soil temperature
       lpp.addTemperature(5, tmp_value);
+    #endif  
     }
     #endif
+
+    #ifdef TWO_SOIL_TEMP_SENSOR
+    // the soil temperature sensor
+    if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST2",3)==0) {
+      // we always use channel ch=10 for second soil temperature
+      lpp.addTemperature(10, tmp_value);
+    }
+    #endif
+
+    #ifdef THREE_SOIL_TEMP_SENSOR
+    // the soil temperature sensor
+    if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST3",3)==0) {
+      // we always use channel ch=11 for third soil temperature
+      lpp.addTemperature(11, tmp_value);
+    }
+    #endif        
 
     #if defined DHT22_AM2305_TEMP_SENSOR || defined SHT_TEMP_SENSOR
     if (strncmp(sensor_ptrs[i]->get_nomenclature(),"AT",2)==0) {
@@ -2024,12 +2087,12 @@ void measure_and_send( void)
   lpp.addAnalogInput(6, (float) last_v_bat / 1000.0);
         #ifdef TEST_LOW_BAT
           #ifdef NIMH
-  lpp.addAnalogInput(10, (float) v_bat / 1000.0);   // in debug (TEST_LOW_BAT), also send v_bat outside tx
+  lpp.addAnalogInput(20, (float) v_bat / 1000.0);   // in debug (TEST_LOW_BAT), also send v_bat outside tx
           #else
-  lpp.addAnalogInput(10, (float) bat_level(v_bat)); // percent for lithium
+  lpp.addAnalogInput(20, (float) bat_level(v_bat)); // percent for lithium
           #endif
-  lpp.addAnalogInput(11, current_vcc); // VCC
-  lpp.addAnalogInput(12, low_voltage_indication); // and the low_voltage_indication
+  lpp.addAnalogInput(21, current_vcc); // VCC
+  lpp.addAnalogInput(22, low_voltage_indication); // and the low_voltage_indication
         #endif
 
       #else // without solar
@@ -2038,10 +2101,10 @@ void measure_and_send( void)
   // in that case (debug) we transmit the voltage measured right after TX (last_vcc)
   lpp.addAnalogInput(6, last_vcc);
   // we also transmit the voltage measured during TX
-  lpp.addAnalogInput(10, tx_vcc);
+  lpp.addAnalogInput(20, tx_vcc);
   // we also transmit the voltage measured before TX
-  lpp.addAnalogInput(11, current_vcc);
-  lpp.addAnalogInput(12, low_voltage_indication); // and the low_voltage_indication
+  lpp.addAnalogInput(21, current_vcc);
+  lpp.addAnalogInput(22, low_voltage_indication); // and the low_voltage_indication
         #else
   // in that case we transmit the minimum measured voltage
   lpp.addAnalogInput(6, min(last_vcc, min(current_vcc, tx_vcc)));

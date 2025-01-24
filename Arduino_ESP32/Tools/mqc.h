@@ -1,11 +1,10 @@
-
 /************************************************************************
- *									*
- *	Fast DCT for image compression scheme				*
- *									*
- *	Author: Vincent LECUIRE, CRAN UMR 7039, Nancy-Université, CNRS	*
- *	Date: march, 16 2012						*
- *									*
+ *																																			*
+ *	Fast DCT for image compression scheme																*
+ *																																			*
+ *	Author: Vincent LECUIRE, CRAN UMR 7039, Nancy-Université, CNRS			*
+ *	Date: march, 16 2012																								*
+ *																																			*
  ************************************************************************/
  
  /**

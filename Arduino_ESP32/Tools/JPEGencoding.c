@@ -86,7 +86,7 @@ void JPEGencoding(BMPImageStruct *InputImage, BMPImageStruct *OutputImage) {
     double tmp;
 
     // Encodage bloc par bloc
-    for (int i = 0; i < InputImage->imageVsize; i = i + 8)
+    for (int i = 0; i < abs(InputImage->imageVsize); i = i + 8)
         for (int j = 0; j < InputImage->imageHsize; j = j + 8) {
             for (int u = 0; u < 8; u++)
                 for (int v = 0; v < 8; v++) Block[u][v] = InputImage->data[i + u][j + v];
@@ -197,12 +197,12 @@ unsigned int JPEGpacketization(BMPImageStruct *InputImage, unsigned int BlockOff
     packetoffset = BlockOffset;
 
     while ((loop == true) &&
-           (BlockOffset != (InputImage->imageHsize * InputImage->imageVsize / 64))) {
+           (BlockOffset != (InputImage->imageHsize * abs(InputImage->imageVsize) / 64))) {
         // On lit le bloc
         row = (BlockOffset * 8) / InputImage->imageHsize * 8;
         col = (BlockOffset * 8) % InputImage->imageHsize;
         row_mix = ((row * 5) + (col * 8)) % (InputImage->imageHsize);
-        col_mix = ((row * 8) + (col * 13)) % (InputImage->imageVsize);
+        col_mix = ((row * 8) + (col * 13)) % (abs(InputImage->imageVsize));
 
         // printf("(%d %d) ", row_mix, col_mix);
 
@@ -374,7 +374,7 @@ int main(int argc, char *argv[]) {
 
     // On ajoute dans le fichier de trace la taille H et V
     fprintf(TRACEFILE, "%.4X ", (uint16_t)OriginalImage.imageHsize);
-    fprintf(TRACEFILE, "%.4X ", (uint16_t)OriginalImage.imageVsize);
+    fprintf(TRACEFILE, "%.4X ", (uint16_t)abs(OriginalImage.imageVsize));
     // On ajoute aussi le QualityFactor
     fprintf(TRACEFILE, "%.4X ", (uint16_t)QualityFactor);
 
@@ -397,16 +397,16 @@ int main(int argc, char *argv[]) {
     do {
         offset = JPEGpacketization(&OriginalImage, offset);
 
-    } while (offset != (OriginalImage.imageHsize * OriginalImage.imageVsize / 64));
+    } while (offset != (OriginalImage.imageHsize * abs(OriginalImage.imageVsize) / 64));
 
     fclose(TRACEFILE);
 
-    CompressionRate = (double)count * 8.0 / (OriginalImage.imageHsize * OriginalImage.imageVsize);
+    CompressionRate = (double)count * 8.0 / (OriginalImage.imageHsize * abs(OriginalImage.imageVsize));
     printf("Compression rate : %2.2f bpp\n", CompressionRate);
     printf("Packets : %d, Packets: %.4X \n", packetcount, packetcount);
     printf("Q : %d, Q: %.4X \n", QualityFactor, QualityFactor);
     printf("H : %d, H: %.4X, V : %d, V: %.4X \n", OriginalImage.imageHsize,
-           OriginalImage.imageHsize, OriginalImage.imageVsize, OriginalImage.imageVsize);
+           OriginalImage.imageHsize, abs(OriginalImage.imageVsize), abs(OriginalImage.imageVsize));
     printf("Real encoded image file size : %ld \n", count);
 
     snprintf(newtargetFilename, sizeof(newtargetFilename), "%s.M%d-Q%d-P%d-S%ld.dat",
