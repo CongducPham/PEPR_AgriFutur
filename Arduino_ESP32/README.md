@@ -1,13 +1,13 @@
 Introduction
 ==
 
-The work presented here is an update of our previous works on image transmission, first using IEEE 802.15.4 then LoRa [https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html). 
+In the PEPR AgriFutur project, in addition to more traditional sensors (soil humidity/temperature, air temperature/humidity, C02, ...) we will develop an ESP32S3-based advanced image sensor with LoRa transmission and embedded AI capabilities. The objective is to used such image device to capture more advanced environmental conditions in order to better qualify and quantify the impact of agroecological practices.
 
-In the PEPR AgriFutur project, in addition to more traditional sensors (soil humidity/temperature, air temperature/humidity, C02, ...) we will develop an ESP32S3-based advanced image sensor with LoRa transmission and embedded AI capabilities. The objective is to used such image device to capture more advanced environmental conditions in order to better qualify and quantify the impact of agroecological practices.  
+The work presented here is an update of our previous works on image transmission, first using IEEE 802.15.4 back in 2014, then LoRa in 2016 [https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html). We will use the state-of-the-art ESP32 microcontroller to control the camera and run embedded AI processing.
 
-The proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in the [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses. 
+The proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in this previous [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses. 
 
-In the following section, we are presenting the main tools intended to be used on a computer to test the image tool chain:
+In the following section, we are presenting the main tools, that have been updated, and that are intended to be used on a computer to test the image tool chain:
 
 - `JPEGencoding`: encodes an 8bpp grayscale BMP image into the proposed image format
 - `decode_to_bmp`: decodes from the proposed image format back to BMP
@@ -51,7 +51,7 @@ Renaming in desert-128x128-gray.bmp.M64-Q50-P94-S4757.dat
 ```
 Packets indicates in decimal and hexadecimal the number of packets that have been generated. The other parameters are Q, the quality factor, and H and V that are respectively the horizontal and vertical size of the image. The real encoded image file size (in bytes) is also indicated. The example above used the default value so MSS=64 and Q=50.
 
-You can optionally mention the maximum payload size per packet (64 by default) and the quality factor (by default 50, should be between 1 and 100). For instance:
+You can optionally mention the maximum payload size per packet (MSS=64 by default) and the quality factor (Q=50 by default, should be between 5 and 100). For instance:
 
 	> ./JPEGencoding -MSS 240 -Q 10 desert-128x128-gray.bmp
 
@@ -169,6 +169,16 @@ Here, since there have been some packet dropped, running `decode_to_bmp` may ind
 You can then display the image and see what is the impact of packet losses on the quality, the advantage is that you can better control the packet loss rate.
 
 Note that you can also edit the initially encoded `.dat` and manually delete some packets.
+
+As previously mentioned, the proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in the [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses.
+
+Here, we provide an updated example. `ESP32S3-realcapture.bmp.M95-Q20-P13-S1077.dat` is the encoded image file with MSS set to 95 to reduce the impact of losing a packet. `ESP32S3-realcapture.bmp.M95-Q20-P13-S1077.dat-DP10-15-P11.dat` is the file that has been obtained with:
+
+	> ./drop_img_pkt -drop 10 ESP32S3-realcapture.bmp.M95-Q20-P13-S1077.dat
+	
+where 2 packets have been dropped, resulting to a final drop percentage of 15%. The pictures below show the original BMP image and the one where 2 packets have been dropped.	
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-ESP32S3-realcapture.bmp.M95-Q20-P13-S1077.dat-P13-S1077.png" width="128"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-ESP32S3-realcapture.bmp.M95-Q20-P13-S1077.dat-DP10-15-P11.dat-P11-S973.png" width="128">
 
 That's all
 Enjoy – C. Pham
