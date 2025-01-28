@@ -3,7 +3,7 @@ Introduction
 
 In the PEPR AgriFutur project, in addition to more traditional sensors (soil humidity/temperature, air temperature/humidity, C02, ...) we will develop an ESP32S3-based advanced image sensor with LoRa transmission and embedded AI capabilities. The objective is to used such image device to capture more advanced environmental conditions in order to better qualify and quantify the impact of agroecological practices.
 
-The work presented here is an update of our previous works on image transmission, first using IEEE 802.15.4 back in 2014, then LoRa in 2016 [https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html). We will use the state-of-the-art ESP32 microcontroller to control the camera and run embedded AI processing.
+The work presented here is an update of our previous works on image transmission, first using IEEE 802.15.4 back in 2014, then LoRa in 2016:  [https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html). We will use the state-of-the-art ESP32 microcontroller to control the camera and run embedded AI processing.
 
 The proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in this previous [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses. 
 
@@ -123,7 +123,7 @@ It can output the following encoded data in the Serial Monitor for an 128x128 gr
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png" width="700">
 
-These data has been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. Of course when LoRa transmission of the packets will be integrated, the image `.dat` file will created automatically by the gateway. After reception of the image file, it is decoded with `decode_to_bmp`:
+These data have been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. Of course when LoRa transmission of the packets will be integrated, the image `.dat` file will created automatically by the gateway. After reception of the image file, it is decoded with `decode_to_bmp`:
 
 	> ./decode_to_bmp ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat 128x128-ESP32S3-test.bmp 
 	
