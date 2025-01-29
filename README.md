@@ -20,8 +20,7 @@ The [PoC of a LoRa image sensor (LoRaCAM)](https://github.com/CongducPham/PEPR_A
 
 For the LoRaCAM image sensor, the [Tools folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Tools) contains the various software tool to test the customized image encoding approach in order to have a robust encoding scheme for efficient LoRa transmission of images.
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_1.jpg" width="200"> 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_2.jpg" width="200"><img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_3.jpg" width="200">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_1.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_2.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_3.jpg" width="200">
 
 Enjoy!
 C. Pham
