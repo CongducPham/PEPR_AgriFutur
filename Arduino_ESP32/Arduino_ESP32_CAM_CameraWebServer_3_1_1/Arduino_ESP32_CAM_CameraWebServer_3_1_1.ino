@@ -22,16 +22,20 @@
  #  Based on ESP32 CameraWebServer and Arduino_LoRa_ucamII (https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html)
  *  Design:                 C. Pham
  *  Implementation:         C. Pham
- *  Last update:            Jan. 28th, 2025
+ *  Last update:            Jan. 29th, 2025
+ *
+ *  TODO: there is no real LoRa transmission yet
  *
  *  With #define WAIT_FOR_SERIAL_INPUT, for testing purposes, no deep sleep, a command starts with /@ and ends with #: /@Z40#Q40#
  *    "Z64#" -> sets the MSS size to 64, default is 90 for LoRa
  *    "Q15#" -> sets the quality factor to 15, default is 20 for LoRa
  *    "F30000#" -> sets inter-capture time to 30000ms, i.e. 30s, fps is then 1/30, default is 60000ms, i.e. 60s
  *
- *  Otherwise
+ *  Otherwise (should be considered as default setting)
  *    - periodic capture & transmission every hour
  *    - deep sleep between capture, similar to full reset
+ *    - to flash a new code, connect board and upload before device goes in deep sleep.
+ *      A 30s window is set for such purpose before the first deep sleep period
  */
 
 #include "esp_camera.h"
@@ -112,7 +116,7 @@ void setupLedFlash(int pin);
 // LoRa + custom cam with optimized image encoding
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nNewGen Camera Sensor – Jan. 22nd, 2025\n"
+#define BOOT_START_MSG  "\nNewGen LoRaCAM Sensor – Jan. 29th, 2025. C. Pham, UPPA, France\n"
 
 #ifdef WITH_CUSTOM_CAM
 #include "custom_cam.h"
@@ -178,7 +182,7 @@ SX128XLT LT;
 
 // keep track of the number of successful transmissions
 uint32_t TXPacketCount=0;
-#endif
+#endif //WITH_LORA_MODULE
 
 #if defined LOW_POWER_DEEP_SLEEP || defined LOW_POWER_LIGHT_SLEEP
 
@@ -230,7 +234,7 @@ void lowPower(unsigned long time_ms) {
     esp_light_sleep_start();
 #endif
 }
-#endif
+#endif //defined LOW_POWER_DEEP_SLEEP || defined LOW_POWER_LIGHT_SLEEP
 
 /*****************************
  _____      _               
@@ -434,7 +438,7 @@ void setup() {
 
     // Print a success message
     Serial.print(" successfully configured\n");
-#endif  // #ifdef WITH_LORA_MODULE
+#endif  //WITH_LORA_MODULE
 
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
@@ -602,8 +606,7 @@ long getCmdValue(int &i, char* strBuff=NULL) {
       else
               return (atol(seqStr));
 }   
-
-#endif
+#endif //WAIT_FOR_SERIAL_INPUT
 
 /*****************************
   _                      
@@ -731,9 +734,12 @@ void loop() {
           else {
               Serial.println(F("\nHave not recognized a command prefix /@"));
           }                      
-      }    
-  } while (millis()<nextCamCaptureTime);
-#else
+      }
+      //avoid wrapping
+      delay(1000);
+      interCamCaptureTime -= 1000;    
+  } while (interCamCaptureTime>0);
+#else //WAIT_FOR_SERIAL_INPUT
 
 #ifdef TEST_IN_PROGRESS
   //60s
@@ -744,6 +750,7 @@ void loop() {
 #endif    
 
   nextCamCaptureTime=millis()+interCamCaptureTime;
+#endif
 
   camera_fb_t *fb = NULL;
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
@@ -816,14 +823,24 @@ void loop() {
   
   unsigned long waiting_time;
 
-    //how much do we still have to wait, in millisec?
-  if (now_millis > nextCamCaptureTime)
-        //TODO: check this code for handling wrapping
-      now_millis=now_millis;
-  else  
-      waiting_time = nextCamCaptureTime-now_millis;
+  //how much do we still have to wait, in millisec?
+  if (now_millis > nextCamCaptureTime) {
+      // In case of wrapping
+      Serial.print("Something wrong with sleep time, back to default\n");
+#ifdef TEST_IN_PROGRESS
+      //60s
+      interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*1000;
+#else
+      //60mins
+      interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*60*1000;  
+#endif    
+      nextCamCaptureTime=now_millis+interCamCaptureTime;
+  }
+ 
+  waiting_time = nextCamCaptureTime-now_millis;
 
-  //we will be waiting
+  // When testing in deep sleep mode, we wait 30s to allow flashing a new code if necessary
+  // otherwise, deep sleep disconnects the serial port and Arduino IDE cannot flash anymore
   if (bootCount == 0) {
       Serial.println("First start, delay of 30s for uploading program if necessary");
       delay(30000);
