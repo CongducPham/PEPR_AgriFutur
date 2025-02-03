@@ -1,3 +1,6 @@
+#ifndef RADIO_SETTINGS
+#define RADIO_SETTINGS
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // please uncomment only 1 choice 
 //#define SX126X
@@ -17,7 +20,7 @@
 #endif
 
 //To explicitely activate the local LoRaWAN software stack if you do not have a LoRaWAN radio module
-//#define LORAWAN
+#define LORAWAN
 
 #ifdef RAK3172
   #define LORAWAN
@@ -30,4 +33,6 @@
     #define CUSTOM_LORAWAN
   #endif
   #define WITH_SPI_COMMANDS
+#endif
+
 #endif

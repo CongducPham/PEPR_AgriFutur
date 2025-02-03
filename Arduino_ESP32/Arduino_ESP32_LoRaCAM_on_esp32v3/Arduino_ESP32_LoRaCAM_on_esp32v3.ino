@@ -22,9 +22,7 @@
  #  Based on ESP32 CameraWebServer and Arduino_LoRa_ucamII (https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html)
  *  Design:                 C. Pham
  *  Implementation:         C. Pham
- *  Last update:            Jan. 29th, 2025
- *
- *  TODO: there is no real LoRa transmission yet
+ *  Last update:            Fev. 3rd, 2025
  *
  *  With #define WAIT_FOR_SERIAL_INPUT, for testing purposes, no deep sleep, a command starts with /@ and ends with #: /@Z40#Q40#
  *    "Z64#" -> sets the MSS size to 64, default is 90 for LoRa
@@ -32,10 +30,10 @@
  *    "F30000#" -> sets inter-capture time to 30000ms, i.e. 30s, fps is then 1/30, default is 60000ms, i.e. 60s
  *
  *  Otherwise (should be considered as default setting)
- *    - periodic capture & transmission every hour
- *    - deep sleep between capture, similar to full reset
+ *    - periodic capture & LoRa transmission every hour
+ *    - deep sleep between capture, similar to full reset (deep sleep of camera not fully validated yet)
  *    - to flash a new code, connect board and upload before device goes in deep sleep.
- *      A 30s window is set for such purpose before the first deep sleep period
+ *      a 30s window is set for such purpose before the first deep sleep period
  */
 
 #include "esp_camera.h"
@@ -44,30 +42,7 @@
 #include "fb_gfx.h"
 #include <WiFi.h>
 
-//#define ORIGINAL_CONFIG
-
-#ifdef ORIGINAL_CONFIG
-    #define WITH_WEB_SERVER
-#else
-    #define TEST_IN_PROGRESS
-    //#define WITH_WEB_SERVER
-    #define WITH_CUSTOM_CAM
-    #define WITH_LORA_MODULE
-    //#define WAIT_FOR_SERIAL_INPUT
-    #define LOW_POWER // incompatible with WITH_WEB_SERVER and WAIT_FOR_SERIAL_INPUT
-    #define LOW_POWER_DEEP_SLEEP
-    //LOW_POWER_LIGHT_SLEEP not tested yet
-    //#define LOW_POWER_LIGHT_SLEEP        
-#endif
-
-// if the XIAO_ESP32S3_SENSE is not automatically detected
-#define MY_XIAO_ESP32S3_SENSE
-// if the FREENOVE_ESP32S3_CAM is not automatically detected
-//#define MY_FREENOVE_ESP32S3_CAM
-// if the FREENOVE_ESP32_CAM_DEV is not automatically detected, board v1.6
-//#define MY_FREENOVE_ESP32_CAM_DEV
-// if the NONAME_ESP32_CAM_DEV is not automatically detected, similar to FREENOVE_ESP32_CAM_DEV
-//#define MY_NONAME_ESP32_CAM_DEV
+#include "ConfigSettings.h"
 
 ////////////////////////////////////////////////////////////////////
 // CameraWebServer example
@@ -155,19 +130,36 @@ void setupLedFlash(int pin);
 #endif       
 
 ///////////////////////////////////////////////////////////////////
-// ENCRYPTION CONFIGURATION AND KEYS FOR LORAWAN
-#if defined LORAWAN && defined CUSTOM_LORAWAN
-  #ifndef WITH_AES
-    #define WITH_AES
-  #endif
+// CHANGE HERE THE NODE ADDRESS IN NO LORAWAN MODE
+uint8_t node_addr=8;
+//////////////////////////////////////////////////////////////////
+
+/********************************************************************
+  _        ___    __      ___   _  _ 
+ | |   ___| _ \__ \ \    / /_\ | \| |
+ | |__/ _ \   / _` \ \/\/ / _ \| .` |
+ |____\___/_|_\__,_|\_/\_/_/ \_\_|\_|
+********************************************************************/
+                                     
+#ifdef LORAWAN
+///////////////////////////////////////////////////////////////////
+// ENTER HERE your Device Address from the TTN device info (same order, i.e. msb). Example for 0x12345678
+// unsigned char DevAddr[4] = {0x26, 0x01, 0x2D, 0xAA};
+///////////////////////////////////////////////////////////////////
+// The default address in ABP mode for image sensor devices is 26012DAA
+// if you need a different address for another image sensor device, use AB, AC,..., AF instead
+unsigned char DevAddr[4] = {0x26, 0x01, 0x2D, 0xAA};
+#else
+///////////////////////////////////////////////////////////////////
+// DO NOT CHANGE HERE
+unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
+///////////////////////////////////////////////////////////////////
 #endif
-#ifdef WITH_AES
-  #include "local_lorawan.h"
-#endif
+///////////////////////////////////////////////////////////////////
 
 // create a library class instance called LT
 // to handle LoRa radio communications
-
+////////////////////////////////////////////
 #ifdef SX126X
 SX126XLT LT;
 #endif
@@ -180,10 +172,18 @@ SX127XLT LT;
 SX128XLT LT;
 #endif
 
-// keep track of the number of successful transmissions
-uint32_t TXPacketCount=0;
 #endif //WITH_LORA_MODULE
 
+/*****************************
+ _____           _      
+/  __ \         | |     
+| /  \/ ___   __| | ___ 
+| |    / _ \ / _` |/ _ \
+| \__/\ (_) | (_| |  __/
+ \____/\___/ \__,_|\___|
+*****************************/ 
+
+///////////////////////////////////////////////////////////////////
 #if defined LOW_POWER_DEEP_SLEEP || defined LOW_POWER_LIGHT_SLEEP
 
 #define mS_TO_uS_FACTOR 1000ULL /* Conversion factor for milli seconds to micro seconds */
@@ -236,6 +236,40 @@ void lowPower(unsigned long time_ms) {
 }
 #endif //defined LOW_POWER_DEEP_SLEEP || defined LOW_POWER_LIGHT_SLEEP
 
+///////////////////////////////////////////////////////////////////
+#ifdef WAIT_FOR_SERIAL_INPUT
+
+// BEWARE, we limit the size of the received cmd to avoid strange packets arriving. 
+// So avoid to have to long cmd, use multiple cmd is necessary
+#define MAX_CMD_LENGTH           60
+
+uint8_t* rcv_data = NULL;
+uint8_t rcv_data_len=0;
+
+long getCmdValue(int &i, char* strBuff=NULL) {
+      
+      // a maximum of 16 characters plus the null-terminited character, can store a 64-bit MAC address
+      char seqStr[17]="****************";
+
+      int j=0;
+      // character '#' will indicate end of cmd value
+      while ((char)rcv_data[i]!='#' && (i < rcv_data_len) && j<strlen(seqStr)) {
+              seqStr[j]=(char)rcv_data[i];
+              i++;
+              j++;
+      }
+      
+      // put the null character at the end
+      seqStr[j]='\0';
+      
+      if (strBuff) {
+              strcpy(strBuff, seqStr);        
+      }
+      else
+              return (atol(seqStr));
+}   
+#endif //WAIT_FOR_SERIAL_INPUT
+
 /*****************************
  _____      _               
 /  ___|    | |              
@@ -253,21 +287,24 @@ void setup() {
     // Serial.setDebugOutput(true);
     Serial.println();
 
-#ifdef ESP32
+#ifdef ARDUINO_ARCH_ESP32
     Serial.print("ESP32 detected\n");
 #endif
-#if defined ESP32S3_DEV || defined MY_FREENOVE_ESP32S3_CAM
+#if defined ARDUINO_ESP32S3_DEV || defined MY_FREENOVE_ESP32S3_CAM
     Serial.print("FREENOVE_ESP32S3_CAM variant (test)\n");
 #endif
 #if defined MY_FREENOVE_ESP32_CAM_DEV || defined MY_NONAME_ESP32_CAM_DEV
     Serial.print("ESP32_CAM_DEV variant\n");
+#endif
+#if defined ARDUINO_XIAO_ESP32S3
+    Serial.print("XIAO-ESP32S3\n");
 #endif
 #if defined MY_XIAO_ESP32S3_SENSE
     Serial.print("XIAO-ESP32S3-Sense variant with camera board\n");
 #endif
 
 #ifdef WITH_LORA_MODULE
-#if defined MY_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
+#if defined ARDUINO_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
     pinMode(2, OUTPUT);  // GPIO 2 = D1
     pinMode(1, OUTPUT);  // GPIO 1 = D0
     pinMode(4, INPUT);   // GPIO 4 = D3
@@ -521,6 +558,22 @@ void setup() {
     }
 
     sensor_t *s = esp_camera_sensor_get();
+    
+    /*
+    // TEST: set back to enable the camera after the standby mode
+    // not sure that it works
+    if (s->id.PID == OV2640_PID) {
+        Serial.println("OV2640 - use register normal mode");
+        s->set_reg(s, 0x109, 0x10, 0x00);   //camera to ready
+        delay(1000);
+    }
+    if (s->id.PID == OV3660_PID || s->id.PID == OV5640_PID) {
+        Serial.println("OV3660|OV5640 - use register normal mode");
+        s->set_reg(s, 0x3008, 0x40, 0x00);   //camera to ready
+        delay(1000);
+    }      
+    */
+
     // initial sensors are flipped vertically and colors are a bit saturated
     if (s->id.PID == OV3660_PID) {
         s->set_vflip(s, 1);        // flip it back
@@ -572,41 +625,12 @@ void setup() {
     init_custom_cam();
 #endif
 
+#ifdef WITH_AES
+  local_lorawan_init();
+#endif
+
     pinMode(LED_BUILTIN, OUTPUT);
 }
-
-#ifdef WAIT_FOR_SERIAL_INPUT
-
-// BEWARE, we limit the size of the received cmd to avoid strange packets arriving. 
-// So avoid to have to long cmd, use multiple cmd is necessary
-#define MAX_CMD_LENGTH           60
-
-uint8_t* rcv_data = NULL;
-uint8_t rcv_data_len=0;
-
-long getCmdValue(int &i, char* strBuff=NULL) {
-      
-      // a maximum of 16 characters plus the null-terminited character, can store a 64-bit MAC address
-      char seqStr[17]="****************";
-
-      int j=0;
-      // character '#' will indicate end of cmd value
-      while ((char)rcv_data[i]!='#' && (i < rcv_data_len) && j<strlen(seqStr)) {
-              seqStr[j]=(char)rcv_data[i];
-              i++;
-              j++;
-      }
-      
-      // put the null character at the end
-      seqStr[j]='\0';
-      
-      if (strBuff) {
-              strcpy(strBuff, seqStr);        
-      }
-      else
-              return (atol(seqStr));
-}   
-#endif //WAIT_FOR_SERIAL_INPUT
 
 /*****************************
   _                      
@@ -743,9 +767,9 @@ void loop() {
 
 #ifdef TEST_IN_PROGRESS
   //60s
-  interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*1000;
+  interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*1000*TEST_IN_PROGRESS;
 #else
-  //60mins
+  //increase the default 60s to 60mins
   interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*60*1000;  
 #endif    
 
@@ -774,12 +798,16 @@ void loop() {
       log_e("BMP Conversion failed");
   }
 
+  ///////////////////////////////////////////////////////////////////
   //here we pass buf as image buffer to our encoding procedure
-  encode_image(buf, false);
+  //second parameter true/false=enable/disable transmission of packets
+  encode_image(buf, true);
+  //
+  ///////////////////////////////////////////////////////////////////
 
   free(buf);
 
-#ifdef MY_XIAO_ESP32S3_SENSE
+#if defined ARDUINO_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
   //XIAO ESP32S3 has inverted logic for the built-in led
   digitalWrite(LED_BUILTIN, LOW);  
   delay(200);                      
@@ -812,9 +840,45 @@ void loop() {
 #if defined LOW_POWER_DEEP_SLEEP || defined LOW_POWER_LIGHT_SLEEP
   Serial.print("Switch to power saving mode\n");
 
+  // esp_camera_deinit() NOT WORKING on the XIAO ESP32S3 because the power down pin is not connected
+  // see https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40
+  if (PWDN_GPIO_NUM == -1) {
+      Serial.println("PWDN_GPIO_NUM - esp_camera_deinit() not working - too bad");
+      sensor_t *s = esp_camera_sensor_get();
+      // put the camera in standby mode
+      if (s->id.PID == OV2640_PID) {
+          // https://github.com/espressif/esp32-camera/issues/672
+          Serial.println("OV2640 - use register standby");
+          Serial.println("sorry nothing works for now :-(");
+          //s->set_reg(s, 0x109, 0x10, 0x10);
+          // just to keep this information in case we need it
+          // s->set_reg(s, 0x109, 0x10, 0x00);   //camera to ready
+          delay(1000);
+      }
+      if (s->id.PID == OV3660_PID || s->id.PID == OV5640_PID) {
+          Serial.println("OV3660|OV5640 - use register standby");
+          Serial.println("but not yet validated as working");
+          // from https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40
+          // but seems not to work as the camera is still heating :-(
+          //s->set_reg(s, 0x3008, 0x40, 0x40);   //camera to standby
+          // just to keep this information in case we need it
+          // s->set_reg(s, 0x3008, 0x40, 0x00);   //camera to ready
+          delay(1000);
+      }  
+  }
+  else {
+      // close camera
+      esp_err_t err = esp_camera_deinit();
+      if (err != ESP_OK)
+      Serial.printf("Camera deinit failed with error 0x%x", err);
+  }    
+
+#ifdef WITH_LORA_MODULE
   //CONFIGURATION_RETENTION=RETAIN_DATA_RAM on SX128X
   //parameter is ignored on SX127X
   LT.setSleep(CONFIGURATION_RETENTION);
+  Serial.println("Set LoRa module in deep sleep");
+#endif
 
   unsigned long now_millis=millis();
 
@@ -829,7 +893,7 @@ void loop() {
       Serial.print("Something wrong with sleep time, back to default\n");
 #ifdef TEST_IN_PROGRESS
       //60s
-      interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*1000;
+      interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*1000*TEST_IN_PROGRESS;
 #else
       //60mins
       interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*60*1000;  

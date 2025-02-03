@@ -2347,7 +2347,7 @@ void measure_and_send( void)
     uint16_t IRQStatus;
     IRQStatus = LT.readIrqStatus();
     PRINT_CSTSTR("SendError,");
-    PRINT_CSTSTR(",IRQreg,");
+    PRINT_CSTSTR("IRQreg,");
     PRINT_HEX("%d", IRQStatus);
     LT.printIrqStatus();
 #endif

@@ -459,6 +459,9 @@ void setup()
   SPI.begin(12,  13,   4,   16);
   // TODO: it is still not working :-(
   // seems that it is not possible to use SPI pins that are connected to SD card
+  // need to try:
+  // https://stuartsprojects.github.io/2022/02/05/Long-Range-Wireless-Adapter-for-ESP32CAM.html
+  // MOSI:2 SCK:4 NSS:12 MISO:13 NRESET:15 
 #elif defined MY_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
   pinMode(2, OUTPUT); //GPIO 2 = D1
   pinMode(1, OUTPUT); //GPIO 1 = D0

@@ -1,3 +1,6 @@
+#ifndef SX126X_RADIO_SETTINGS
+#define SX126X_RADIO_SETTINGS
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // add here some specific board define statements if you want to implement user-defined specific settings
 // A/ LoRa radio node from IoTMCU: https://www.tindie.com/products/IOTMCU/lora-radio-node-v10/
@@ -6,6 +9,8 @@
 //#define HELTEC_LORA
 // uncomment if you are sure you have an ESP8266 board and that it is not detected
 //#define ESP8266
+// uncomment if you are sure you have CUBECELL board and that it is not detected
+//#define CUBECELL
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*******************************************************************************************************
@@ -14,68 +19,55 @@
 
 //*******  Setup hardware pin definitions here ! ***************
 
-#if defined ARDUINO_Heltec_WIFI_LoRa_32 || defined ARDUINO_WIFI_LoRa_32 || defined HELTEC_LORA
-  // for the Heltec ESP32 WiFi LoRa module
-#define NSS 18
-#elif defined ARDUINO_AVR_FEATHER32U4 || defined ARDUINO_SAMD_FEATHER_M0
-// on the Adafruit Feather, the RFM95W is embeded and CS pin is normally on pin 8
-#define NSS 8
-#elif defined UPESY_WROOM || defined MY_UPESY_WROOM
-  // for the uPesy Wroom module
-#define NSS 5
-#define NRESET 32
-#elif defined ESP32_DEV || defined MY_ESP32_CAM
-  // for the ESP32-CAM module
-#define NSS 16
-#define NRESET 33 //the built-in led
-  // TODO: it is still not working :-(
-  // seems that it is not possible to use SPI pins that are connected to SD card
-#elif defined ARDUINO_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
-#define NSS 2                                   // GPIO2=D1 select pin on LoRa device
-#define NRESET 6                                // GPIO6=D5 reset pin on LoRa device
-#elif defined MY_FREENOVE_ESP32S3_CAM
-#define NSS 21                                  // GPIO21=?? select pin on LoRa device
-#define NRESET 1                                // GPIO1=?? reset pin on LoRa device
-#elif defined MY_FREENOVE_ESP32_CAM_DEV || defined MY_NONAME_ESP32_CAM_DEV
-#define NSS 32
-#define NRESET 33
+#if defined ARDUINO_ARCH_ASR650X || defined CUBECELL
+//for the Heltech CubeCell such as HTCC-AB01
+//https://github.com/HelTecAutomation/CubeCell-Arduino/blob/master/PinoutDiagram/HTCC-AB01.pdf
+#define NSS P4_3                                  //select pin on LoRa device
+#define NRESET P5_7                                //reset pin on LoRa device
+#define RFBUSY P4_7                                //busy pin on LoRa device
+#elif defined MY_XIAO_ESP32S3_WIO1262
+#define NSS 41                                  //select pin on LoRa device
+#define NRESET 42                               //reset pin on LoRa device
+#define RFBUSY 40                               //busy pin on LoRa device
 #else
 #define NSS 10                                  //select pin on LoRa device
-#endif
-
-#ifndef NRESET
 #define NRESET 4                                //reset pin on LoRa device
+//we do not connect RFBUSY
+//if you have a NiceRF SX1262 which has almost the same pinout than the RFM95 then
+//you can use our ProMini LoRa PCB for RFM95 where RFBUSY (marked DIO2 on the RFM95 PCB) can be connected to D5
+#define RFBUSY 5                                //busy pin on LoRa device 
 #endif
-//we do not connect DIO0 as we use polling method
-//if you have an RFM95 then
-//you can use our ProMini LoRa PCB for RFM95 where DIO0 can be connected to D2
-//in that case, comment #define USE_POLLING in SX127XLT.cpp to use DIO0 interrrupt pin
-//#define DIO0 2                                  //DIO0 pin on LoRa device, used for RX and TX done 
-#define DIO0 -1                                  //DIO0 pin on LoRa device, used for RX and TX done 
-//*******
-#define DIO1 -1                                 //DIO1 pin on LoRa device, normally not used so set to -1 
-#define DIO2 -1                                 //DIO2 pin on LoRa device, normally not used so set to -1
 
-#define LORA_DEVICE DEVICE_SX1276               //we need to define the device we are using
+//we do not connect DIO1 as we use polling method
+//if you have a NiceRF SX1262 which has almost the same pinout than the RFM95 then
+//you can use our ProMini LoRa PCB for RFM95 where DIO1 can be connected to D3
+//in that case, comment #define USE_POLLING in SX126XLT.cpp to use DIO1 interrrupt pin
+//#define DIO1 3                                  //DIO1 pin on LoRa device, used for RX and TX done
+#define DIO1 -1                                  //DIO1 pin on LoRa device, used for RX and TX done
+//*******
+#define DIO2 -1                                 //DIO2 pin on LoRa device, normally not used so set to -1 
+#define DIO3 -1                                 //DIO3 pin on LoRa device, normally not used so set to -1
+#define RX_EN -1                                //pin for RX enable, used on some SX126X devices, set to -1 if not used
+#define TX_EN -1                                //pin for TX enable, used on some SX126X devices, set to -1 if not used 
+#define SW -1                                   //SW pin on some Dorji LoRa devices, used to power antenna switch, set to -1 if not used
+
+#define LORA_DEVICE DEVICE_SX1262               //we need to define the device we are using
 
 //*******  Setup LoRa Parameters Here ! ***************
 
 //LoRa Modem Parameters
 const uint32_t Offset = 0;                      //offset frequency for calibration purposes
-#ifdef LORAWAN
-const uint8_t Bandwidth = LORA_BW_125;          //LoRa bandwidth for LoRaWAN mode, DO NOT CHANGE
-const uint8_t SpreadingFactor = LORA_SF12;      //Change here LoRa spreading factor for LoRaWAN mode
-#else
 const uint8_t Bandwidth = LORA_BW_125;          //LoRa bandwidth
-const uint8_t SpreadingFactor = LORA_SF12;      //LoRa spreading factor
-#endif
+const uint8_t SpreadingFactor = LORA_SF12;       //LoRa spreading factor
 const uint8_t CodeRate = LORA_CR_4_5;           //LoRa coding rate
 const uint8_t Optimisation = LDRO_AUTO;         //low data rate optimisation setting, normally set to auto
-// set to 1 if your radio is an HopeRF RFM92W, HopeRF RFM95W, Modtronix inAir9B, NiceRF1276
-// or you known from the circuit diagram that output use the PABOOST line instead of the RFO line
-const uint8_t PA_BOOST = 1;
+
 // can be set to LORA_IQ_NORMAL or LORA_IQ_INVERTED
 const uint8_t IQ_Setting = LORA_IQ_NORMAL; 
+
+//for SX1262, SX1268 power range is +22dBm to -9dBm
+//for SX1261, power range is +15dBm t0 -9dBm
+
 /*******************************************************************************************************
   End from SX12XX example - Stuart Robinson 
 *******************************************************************************************************/
@@ -97,10 +89,6 @@ const uint8_t IQ_Setting = LORA_IQ_NORMAL;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#define USE_20DBM
-/////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DO NOT CHANGE
 
 #ifdef ETSI_EUROPE_REGULATION
@@ -109,11 +97,6 @@ const uint8_t IQ_Setting = LORA_IQ_NORMAL;
 #define MAX_DBM 10
 #elif defined FCC_US_REGULATION
 #define MAX_DBM 14
-#endif
-
-#ifdef USE_20DBM
-#undef MAX_DBM
-#define MAX_DBM 20
 #endif
 
 //FREQUENCY CHANNELS:
@@ -192,5 +175,6 @@ const uint32_t DEFAULT_CHANNEL=CH_00_433;
 
 #define DEFAULT_DEST_ADDR       1
 
+#endif
 // END
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////

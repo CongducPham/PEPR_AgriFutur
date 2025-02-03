@@ -7,10 +7,41 @@
  #include "WProgram.h"
 #endif
 
+#include "ConfigSettings.h"
+#include "RadioSettings.h"
+
+#ifdef SX126X
+  #include <SX126XLT.h>
+  #include "SX126X_RadioSettings.h"
+#endif
+
+#ifdef SX127X
+  #include <SX127XLT.h>
+  #include "SX127X_RadioSettings.h"
+#endif
+
+#ifdef SX128X
+  #include <SX128XLT.h>
+  #include "SX128X_RadioSettings.h"
+#endif
+
+#ifdef SX126X
+extern SX126XLT LT;
+#endif
+
+#ifdef SX127X
+extern SX127XLT LT;
+#endif
+
+#ifdef SX128X
+extern SX128XLT LT;
+#endif
+
+extern uint8_t node_addr;
+
 //have a LoRa module attached
 #define LORA_UCAM
 #define UCAM_ADDR 0x01
-#define NB_CAM 1
 //by default
 #define CAM_RES128X128
 //#define CAM_RES240X240
@@ -40,10 +71,10 @@
 // take into account light change between snapshot, recommended.
 //#define LUM_HISTO
 // will insert the source addr in the image packet
-#define WITH_SRC_ADDR // DO NOT CHANGE
+//#define WITH_SRC_ADDR 
 
 #ifdef WITH_SRC_ADDR 
-#define PREAMBLE_SIZE            7
+#define PREAMBLE_SIZE            6
 #else
 #define PREAMBLE_SIZE            5
 #endif
@@ -58,11 +89,12 @@
 #define DEFAULT_INTER_PKT_TIME   MIN_INTER_PKT_TIME+5500
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define MIN_INTER_SNAPSHOT_TIME  1712 // in ms
+#define MIN_INTER_SNAPSHOT_TIME  5000 // in ms
 
 #ifdef PERIODIC_IMG_TRANSMIT
-// 1 image / hour
-#define DEFAULT_INTER_SNAPSHOT_TIME  3600 // in s
+// 1 image / min
+// will be increased to 1 image / hour in main program
+#define DEFAULT_INTER_SNAPSHOT_TIME  60 // in s
 #else
 // here it means that image will be sent only on intrusion detection
 #define DEFAULT_INTER_SNAPSHOT_TIME  60 // in s
@@ -70,12 +102,13 @@
 
 #ifdef LORA_UCAM
     #define MAX_PKT_SIZE                  238
-    #define DEFAULT_LORA_MSS              235 //MAX_PKT_SIZE
+    #define DEFAULT_LORA_MSS              90 //MAX_PKT_SIZE
     #define DEFAULT_QUALITY_FACTOR        20
     #define DEFAULT_LORA_QUALITY_FACTOR   DEFAULT_QUALITY_FACTOR
 #endif
 
 // the size of data to store one line
+// currently, 240x240 is the maximum
 #ifdef CAM_RES240X240
 #define CAMDATA_LINE_SIZE     240
 #else
@@ -115,5 +148,7 @@ typedef struct {
 ///////////////////////////////////////////////////////////////////////////////////
 
 void init_custom_cam();
+void set_mss(uint8_t mss);
+void set_quality_factor(uint8_t Q);
 int encode_image(uint8_t* buf, bool transmit);
 #endif

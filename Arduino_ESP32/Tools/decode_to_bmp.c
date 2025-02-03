@@ -38,6 +38,10 @@ int SN = -1;
 int srcAddr = -1;
 int camid = -1;
 
+unsigned int npkt;
+unsigned int hSize;
+unsigned int vSize;
+
 uint8_t str2hex(char* str) {
     int aux = 0, aux2 = 0;
 
@@ -135,7 +139,7 @@ void JPEGdecoding(BMPImageStruct* InputImage, BMPImageStruct* OutputImage) {
     double tmp;
 
     // Decodage bloc par bloc
-    for (int i = 0; i < InputImage->imageVsize; i = i + 8)
+    for (int i = 0; i < abs(InputImage->imageVsize); i = i + 8)
         for (int j = 0; j < InputImage->imageHsize; j = j + 8) {
             for (int u = 0; u < 8; u++)
                 for (int v = 0; v < 8; v++) Block[u][v] = InputImage->data[i + u][j + v];
@@ -287,14 +291,14 @@ int JPEGdepacketization(BMPImageStruct* OutputImage, FILE* TRACEFILE) {
         row = (BlockOffset * 8) / OutputImage->imageHsize * 8;
         col = (BlockOffset * 8) % OutputImage->imageHsize;
         row_mix = ((row * 5) + (col * 8)) % (OutputImage->imageHsize);
-        col_mix = ((row * 8) + (col * 13)) % (OutputImage->imageVsize);
+        col_mix = ((row * 8) + (col * 13)) % (abs(OutputImage->imageVsize));
         for (int u = 0; u < 8; u++)
             for (int v = 0; v < 8; v++)
                 OutputImage->data[row_mix + u][col_mix + v] = (double)Block[u][v];
         BlockOffset++;
     }
 
-    if (BlockOffset != (OutputImage->imageHsize * OutputImage->imageVsize / 64)) {
+    if (BlockOffset != (OutputImage->imageHsize * abs(OutputImage->imageVsize) / 64)) {
         q = 0;
         while ((mqc_decode(objet) == 1) && (q < 32)) q++;
         r = mqc_decode(objet);
@@ -316,7 +320,7 @@ int JPEGdepacketization(BMPImageStruct* OutputImage, FILE* TRACEFILE) {
         row = (BlockOffset * 8) / OutputImage->imageHsize * 8;
         col = (BlockOffset * 8) % OutputImage->imageHsize;
         row_mix = ((row * 5) + (col * 8)) % (OutputImage->imageHsize);
-        col_mix = ((row * 8) + (col * 13)) % (OutputImage->imageVsize);
+        col_mix = ((row * 8) + (col * 13)) % (abs(OutputImage->imageVsize));
         for (int u = 0; u < 8; u++)
             for (int v = 0; v < 8; v++)
                 OutputImage->data[row_mix + u][col_mix + v] = (double)Block[u][v];
@@ -338,10 +342,14 @@ void startDecodeImage(char* fileToDecode, FILE* theFile, int Q, int SN, char* pa
 
     if (err) {
         fprintf(stderr, "CANNOT read original BMP file %s\n", paletteFile);
-
     } else {
+        // set size from the encoded image
+        OriginalImage.imageHsize=hSize;
+        if (OriginalImage.imageVsize<0)
+        		//if the image is stored from top to bottom
+        		OriginalImage.imageVsize=-vSize;
         // reset content
-        for (int i = 0; i < OriginalImage.imageVsize; i++)
+        for (int i = 0; i < abs(OriginalImage.imageVsize); i++)
             for (int j = 0; j < OriginalImage.imageHsize; j++) OriginalImage.data[i][j] = 0.0;
 
         fprintf(stderr, "Start JPEGdepacketization\n");
@@ -438,10 +446,9 @@ int main(int argc, char* argv[]) {
     if (!decode_received_dat) {
         fprintf(stderr, "Decoding original image\n");
 
-        // skip the field that are not usefull for display, just keep the quality Factor
-        fscanf(pFile, "%04X", &tmp);
-        fscanf(pFile, "%04X", &tmp);
-        fscanf(pFile, "%04X", &tmp);
+        fscanf(pFile, "%04X", &npkt);
+        fscanf(pFile, "%04X", &hSize);
+        fscanf(pFile, "%04X", &vSize);
         fscanf(pFile, "%04X", &tmp);
 
         qualityFactor = tmp;

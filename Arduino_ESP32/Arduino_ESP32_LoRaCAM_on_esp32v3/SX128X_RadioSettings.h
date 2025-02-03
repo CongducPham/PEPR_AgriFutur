@@ -1,3 +1,6 @@
+#ifndef SX128X_RADIO_SETTINGS
+#define SX128X_RADIO_SETTINGS
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // add here some specific board define statements if you want to implement user-defined specific settings
 // A/ LoRa radio node from IoTMCU: https://www.tindie.com/products/IOTMCU/lora-radio-node-v10/
@@ -60,5 +63,6 @@ const uint32_t DEFAULT_CHANNEL=CH_00_2400;
 
 #define DEFAULT_DEST_ADDR       1
 
+#endif
 // END
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////

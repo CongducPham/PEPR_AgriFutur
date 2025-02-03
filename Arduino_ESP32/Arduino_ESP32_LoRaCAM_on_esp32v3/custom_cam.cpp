@@ -1,18 +1,31 @@
 #include "custom_cam.h"
 #include "mqc.h"
+#include "ConfigSettings.h" 
+
+///////////////////////////////////////////////////////////////////
+// ENCRYPTION CONFIGURATION AND KEYS FOR LORAWAN
+#if defined LORAWAN && defined CUSTOM_LORAWAN
+  #ifndef WITH_AES
+    #define WITH_AES
+  #endif
+#endif
+#ifdef WITH_AES
+  #include "local_lorawan.h"
+#endif
 
 #ifdef LORA_UCAM
 unsigned int MSS = DEFAULT_LORA_MSS;
 #endif
 
-// use flow id of image mode 0x50
+// Note: we are slightly changing the packet format as previously defined in
+// https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html
 #ifdef WITH_SRC_ADDR
-// the 3rd and 4th byte are the src addr
-uint8_t pktPreamble[PREAMBLE_SIZE] = {0xFF, 0x50, 0x00, UCAM_ADDR, 0x00, 0x00};
+// 0xFE 0x50->0x54 for image packets, node addr, sequence number, quality factor and packet size
+uint8_t pktPreamble[PREAMBLE_SIZE] = {0xFE, 0x50, UCAM_ADDR, 0x00, 0x00, 0x00};
 #else
+// 0xFF 0x50->0x54 for image packets, sequence number, quality factor and packet size
 uint8_t pktPreamble[PREAMBLE_SIZE] = {0xFF, 0x50, 0x00, 0x00, 0x00};
 #endif
-uint8_t flowId = 0x00;
 
 // default behavior is to use framing bytes
 bool with_framing_bytes = true;
@@ -27,15 +40,13 @@ bool useRefImage = false;
 #endif
 
 bool send_image_on_intrusion = true;
-bool camDataReady = false;
-bool camHasSync = false;
 bool transmitting_data = false;
 bool new_ref_on_intrusion = true;
 
 // for the incoming data from uCam
 InImageStruct inImage;
 // for the reference images
-InImageStruct refImage[NB_CAM];
+InImageStruct refImage;
 
 #ifdef CRAN_NEW_CODING
 InImageStruct outImage;
@@ -48,20 +59,21 @@ bool detectedIntrusion = false;
 
 #ifdef LUM_HISTO
 // to store the image histogram
-short histoRefImage[NB_CAM][255];
+short histoRefImage[255];
 short histoInImage[255];
-long refImageLuminosity[NB_CAM];
+long refImageLuminosity;
 long inImageLuminosity;
 #endif
 
-unsigned long totalPacketizationTime=0;
+unsigned long totalPacketizationDuration=0;
 unsigned int packetcount = 0;
 long count = 0L;
-unsigned int QualityFactor[NB_CAM];
+unsigned int QualityFactor;
 
 // will wrap at 255
 uint8_t nbSentPackets = 0;
 unsigned long lastSentTime = 0;
+unsigned long lastSendDuration = 0;
 unsigned long inter_binary_pkt=DEFAULT_INTER_PKT_TIME+5;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -336,14 +348,22 @@ void SendPacket() {
         if (inter_binary_pkt != MIN_INTER_PKT_TIME)
             while ((millis() - lastSentTime) < inter_binary_pkt);
 
-            // just the maximum pkt size plus some more bytes
-#ifdef LORA_UCAM
+        // just the maximum pkt size plus some more bytes
         uint8_t myBuff[260];
-#else
-        uint8_t myBuff[110];
-#endif
         uint8_t dataSize = 0;
         long startSendTime, stopSendTime, previousLastSendTime;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// for instance, if Q=20 (0x14) and the 9th (seq number 8, 0x08) image packet is: 
+//    003F 00E4C1129592397FDDBFF13790E9D5DC473DBDCDFDAA2031705C6D283EC3A4B316415CB9CD281CEFBF1B44A296533ED59645E1D33DF4824A5C4D514A8C0CF7
+// then the generated payload is (with framing bytes and without WITH_SRC_ADDR)
+//    FF 50 08 14 3F 00E4C1129592397FDDBFF13790E9D5DC473DBDCDFDAA2031705C6D283EC3A4B316415CB9CD281CEFBF1B44A296533ED59645E1D33DF4824A5C4D514A8C0CF7
+// in LoRaWAN mode, the payload will be first encrypted (using AppSkey and NwkSkey in local_lorawan.cpp)
+//    42B05B3C5BDA5AAD4A428D1D1E1517E5D74C4E3AC7464B295F20954CB01FB65CA10A37D841800B8B1BE175509025EFE7AC0D0ED7AD2EE439F954304BEC4E356749E2EE0E
+// and put in a LoRaWAN packet with the LoRaWAN header
+//    MHDR[1] | DevAddr[4] | FCtrl[1] | FCnt[2] | FPort[1] | EncryptedPayload | MIC[4]
+//    40 AA2D0126 00 0800 01 42B05B3C5BDA5AAD4A428D1D1E1517E5D74C4E3AC7464B295F20954CB01FB65CA10A37D841800B8B1BE175509025EFE7AC0D0ED7AD2EE439F954304BEC4E356749E2EE0E 15893440
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         if (with_framing_bytes) {
             myBuff[0] = pktPreamble[0];
@@ -351,18 +371,17 @@ void SendPacket() {
 
 #ifdef WITH_SRC_ADDR
             myBuff[2] = pktPreamble[2];
-            myBuff[3] = pktPreamble[3];
             // set the sequence number
-            myBuff[4] = (uint8_t)packetcount;
+            myBuff[3] = (uint8_t)packetcount;
             // set the Quality Factor
-            myBuff[5] = (uint8_t)QualityFactor[currentCam];
+            myBuff[4] = (uint8_t)QualityFactor;
             // set the packet size
-            myBuff[6] = (uint8_t)(packetsize + 2);
+            myBuff[5] = (uint8_t)(packetsize + 2);
 #else
             // set the sequence number
             myBuff[2] = (uint8_t)packetcount;
             // set the Quality Factor
-            myBuff[3] = (uint8_t)QualityFactor[currentCam];
+            myBuff[3] = (uint8_t)QualityFactor;
             // set the packet size
             myBuff[4] = (uint8_t)(packetsize + 2);
 #endif
@@ -392,6 +411,37 @@ void SendPacket() {
         Serial.println(packetcount);
 #endif
 
+#ifdef LORA_UCAM        
+        int pl;
+
+        pl = dataSize + packetsize;
+        Serial.print("payload size is ");
+        Serial.println(pl);   
+
+#ifdef RAW_LORA
+        uint8_t p_type=PKT_TYPE_DATA;
+#if defined WITH_AES
+        // indicate that payload is encrypted
+        p_type = p_type | PKT_FLAG_DATA_ENCRYPTED;
+#endif
+#if defined WITH_ACK
+        p_type=PKT_TYPE_DATA | PKT_FLAG_ACK_REQ;
+        Serial.println("Will request an ACK");      
+#endif  
+#endif
+
+///////////////////////////////////
+//use AES (LoRaWAN-like) encrypting
+///////////////////////////////////
+#ifdef WITH_AES
+#ifdef LORAWAN
+        Serial.print("LoRaCAM uses native LoRaWAN packet format\n");
+#else
+        Serial.print("LoRaCAM uses encapsulated LoRaWAN packet format only for encryption\n");
+#endif
+        pl=local_aes_lorawan_create_pkt(myBuff, pl, 0);
+#endif
+
         previousLastSendTime = lastSentTime;
 
         startSendTime = millis();
@@ -400,24 +450,51 @@ void SendPacket() {
         // packets back to back since the sending procedure can introduce a delay
         lastSentTime = (unsigned long)startSendTime;
 
-#ifdef LORA_UCAM
-        //TODO: send packet in raw LoRa mode
-        Serial.print("HERE WILL BE LORA SENDING");        
+#ifdef CUSTOM_LORAWAN
+        // will return sent packet length if OK, otherwise 0 if transmission error
+        // we use raw format for LoRaWAN
+        if (LT.transmit(myBuff, pl, 10000, MAX_DBM, WAIT_TX))
+#else
+        // will return packet length sent if OK, otherwise 0 if transmit error
+        if (LT.transmitAddressed(myBuff, pl, p_type, DEFAULT_DEST_ADDR, node_addr, 10000, MAX_DBM, WAIT_TX))
 #endif
-        stopSendTime = millis();
+        {
+            stopSendTime = millis();
+            nbSentPackets++;;
 
-#ifndef ENERGY_TEST
-        //digitalWrite(capture_led, HIGH);
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS
+            uint16_t localCRC = LT.CRCCCITT(myBuff, pl, 0xFFFF);
+            Serial.printf("CRC %.4X\n", localCRC);
+
+            if (LT.readAckStatus()) {
+                Serial.printf("Received ACK from %d\n", LT.readRXSource());
+                Serial.printf("SNR of transmitted pkt is %d\n", LT.readPacketSNRinACK());
+            }
 #endif
-        nbSentPackets++;
+        }
+        else // transmission error
+        {
+            stopSendTime=millis();
+        
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS
+            // if here there was an error transmitting packet
+            uint16_t IRQStatus;
+            IRQStatus = LT.readIrqStatus();
+            Serial.printf("SendError,IRQreg,%.4X\n", IRQStatus);
+            LT.printIrqStatus();
+#endif
+        }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+#endif
 
 #ifdef DISPLAY_PKT
 
         Serial.print(F("Packet Sent in "));
-        Serial.println(stopSendTime - startSendTime);
+        lastSendDuration = stopSendTime - startSendTime;
+        Serial.println(lastSendDuration);
 
 #ifdef LORA_UCAM
-        //TODO: something to do?
+        //TODO: something else to do?
 #endif
 #endif
 
@@ -481,7 +558,7 @@ int FillPacket(int Block[8][8], bool *full) {
 
     // On déborde (il faut tenir compte du champ offset (2 octets) dans le paquet
     if (buffersize > (MSS - 2)) {
-        totalPacketizationTime += millis() - startFillPacket;
+        totalPacketizationDuration += millis() - startFillPacket;
         return -1;
     }
 
@@ -510,7 +587,7 @@ int FillPacket(int Block[8][8], bool *full) {
         *full = true;
     }
 
-    totalPacketizationTime += millis() - startFillPacket;
+    totalPacketizationDuration += millis() - startFillPacket;
 
     return 0;
 }
@@ -524,13 +601,13 @@ int encode_ucam_file_data() {
     int i, j, w;
 
     long startCamGlobalEncodeTime = 0;
-    long stopCamGlobalEncodeTime = 0;
     long startEncodeTime = 0;
-    long totalEncodeTime = 0;
-    totalPacketizationTime = 0;
+    long totalEncodeDuration = 0;
+    long totalSendDuration = 0;
+    totalPacketizationDuration = 0;
 
     Serial.print(F("Encoding picture data, Quality Factor is : "));
-    Serial.println(QualityFactor[currentCam]);
+    Serial.println(QualityFactor);
 
     Serial.print(F("MSS for packetization is : "));
     Serial.println(MSS);
@@ -538,7 +615,7 @@ int encode_ucam_file_data() {
     startCamGlobalEncodeTime = millis();
 
     // Initialisation de la matrice de quantification
-    QTinitialization(QualityFactor[currentCam]);
+    QTinitialization(QualityFactor);
 
 #ifdef DISPLAY_ENCODE_STATS
     Serial.print(F("Q: "));
@@ -588,7 +665,7 @@ int encode_ucam_file_data() {
             // Encodage JPEG du bloc 8x8
             JPEGencoding(Block);
 
-            totalEncodeTime += millis() - startEncodeTime;
+            totalEncodeDuration += millis() - startEncodeTime;
 
 #ifdef DISPLAY_BLOCK
             Serial.println(F("encode_ucam_file_data():"));
@@ -609,6 +686,7 @@ int encode_ucam_file_data() {
                 Serial.println(F("err"));
 #endif
                 SendPacket();
+                totalSendDuration += lastSendDuration;
                 CreateNewPacket(offset);
                 FillPacket(Block, &RTS);
             }
@@ -617,45 +695,27 @@ int encode_ucam_file_data() {
 
             if (RTS == true) {
                 SendPacket();
+                totalSendDuration += lastSendDuration;
                 CreateNewPacket(offset);
                 RTS = false;
             }
         }
 
     SendPacket();
+    totalSendDuration += lastSendDuration;
 
-    stopCamGlobalEncodeTime = millis();
-
-    Serial.print(F("Time to encode (ms): "));
-    Serial.println(stopCamGlobalEncodeTime - startCamGlobalEncodeTime);
-    Serial.print(F("Total encode time (ms): "));
-    Serial.println(totalEncodeTime);
-    Serial.print(F("Total pkt time (ms): "));
-    Serial.println(totalPacketizationTime);
+    Serial.printf("Total encode+packetization+transmission (ms): %ld\n", millis() - startCamGlobalEncodeTime);
+    Serial.printf("Encode (ms): %ld\n", totalEncodeDuration);
+    Serial.printf("Packetisation (ms): %ld\n", totalPacketizationDuration);
+    Serial.printf("Transmission (ms): %ld\n", totalSendDuration);    
 
     CompressionRate = (float)count * 8.0 / (CAMDATA_LINE_SIZE * CAMDATA_LINE_SIZE);
-    Serial.print(F("Compression rate (bpp) : "));
-    Serial.println(CompressionRate);
-    Serial.print(F("Packets : "));
-    Serial.print(packetcount);
-    Serial.print(" ");
-    if (packetcount < 0x10) Serial.print(F("0"));
-    Serial.println(packetcount, HEX);
-    Serial.print(F("Q : "));
-    Serial.print(QualityFactor[currentCam]);
-    Serial.print(" ");
-    if (QualityFactor[currentCam] < 0x10) Serial.print(F("0"));
-    Serial.println(QualityFactor[currentCam], HEX);
-    Serial.print(F("H : "));
-    Serial.print(CAMDATA_LINE_SIZE);
-    Serial.print(" ");
-    Serial.println(CAMDATA_LINE_SIZE, HEX);
-    Serial.print(F("V : "));
-    Serial.print(CAMDATA_LINE_SIZE);
-    Serial.print(" ");
-    Serial.println(CAMDATA_LINE_SIZE, HEX);
-    Serial.print(F("Real encoded image file size : "));
-    Serial.println(count);
+    Serial.printf("Compression rate (bpp) : %f\n", CompressionRate);
+    Serial.printf("Packets : %d %.2X\n", packetcount, packetcount);
+    Serial.printf("Q : %d %.2X\n", QualityFactor, QualityFactor);
+    Serial.printf("H : %d %.2X\n", CAMDATA_LINE_SIZE, CAMDATA_LINE_SIZE);
+    Serial.printf("V : %d %.2X\n", CAMDATA_LINE_SIZE, CAMDATA_LINE_SIZE);
+    Serial.printf("Real encoded image file size : %d\n", count);
 
     // reset
     packetcount = 0L;
@@ -935,12 +995,8 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         if (inter_binary_pkt != MIN_INTER_PKT_TIME)
             while ((millis() - lastSentTime) < inter_binary_pkt);
 
-            // just the maximum pkt size plus some more bytes
-#ifdef LORA_UCAM
+        // just the maximum pkt size plus some more bytes
         uint8_t myBuff[260];
-#else
-        uint8_t myBuff[110];
-#endif
         uint8_t dataSize = 0;
         long startSendTime, stopSendTime, previousLastSendTime;
 
@@ -950,18 +1006,17 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
 
 #ifdef WITH_SRC_ADDR
             myBuff[2] = pktPreamble[2];
-            myBuff[3] = pktPreamble[3];
             // set the sequence number
-            myBuff[4] = (uint8_t)packetcount;
+            myBuff[3] = (uint8_t)packetcount;
             // set the Quality Factor
-            myBuff[5] = (uint8_t)QualityFactor[currentCam];
+            myBuff[4] = (uint8_t)QualityFactor;
             // set the packet size
-            myBuff[6] = (uint8_t)(packetsize + 2);
+            myBuff[5] = (uint8_t)(packetsize + 2);
 #else
             // set the sequence number
             myBuff[2] = (uint8_t)packetcount;
             // set the Quality Factor
-            myBuff[3] = (uint8_t)QualityFactor[currentCam];
+            myBuff[3] = (uint8_t)QualityFactor;
             // set the packet size
             myBuff[4] = (uint8_t)(packetsize + 2);
 #endif
@@ -991,6 +1046,37 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         Serial.println(packetcount);
 #endif
 
+#ifdef LORA_UCAM        
+        int pl;
+
+        pl = dataSize + packetsize;
+        Serial.print("payload size is ");
+        Serial.println(pl);   
+
+#ifdef RAW_LORA
+        uint8_t p_type=PKT_TYPE_DATA;
+#if defined WITH_AES
+        // indicate that payload is encrypted
+        p_type = p_type | PKT_FLAG_DATA_ENCRYPTED;
+#endif
+#if defined WITH_ACK
+        p_type=PKT_TYPE_DATA | PKT_FLAG_ACK_REQ;
+        Serial.println("Will request an ACK");      
+#endif  
+#endif
+
+///////////////////////////////////
+//use AES (LoRaWAN-like) encrypting
+///////////////////////////////////
+#ifdef WITH_AES
+#ifdef LORAWAN
+        Serial.print("LoRaCAM uses native LoRaWAN packet format\n");
+#else
+        Serial.print("LoRaCAM uses encapsulated LoRaWAN packet format only for encryption\n");
+#endif
+        pl=local_aes_lorawan_create_pkt(myBuff, pl, 0);
+#endif
+
         previousLastSendTime = lastSentTime;
 
         startSendTime = millis();
@@ -999,23 +1085,51 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         // packets back to back since the sending procedure can introduce a delay
         lastSentTime = (unsigned long)startSendTime;
 
-#ifdef LORA_UCAM
-        //TODO: send packet in raw LoRa mode
-        Serial.print("HERE WILL BE LORA SENDING");
+#ifdef CUSTOM_LORAWAN
+        // will return sent packet length if OK, otherwise 0 if transmission error
+        // we use raw format for LoRaWAN
+        if (LT.transmit(myBuff, pl, 10000, MAX_DBM, WAIT_TX))
+#else
+        // will return packet length sent if OK, otherwise 0 if transmit error
+        if (LT.transmitAddressed(myBuff, pl, p_type, DEFAULT_DEST_ADDR, node_addr, 10000, MAX_DBM, WAIT_TX))
 #endif
+        {
+            stopSendTime = millis();
+            nbSentPackets++;;
 
-#ifndef ENERGY_TEST
-        //digitalWrite(capture_led, HIGH);
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS
+            uint16_t localCRC = LT.CRCCCITT(myBuff, pl, 0xFFFF);
+            Serial.printf("CRC %.4X\n", localCRC);
+
+            if (LT.readAckStatus()) {
+                Serial.printf("Received ACK from %d\n", LT.readRXSource());
+                Serial.printf("SNR of transmitted pkt is %d\n", LT.readPacketSNRinACK());
+            }
 #endif
-        nbSentPackets++;
+        }
+        else // transmission error
+        {
+            stopSendTime=millis();
+        
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS
+            // if here there was an error transmitting packet
+            uint16_t IRQStatus;
+            IRQStatus = LT.readIrqStatus();
+            Serial.printf("SendError,IRQreg,%.4X\n", IRQStatus);
+            LT.printIrqStatus();
+#endif
+        }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+#endif
 
 #ifdef DISPLAY_PKT
 
         Serial.print(F("Packet Sent in "));
-        Serial.println(stopSendTime - startSendTime);
+        lastSendDuration = stopSendTime - startSendTime;
+        Serial.println(lastSendDuration);
 
 #ifdef LORA_UCAM
-        //TODO: something to do?
+        //TODO: something else to do?
 #endif
 #endif
 
@@ -1037,14 +1151,15 @@ int encode_ucam_file_data() {
     unsigned int offset = 0;
     float CompressionRate;
     long startCamGlobalEncodeTime = 0;
-    long stopCamGlobalEncodeTime = 0;
     long startCamEncodeTime = 0;
     long startCamPktEncodeTime = 0;
     long stopCamPktEncodeTime = 0;
     long stopCamQuantizatioTime = 0;
+    long totalSendDuration = 0;
+    long totalEncodeDuration = 0;
 
     Serial.print(F("Encoding picture data, Quality Factor is : "));
-    Serial.println(QualityFactor[currentCam]);
+    Serial.println(QualityFactor);
 
     Serial.print(F("MSS for packetization is : "));
     Serial.println(MSS);
@@ -1054,7 +1169,7 @@ int encode_ucam_file_data() {
 #ifdef DISPLAY_ENCODE_STATS
 
     // Initialisation de la matrice de quantification
-    QTinitialization(QualityFactor[currentCam]);
+    QTinitialization(QualityFactor);
 
     startCamEncodeTime = millis();
 
@@ -1065,10 +1180,11 @@ int encode_ucam_file_data() {
     Serial.print(startCamEncodeTime - startCamGlobalEncodeTime);
 
     Serial.print(F(" E: "));
+    totalEncodeDuration += millis() - startCamEncodeTime;
     Serial.println(millis() - startCamEncodeTime);
 #else
     // Initialisation de la matrice de quantification
-    QTinitialization(QualityFactor[currentCam]);
+    QTinitialization(QualityFactor);
 
     // Encodage JPEG et fin
     JPEGencoding(&inImage, &outImage);
@@ -1081,6 +1197,7 @@ int encode_ucam_file_data() {
 #ifdef DISPLAY_PACKETIZATION_STATS
         startCamPktEncodeTime = millis();
         offset = JPEGpacketization(&outImage, offset);
+        totalSendDuration += lastSendDuration;
         stopCamPktEncodeTime = millis();
         Serial.print(offset);
         Serial.print("|");
@@ -1090,37 +1207,18 @@ int encode_ucam_file_data() {
 #endif
     } while (offset != (outImage.imageHsize * outImage.imageVsize / 64));
 
-    stopCamGlobalEncodeTime = millis();
+    Serial.printf("Total encode+packetization+transmission (ms): %ld\n", millis() - startCamGlobalEncodeTime);
+    Serial.printf("Encode (ms): %ld\n", totalEncodeDuration);
+    Serial.printf("Packetisation (ms): %ld\n", stopCamGlobalEncodeTime - startCamPktEncodeTime);
+    Serial.printf("Transmission (ms): %ld\n", totalSendDuration);    
 
-    Serial.print(F("Global time to encode (ms): "));
-    Serial.println(stopCamGlobalEncodeTime - startCamGlobalEncodeTime);
-
-    Serial.print(F("Time for packetization (ms): "));
-    Serial.println(stopCamGlobalEncodeTime - startCamPktEncodeTime);
-
-    CompressionRate = (float)count * 8.0 / (outImage.imageHsize * outImage.imageVsize);
-    Serial.print(F("Compression rate (bpp) : "));
-    Serial.println(CompressionRate);
-    Serial.print(F("Packets : "));
-    Serial.print(packetcount);
-    Serial.print(" ");
-    if (packetcount < 0x10) Serial.print(F("0"));
-    Serial.println(packetcount, HEX);
-    Serial.print(F("Q : "));
-    Serial.print(QualityFactor[currentCam]);
-    Serial.print(" ");
-    if (QualityFactor[currentCam] < 0x10) Serial.print(F("0"));
-    Serial.println(QualityFactor[currentCam], HEX);
-    Serial.print(F("H : "));
-    Serial.print(inImage.imageHsize);
-    Serial.print(" ");
-    Serial.println(inImage.imageHsize, HEX);
-    Serial.print(F("V : "));
-    Serial.print(inImage.imageVsize);
-    Serial.print(" ");
-    Serial.println(inImage.imageVsize, HEX);
-    Serial.print(F("Real encoded image file size : "));
-    Serial.println(count);
+    CompressionRate = (float)count * 8.0 / (CAMDATA_LINE_SIZE * CAMDATA_LINE_SIZE);
+    Serial.printf("Compression rate (bpp) : %f\n", CompressionRate);
+    Serial.printf("Packets : %d %.2X\n", packetcount, packetcount);
+    Serial.printf("Q : %d %.2X\n", QualityFactor, QualityFactor);
+    Serial.printf("H : %d %.2X\n", CAMDATA_LINE_SIZE, CAMDATA_LINE_SIZE);
+    Serial.printf("V : %d %.2X\n", CAMDATA_LINE_SIZE, CAMDATA_LINE_SIZE)
+    Serial.printf("Real encoded image file size : %d\n", count); 
 
     // reset
     packetcount = 0L;
@@ -1139,7 +1237,7 @@ void clearHistogram(short histo_data[]) {
     for (int i = 0; i < 255; i++) histo_data[i] = 0;
 }
 
-void computeHistogram(short histo_data[], uint8_t **data) {
+void computeHistogram(short histo_data[], uint8_t *data) {
     clearHistogram(histo_data);
 
     for (int x = 0; x < CAMDATA_LINE_SIZE; x++)
@@ -1183,11 +1281,11 @@ void copy_in_refImage() {
     if (useRefImage) {
         for (int x = 0; x < CAMDATA_LINE_SIZE; x++)
             for (int y = 0; y < CAMDATA_LINE_SIZE; y++)
-                refImage[currentCam].data[x][y] = inImage.data[x][y];
+                refImage.data[x][y] = inImage.data[x][y];
 
 #ifdef LUM_HISTO
-        computeHistogram(histoRefImage[currentCam], refImage[currentCam].data);
-        refImageLuminosity[currentCam] = computeMeanLuminosity(histoRefImage[currentCam]);
+        computeHistogram(histoRefImage, refImage.data);
+        refImageLuminosity = computeMeanLuminosity(histoRefImage);
 #endif
     }
 }
@@ -1196,9 +1294,7 @@ void init_custom_cam() {
     bool ok_to_read_picture_data=false;
     bool ok_to_encode_picture_data=false;
 
-    for (int cam=0; cam<NB_CAM; cam++) {
-        QualityFactor[cam] = DEFAULT_QUALITY_FACTOR;
-    }
+    QualityFactor = DEFAULT_QUALITY_FACTOR;
 
     inImage.imageVsize=inImage.imageHsize=CAMDATA_LINE_SIZE;
     outImage.imageVsize=outImage.imageHsize=CAMDATA_LINE_SIZE;
@@ -1211,17 +1307,16 @@ void init_custom_cam() {
     else
         ok_to_read_picture_data=true;
         
-    for (int k=0; k<NB_CAM; k++)
-        if (useRefImage) {
-            if ((refImage[k].data = AllocateUintMemSpace(CAMDATA_LINE_SIZE, CAMDATA_LINE_SIZE))==NULL) {
-                Serial.println(F("Error calloc refImage"));
-                ok_to_read_picture_data=false;                      
-            }
-            else
-                ok_to_read_picture_data=true;
-        } 
+    if (useRefImage) {
+        if ((refImage.data = AllocateUintMemSpace(CAMDATA_LINE_SIZE, CAMDATA_LINE_SIZE))==NULL) {
+            Serial.println(F("Error calloc refImage"));
+            ok_to_read_picture_data=false;                      
+        }
         else
-            refImage[k].data=NULL;     
+            ok_to_read_picture_data=true;
+    } 
+    else
+        refImage.data=NULL;     
 
     Serial.println(F("InImage memory allocation passed"));
 
@@ -1251,6 +1346,14 @@ void init_custom_cam() {
     }
     else
         Serial.println(F("Ready to encode picture data"));     
+}
+
+void set_mss(uint8_t mss) {
+    MSS=mss;
+}
+
+void set_quality_factor(uint8_t Q) {
+    QualityFactor=Q;
 }
 
 int encode_image(uint8_t* buf, bool transmit) {

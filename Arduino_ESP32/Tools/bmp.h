@@ -114,6 +114,8 @@ int ReadBitmapFile(char * FileName, BMPImageStruct * Image) {
 
     fread( & entier32, sizeof(uint32_t), 1, ImageFile); // hauteur de l'image, 4 octets
     Image -> imageVsize = hex2dec(entier32, sizeof(uint32_t));
+    //if the image is stored from top to bottom, imageVsize is negative
+    //Image -> imageVsize = abs(Image -> imageVsize);
     printf("imageVsize=%d\n", Image -> imageVsize);
 
     fread( & entier32, sizeof(short), 1, ImageFile); // nombre de plans (toujour =1), 2 octets
@@ -143,10 +145,22 @@ int ReadBitmapFile(char * FileName, BMPImageStruct * Image) {
     fread( & entier32, sizeof(uint32_t), 1, ImageFile); // nombre de couleurs utilisées (0=toutes), 4 octets
     Image -> colors = hex2dec(entier32, sizeof(uint32_t));
     printf("colors=%d\n", Image -> colors);
+    
+    //ESP32-camera lib is not setting the number of colors when saving BMP image, even with PIXFORMAT_GRAYSCALE
+    if (Image -> colors ==0) {
+    	Image -> colors = 256;
+    	printf("set colors=%d\n", Image -> colors);
+    }
 
     fread( & entier32, sizeof(uint32_t), 1, ImageFile); // nombre de couleurs importantes (0=toutes), 4 octets
     Image -> primarycolors = hex2dec(entier32, sizeof(uint32_t));
     printf("primarycolors=%d\n", Image -> primarycolors);
+    
+    //ESP32-camera lib is not setting the number of pimary colors when saving BMP image, even with PIXFORMAT_GRAYSCALE
+    if (Image -> primarycolors ==0) {
+    	Image -> primarycolors = 256;
+    	printf("set primarycolors=%d\n", Image -> primarycolors);
+    }    
 
     #ifdef DEBUG_CODING
     printf("ReadBitmapFile-1\n");
@@ -169,9 +183,9 @@ int ReadBitmapFile(char * FileName, BMPImageStruct * Image) {
 
     // après la palette, ce sont les données de l'image
 
-    if ((Image -> data = AllocateMemSpace(Image -> imageHsize, Image -> imageVsize)) == NULL) return -1;
+    if ((Image -> data = AllocateMemSpace(Image -> imageHsize, abs(Image -> imageVsize))) == NULL) return -1;
 
-    for (int row = Image -> imageVsize - 1; row >= 0; row--)
+    for (int row = abs(Image -> imageVsize) - 1; row >= 0; row--)
         for (int col = 0; col < Image -> imageHsize; col++) {
             fread( & pixel, 1, 1, ImageFile);
             Image -> data[row][col] = pixel;
@@ -209,7 +223,8 @@ int WriteBitmapFile(char * FileName, BMPImageStruct * Image, bool vflip_flag = f
     dec2hex(Image -> imageHsize, entier32, sizeof(uint32_t));
     fwrite( & entier32, sizeof(uint32_t), 1, ImageFile); // largeur de l'image, 4 octets
 
-    dec2hex(Image -> imageVsize, entier32, sizeof(uint32_t));
+		// imageVSize can be negative for top to bottom encoded
+    dec2hex(abs(Image -> imageVsize), entier32, sizeof(uint32_t));
     fwrite( & entier32, sizeof(uint32_t), 1, ImageFile); // hauteur de l'image, 4 octets
 
     dec2hex(Image -> plans, entier32, sizeof(short));
@@ -239,17 +254,20 @@ int WriteBitmapFile(char * FileName, BMPImageStruct * Image, bool vflip_flag = f
     // si c'est une image 8 bpp, cette entête est suivie de la palette.
     for (int i = 0; i < Image -> colors; i++) fwrite( & Image -> palette[i * sizeof(uint32_t)], sizeof(uint32_t), 1, ImageFile);
 
+		if (Image -> imageVsize < 0)
+				vflip_flag = true;
+			
     // après la palette, ce sont les données de l'image
     if (vflip_flag == true) {
         // normal order of lines
-        for (int row = 0; row < Image -> imageVsize; row++)
+        for (int row = 0; row < abs(Image -> imageVsize); row++)
             for (int col = 0; col < Image -> imageHsize; col++) {
                 pixel = (unsigned char) Image -> data[row][col];
                 fwrite( & pixel, 1, 1, ImageFile);
             }
     } else {
 
-        for (int row = Image -> imageVsize - 1; row >= 0; row--)
+        for (int row = abs(Image -> imageVsize) - 1; row >= 0; row--)
             // reverse order of lines
             for (int col = 0; col < Image -> imageHsize; col++) {
                 pixel = (unsigned char) Image -> data[row][col];
