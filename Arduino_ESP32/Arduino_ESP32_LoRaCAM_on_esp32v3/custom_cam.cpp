@@ -74,7 +74,7 @@ unsigned int QualityFactor;
 uint8_t nbSentPackets = 0;
 unsigned long lastSentTime = 0;
 unsigned long lastSendDuration = 0;
-unsigned long inter_binary_pkt=DEFAULT_INTER_PKT_TIME+5;
+unsigned long inter_binary_pkt=DEFAULT_INTER_PKT_TIME;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // IMAGE ENCODING METHOD FROM CRAN LABORATORY
@@ -345,8 +345,18 @@ void SendPacket() {
         //digitalWrite(capture_led, LOW);
         // here we transmit data
 
-        if (inter_binary_pkt != MIN_INTER_PKT_TIME)
-            while ((millis() - lastSentTime) < inter_binary_pkt);
+        if (inter_binary_pkt != MIN_INTER_PKT_TIME) {
+            unsigned long now_millis = millis();
+
+            Serial.println(now_millis);
+            Serial.println(lastSentTime);
+
+            if ((now_millis - lastSentTime) < inter_binary_pkt) {
+                Serial.print("Wait for ");
+                Serial.println(inter_binary_pkt - (now_millis - lastSentTime));
+                delay(inter_binary_pkt - (now_millis - lastSentTime));
+            }
+        }
 
         // just the maximum pkt size plus some more bytes
         uint8_t myBuff[260];
@@ -441,7 +451,8 @@ void SendPacket() {
 #endif
         pl=local_aes_lorawan_create_pkt(myBuff, pl, 0);
 #endif
-
+        Serial.flush();
+        
         previousLastSendTime = lastSentTime;
 
         startSendTime = millis();
@@ -461,6 +472,7 @@ void SendPacket() {
         {
             stopSendTime = millis();
             nbSentPackets++;;
+            blinkLed(1, 200);
 
 #if defined RAW_LORA && defined WITH_SPI_COMMANDS
             uint16_t localCRC = LT.CRCCCITT(myBuff, pl, 0xFFFF);
@@ -475,7 +487,8 @@ void SendPacket() {
         else // transmission error
         {
             stopSendTime=millis();
-        
+            blinkLed(4, 80);
+
 #if defined RAW_LORA && defined WITH_SPI_COMMANDS
             // if here there was an error transmitting packet
             uint16_t IRQStatus;

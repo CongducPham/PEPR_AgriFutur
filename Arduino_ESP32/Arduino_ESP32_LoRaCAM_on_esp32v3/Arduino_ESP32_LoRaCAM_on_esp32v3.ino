@@ -22,7 +22,7 @@
  #  Based on ESP32 CameraWebServer and Arduino_LoRa_ucamII (https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html)
  *  Design:                 C. Pham
  *  Implementation:         C. Pham
- *  Last update:            Fev. 3rd, 2025
+ *  Last update:            Fev. 5th, 2025
  *
  *  With #define WAIT_FOR_SERIAL_INPUT, for testing purposes, no deep sleep, a command starts with /@ and ends with #: /@Z40#Q40#
  *    "Z64#" -> sets the MSS size to 64, default is 90 for LoRa
@@ -34,6 +34,8 @@
  *    - deep sleep between capture, similar to full reset (deep sleep of camera not fully validated yet)
  *    - to flash a new code, connect board and upload before device goes in deep sleep.
  *      a 30s window is set for such purpose before the first deep sleep period
+ *    - for real low power mode, we use an external Arduino Pro Mini with a MOSFET to power cycle the LoRaCAM
+*       uncomment RUN_AS_SLAVE in ConfigSettings.h
  */
 
 #include "esp_camera.h"
@@ -184,7 +186,7 @@ SX128XLT LT;
 *****************************/ 
 
 ///////////////////////////////////////////////////////////////////
-#if defined LOW_POWER_DEEP_SLEEP || defined LOW_POWER_LIGHT_SLEEP
+#ifdef LOW_POWER_DEEP_SLEEP
 
 #define mS_TO_uS_FACTOR 1000ULL /* Conversion factor for milli seconds to micro seconds */
 RTC_DATA_ATTR int bootCount = 0;
@@ -227,14 +229,9 @@ void lowPower(unsigned long time_ms) {
     //               String(idlePeriodInSec) + " Seconds");
     Serial.println("Going to deep sleep now");
     Serial.flush();
-#ifdef LOW_POWER_DEEP_SLEEP
     esp_deep_sleep_start();
-#endif
-#ifdef LOW_POWER_LIGHT_SLEEP
-    esp_light_sleep_start();
-#endif
 }
-#endif //defined LOW_POWER_DEEP_SLEEP || defined LOW_POWER_LIGHT_SLEEP
+#endif //defined LOW_POWER_DEEP_SLEEP
 
 ///////////////////////////////////////////////////////////////////
 #ifdef WAIT_FOR_SERIAL_INPUT
@@ -270,6 +267,23 @@ long getCmdValue(int &i, char* strBuff=NULL) {
 }   
 #endif //WAIT_FOR_SERIAL_INPUT
 
+void blinkLed(uint8_t n, uint16_t t) {
+    for (int i = 0; i < n; i++) {
+#if defined ARDUINO_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
+        //XIAO ESP32S3 has inverted logic for the built-in led
+        digitalWrite(LED_BUILTIN, LOW);  
+        delay(t);                      
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(t);      
+#else
+        digitalWrite(LED_BUILTIN, HIGH);  
+        delay(t);;                      
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(t);
+#endif   
+    }
+}
+
 /*****************************
  _____      _               
 /  ___|    | |              
@@ -286,6 +300,22 @@ void setup() {
     //while (!Serial);  // Ensure that the serial port is enabled
     // Serial.setDebugOutput(true);
     Serial.println();
+
+#ifdef RUN_AS_SLAVE
+  Serial.print("Run as slave, set activity pins to HIGH\n");
+#ifdef ACTIVITY_PIN1   
+  pinMode(ACTIVITY_PIN1, OUTPUT);
+  digitalWrite(ACTIVITY_PIN1, HIGH);
+#endif  
+#ifdef ACTIVITY_PIN2   
+  pinMode(ACTIVITY_PIN2, OUTPUT);
+  digitalWrite(ACTIVITY_PIN2, HIGH);
+#endif 
+#ifdef ACTIVITY_PIN3   
+  pinMode(ACTIVITY_PIN3, OUTPUT);
+  digitalWrite(ACTIVITY_PIN3, HIGH);
+#endif 
+#endif    
 
 #ifdef ARDUINO_ARCH_ESP32
     Serial.print("ESP32 detected\n");
@@ -626,7 +656,7 @@ void setup() {
 #endif
 
 #ifdef WITH_AES
-  local_lorawan_init();
+    local_lorawan_init();
 #endif
 
     pinMode(LED_BUILTIN, OUTPUT);
@@ -647,6 +677,22 @@ void loop() {
 
   unsigned long interCamCaptureTime;
   unsigned long nextCamCaptureTime;
+
+#ifdef RUN_AS_SLAVE
+  Serial.print("Run as slave, set activity pins to HIGH\n");
+#ifdef ACTIVITY_PIN1   
+  pinMode(ACTIVITY_PIN1, OUTPUT);
+  digitalWrite(ACTIVITY_PIN1, HIGH);
+#endif  
+#ifdef ACTIVITY_PIN2   
+  pinMode(ACTIVITY_PIN2, OUTPUT);
+  digitalWrite(ACTIVITY_PIN2, HIGH);
+#endif 
+#ifdef ACTIVITY_PIN3   
+  pinMode(ACTIVITY_PIN3, OUTPUT);
+  digitalWrite(ACTIVITY_PIN3, HIGH);
+#endif 
+#endif  
 
 #ifdef WAIT_FOR_SERIAL_INPUT
   //60s
@@ -763,7 +809,7 @@ void loop() {
       delay(1000);
       interCamCaptureTime -= 1000;    
   } while (interCamCaptureTime>0);
-#else //WAIT_FOR_SERIAL_INPUT
+#else // WAIT_FOR_SERIAL_INPUT
 
 #ifdef TEST_IN_PROGRESS
   //60s
@@ -771,10 +817,10 @@ void loop() {
 #else
   //increase the default 60s to 60mins
   interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*60*1000;  
-#endif    
+#endif   
 
   nextCamCaptureTime=millis()+interCamCaptureTime;
-#endif
+#endif // WAIT_FOR_SERIAL_INPUT 
 
   camera_fb_t *fb = NULL;
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
@@ -798,35 +844,18 @@ void loop() {
       log_e("BMP Conversion failed");
   }
 
+  blinkLed(2, 400);
   ///////////////////////////////////////////////////////////////////
   //here we pass buf as image buffer to our encoding procedure
   //second parameter true/false=enable/disable transmission of packets
-  encode_image(buf, true);
+  bool with_transmission = true;
+  encode_image(buf, with_transmission);
   //
   ///////////////////////////////////////////////////////////////////
 
   free(buf);
 
-#if defined ARDUINO_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
-  //XIAO ESP32S3 has inverted logic for the built-in led
-  digitalWrite(LED_BUILTIN, LOW);  
-  delay(200);                      
-  digitalWrite(LED_BUILTIN, HIGH);   
-  delay(200);
-  digitalWrite(LED_BUILTIN, LOW);  
-  delay(200);                      
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(200);   
-#else
-  digitalWrite(LED_BUILTIN, HIGH);  
-  delay(200);                      
-  digitalWrite(LED_BUILTIN, LOW);   
-  delay(200);
-  digitalWrite(LED_BUILTIN, HIGH);  
-  delay(200);                      
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(200); 
-#endif
+  blinkLed(2, 400);
 
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
   uint64_t fr_end = esp_timer_get_time();
@@ -837,8 +866,35 @@ void loop() {
   // LOW-POWER BLOCK - DO NOT EDIT
   ///////////////////////////////////////////////////////////////////
 
-#if defined LOW_POWER_DEEP_SLEEP || defined LOW_POWER_LIGHT_SLEEP
-  Serial.print("Switch to power saving mode\n");
+#ifdef RUN_AS_SLAVE
+  Serial.print("Run as slave, set activity pin to LOW\n");
+#ifdef ACTIVITY_PIN1   
+  digitalWrite(ACTIVITY_PIN1, LOW);
+#endif  
+#ifdef ACTIVITY_PIN2   
+  digitalWrite(ACTIVITY_PIN2, LOW);
+#endif 
+#ifdef ACTIVITY_PIN3   
+  digitalWrite(ACTIVITY_PIN3, LOW);
+#endif 
+#endif
+
+  unsigned long now_millis=millis();
+
+  Serial.println(now_millis);
+  Serial.println(nextCamCaptureTime);
+
+  // Even if we run as slave, we keep the ESP32 deep sleep just in case
+  //
+#ifdef LOW_POWER_DEEP_SLEEP
+  Serial.print("Preparing for deep sleep power saving mode\n");
+
+#ifdef WITH_LORA_MODULE
+  //CONFIGURATION_RETENTION=RETAIN_DATA_RAM on SX128X
+  //parameter is ignored on SX127X
+  LT.setSleep(CONFIGURATION_RETENTION);
+  Serial.println("Set LoRa module in deep sleep");
+#endif
 
   // esp_camera_deinit() NOT WORKING on the XIAO ESP32S3 because the power down pin is not connected
   // see https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40
@@ -846,14 +902,14 @@ void loop() {
       Serial.println("PWDN_GPIO_NUM - esp_camera_deinit() not working - too bad");
       sensor_t *s = esp_camera_sensor_get();
       // put the camera in standby mode
-      if (s->id.PID == OV2640_PID) {
+      if (s->id.PID == OV2640_PID) {         
           // https://github.com/espressif/esp32-camera/issues/672
           Serial.println("OV2640 - use register standby");
           Serial.println("sorry nothing works for now :-(");
           //s->set_reg(s, 0x109, 0x10, 0x10);
           // just to keep this information in case we need it
           // s->set_reg(s, 0x109, 0x10, 0x00);   //camera to ready
-          delay(1000);
+          //delay(1000);
       }
       if (s->id.PID == OV3660_PID || s->id.PID == OV5640_PID) {
           Serial.println("OV3660|OV5640 - use register standby");
@@ -863,7 +919,7 @@ void loop() {
           //s->set_reg(s, 0x3008, 0x40, 0x40);   //camera to standby
           // just to keep this information in case we need it
           // s->set_reg(s, 0x3008, 0x40, 0x00);   //camera to ready
-          delay(1000);
+          //delay(1000);
       }  
   }
   else {
@@ -872,18 +928,6 @@ void loop() {
       if (err != ESP_OK)
       Serial.printf("Camera deinit failed with error 0x%x", err);
   }    
-
-#ifdef WITH_LORA_MODULE
-  //CONFIGURATION_RETENTION=RETAIN_DATA_RAM on SX128X
-  //parameter is ignored on SX127X
-  LT.setSleep(CONFIGURATION_RETENTION);
-  Serial.println("Set LoRa module in deep sleep");
-#endif
-
-  unsigned long now_millis=millis();
-
-  Serial.println(now_millis);
-  Serial.println(nextCamCaptureTime);
   
   unsigned long waiting_time;
 
@@ -892,8 +936,8 @@ void loop() {
       // In case of wrapping
       Serial.print("Something wrong with sleep time, back to default\n");
 #ifdef TEST_IN_PROGRESS
-      //60s
-      interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*1000*TEST_IN_PROGRESS;
+      //60s * TEST_IN_PROGRESS
+      interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*TEST_IN_PROGRESS*1000;
 #else
       //60mins
       interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*60*1000;  
@@ -907,22 +951,32 @@ void loop() {
   // otherwise, deep sleep disconnects the serial port and Arduino IDE cannot flash anymore
   if (bootCount == 0) {
       Serial.println("First start, delay of 30s for uploading program if necessary");
+#ifdef TEST_ENERGY        
+      blinkLed(1, 800);
+#endif             
       delay(30000);
+#ifdef TEST_ENERGY        
+      blinkLed(1, 800);
+#endif   
       waiting_time = nextCamCaptureTime-millis();
   }
 
   Serial.println(waiting_time);
-
+  Serial.print("Go to deep sleep\n");
   lowPower(waiting_time);
   
   // In deep sleep mode, this code will never happen
   Serial.print("Wake from power saving mode\n");
-  LT.wake();      
-#endif
+  LT.wake();   
+#else // LOW_POWER_DEEP_SLEEP
+  Serial.print("Use delay() as power saving mode\n");
+  waiting_time = nextCamCaptureTime-millis();
+  delay(waiting_time);
+#endif // LOW_POWER_DEEP_SLEEP
 
-#else
+#else // WITH_CUSTOM_CAM
   // The original CameraWebServer example to test the camera
   // Do nothing. Everything is done in another task by the web server
   delay(10000);
-#endif
+#endif // WITH_CUSTOM_CAM
 }

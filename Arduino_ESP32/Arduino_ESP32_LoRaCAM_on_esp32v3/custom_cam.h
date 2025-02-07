@@ -38,6 +38,7 @@ extern SX128XLT LT;
 #endif
 
 extern uint8_t node_addr;
+extern void blinkLed(uint8_t n, uint16_t t);
 
 //have a LoRa module attached
 #define LORA_UCAM
@@ -82,11 +83,11 @@ extern uint8_t node_addr;
 #define MIN_PKT_SIZE                      32
 #define DEFAULT_MSS                       90
 
-#define MIN_INTER_PKT_TIME       10 // in ms
+#define MIN_INTER_PKT_TIME       500 // in ms
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // if the inter-pkt time is set to MIN_INTER_PKT_TIME, then packets are sent back-to-back, as fast as possible
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define DEFAULT_INTER_PKT_TIME   MIN_INTER_PKT_TIME+5500
+#define DEFAULT_INTER_PKT_TIME   MIN_INTER_PKT_TIME+4500
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define MIN_INTER_SNAPSHOT_TIME  5000 // in ms
