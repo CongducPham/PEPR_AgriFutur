@@ -19,10 +19,10 @@
  *****************************************************************************
  *
  *  Version:                1.0
- #  Based on ESP32 CameraWebServer and Arduino_LoRa_ucamII (https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html)
+ *  Based on ESP32 CameraWebServer and Arduino_LoRa_ucamII (https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html)
  *  Design:                 C. Pham
  *  Implementation:         C. Pham
- *  Last update:            Fev. 5th, 2025
+ *  Last update:            Fev. 8th, 2025
  *
  *  With #define WAIT_FOR_SERIAL_INPUT, for testing purposes, no deep sleep, a command starts with /@ and ends with #: /@Z40#Q40#
  *    "Z64#" -> sets the MSS size to 64, default is 90 for LoRa
@@ -35,7 +35,7 @@
  *    - to flash a new code, connect board and upload before device goes in deep sleep.
  *      a 30s window is set for such purpose before the first deep sleep period
  *    - for real low power mode, we use an external Arduino Pro Mini with a MOSFET to power cycle the LoRaCAM
-*       uncomment RUN_AS_SLAVE in ConfigSettings.h
+ *      uncomment RUN_AS_SLAVE in ConfigSettings.h. Then define and connect ACTIVITY_PIN accordingly
  */
 
 #include "esp_camera.h"
@@ -186,7 +186,7 @@ SX128XLT LT;
 *****************************/ 
 
 ///////////////////////////////////////////////////////////////////
-#ifdef LOW_POWER_DEEP_SLEEP
+#if defined LOW_POWER && defined LOW_POWER_DEEP_SLEEP
 
 #define mS_TO_uS_FACTOR 1000ULL /* Conversion factor for milli seconds to micro seconds */
 RTC_DATA_ATTR int bootCount = 0;
@@ -231,7 +231,7 @@ void lowPower(unsigned long time_ms) {
     Serial.flush();
     esp_deep_sleep_start();
 }
-#endif //defined LOW_POWER_DEEP_SLEEP
+#endif // LOW_POWER
 
 ///////////////////////////////////////////////////////////////////
 #ifdef WAIT_FOR_SERIAL_INPUT
@@ -295,11 +295,14 @@ void blinkLed(uint8_t n, uint16_t t) {
                      |_|    
 ******************************/
 
-void setup() {
-    Serial.begin(115200);
-    //while (!Serial);  // Ensure that the serial port is enabled
-    // Serial.setDebugOutput(true);
-    Serial.println();
+void setup() {  
+  Serial.begin(115200);
+  //while (!Serial);  // Ensure that the serial port is enabled
+  // Serial.setDebugOutput(true);
+#ifdef TEST_IN_PROGRESS  
+  delay(2000);
+#endif  
+  Serial.println();
 
 #ifdef RUN_AS_SLAVE
   Serial.print("Run as slave, set activity pins to HIGH\n");
@@ -679,17 +682,14 @@ void loop() {
   unsigned long nextCamCaptureTime;
 
 #ifdef RUN_AS_SLAVE
-  Serial.print("Run as slave, set activity pins to HIGH\n");
+  Serial.print("Run as slave, re-set activity pins to HIGH\n");
 #ifdef ACTIVITY_PIN1   
-  pinMode(ACTIVITY_PIN1, OUTPUT);
   digitalWrite(ACTIVITY_PIN1, HIGH);
 #endif  
 #ifdef ACTIVITY_PIN2   
-  pinMode(ACTIVITY_PIN2, OUTPUT);
   digitalWrite(ACTIVITY_PIN2, HIGH);
 #endif 
 #ifdef ACTIVITY_PIN3   
-  pinMode(ACTIVITY_PIN3, OUTPUT);
   digitalWrite(ACTIVITY_PIN3, HIGH);
 #endif 
 #endif  
@@ -812,8 +812,8 @@ void loop() {
 #else // WAIT_FOR_SERIAL_INPUT
 
 #ifdef TEST_IN_PROGRESS
-  //60s
-  interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*1000*TEST_IN_PROGRESS;
+  //60s * TEST_IN_PROGRESS
+  interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*TEST_IN_PROGRESS*1000;
 #else
   //increase the default 60s to 60mins
   interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*60*1000;  
@@ -886,7 +886,7 @@ void loop() {
 
   // Even if we run as slave, we keep the ESP32 deep sleep just in case
   //
-#ifdef LOW_POWER_DEEP_SLEEP
+#if defined LOW_POWER && defined LOW_POWER_DEEP_SLEEP
   Serial.print("Preparing for deep sleep power saving mode\n");
 
 #ifdef WITH_LORA_MODULE
@@ -916,9 +916,9 @@ void loop() {
           Serial.println("but not yet validated as working");
           // from https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40
           // but seems not to work as the camera is still heating :-(
-          //s->set_reg(s, 0x3008, 0x40, 0x40);   //camera to standby
+          //s->set_reg(s, 0x3008, 0xFF, 0x42);   //camera to standby
           // just to keep this information in case we need it
-          // s->set_reg(s, 0x3008, 0x40, 0x00);   //camera to ready
+          // s->set_reg(s, 0x3008, 0xFF, 0x02);   //camera to ready
           //delay(1000);
       }  
   }
@@ -961,8 +961,7 @@ void loop() {
       waiting_time = nextCamCaptureTime-millis();
   }
 
-  Serial.println(waiting_time);
-  Serial.print("Go to deep sleep\n");
+  Serial.printf("Go to deep sleep for %ld ms\n", waiting_time);
   lowPower(waiting_time);
   
   // In deep sleep mode, this code will never happen
@@ -971,6 +970,7 @@ void loop() {
 #else // LOW_POWER_DEEP_SLEEP
   Serial.print("Use delay() as power saving mode\n");
   waiting_time = nextCamCaptureTime-millis();
+  Serial.printf("Wait for %ld ms\n", waiting_time);
   delay(waiting_time);
 #endif // LOW_POWER_DEEP_SLEEP
 

@@ -345,7 +345,7 @@ void SendPacket() {
         //digitalWrite(capture_led, LOW);
         // here we transmit data
 
-        if (inter_binary_pkt != MIN_INTER_PKT_TIME) {
+        if (packetcount>0 && inter_binary_pkt != MIN_INTER_PKT_TIME) {
             unsigned long now_millis = millis();
 
             Serial.println(now_millis);

@@ -33,6 +33,7 @@
 
 // if the XIAO_ESP32S3_SENSE is not automatically detected
 #define MY_XIAO_ESP32S3_SENSE
+#define ACTIVITY_PIN 3 // GPIO 3 = D2/A2
 
 // if the UPESY_WROOM is not automatically detected
 //#define MY_UPESY_WROOM
@@ -85,29 +86,10 @@
                          |___/                                   
 ********************************************************************/
 
-///////////////////////////////////////////////////////////////////
-// COMMENT OR UNCOMMENT TO CHANGE FEATURES. 
-// ONLY IF YOU KNOW WHAT YOU ARE DOING!!! OTHERWISE LEAVE AS IT IS
-// 
-// FOR UPLINK WITH ONLY AES ENCRYTION: uncomment WITH_AES
-// FOR UPLINK TO LORAWAN CLOUD ENCAPSULATED LORAWAN FORMAT: uncomment WITH_AES & EXTDEVADDR 
-// FOR UPLINK TO LORAWAN CLOUD NATIVE LORAWAN FORMAT: uncomment LORAWAN in RadioSettings.h
-// FOR UPLINK TO LORAWAN CLOUD AND DOWNLINK WITH NATIVE LORAWAN FORMAT: uncomment LORAWAN in RadioSettings.h & WITH_RCVW
-// 
-// more info: https://github.com/CongducPham/LowCostLoRaGw/blob/master/gw_full_latest/README-aes_lorawan.md
-//
-// DEFAULT CONFIGURATION: SF12BW125, no encryption, no LoRaWAN, no downlink
-//
 //#define WITH_EEPROM
-////////////////////////////
-//add 4-byte AppKey filtering - only for non-LoRaWAN mode
-//#define WITH_APPKEY
 ////////////////////////////
 //request an ack from gateway - only for non-LoRaWAN mode
 //#define WITH_ACK
-////////////////////////////
-//if you are low on program memory, comment STRING_LIB to save about 2K
-//#define STRING_LIB
 ////////////////////////////
 //#define LOW_POWER
 #define LOW_POWER_DEEP_SLEEP
@@ -115,9 +97,6 @@
 ////////////////////////////
 //Use LoRaWAN AES-like encryption
 //#define WITH_AES
-////////////////////////////
-//If you want to upload to LoRaWAN cloud without pure LoRaWAN format you have to provide a 4 bytes DevAddr and uncomment #define EXTDEVADDR
-//#define EXTDEVADDR
 ////////////////////////////
 //this will enable a receive window after every transmission, uncomment it to also have LoRaWAN downlink
 //#define WITH_RCVW
@@ -129,22 +108,6 @@
 //#define MY_FREQUENCY 868100000
 //#define MY_FREQUENCY 433170000
 ////////////////////////////
-//when sending to a LoRaWAN gateway (e.g. running util_pkt_logger) but with no native LoRaWAN format, just to set the correct sync word
-//#define PUBLIC_SYNCWORD
-////////////////////////////
-
-///////////////////////////////////////////////////////////////////
-// ADD HERE OTHER PLATFORMS THAT DO NOT SUPPORT EEPROM
-#if defined ARDUINO_SAM_DUE || defined _VARIANT_ARDUINO_DUE_X_ || defined __SAMD21G18A__
-#undef WITH_EEPROM
-#endif
-
-///////////////////////////////////////////////////////////////////
-// ADD HERE OTHER PLATFORMS THAT DO NOT SUPPORT LOW POWER LIB
-#if defined ARDUINO_SAM_DUE || defined _VARIANT_ARDUINO_DUE_X_ || defined ARDUINO_ARCH_ASR650X
-#undef LOW_POWER
-#endif
-///////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE NODE ADDRESS 
@@ -154,16 +117,8 @@ uint8_t node_addr=8;
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE TIME IN MINUTES BETWEEN 2 READING & TRANSMISSION
 unsigned int idlePeriodInMin = 0;
-unsigned int idlePeriodInSec = 45;
+unsigned int idlePeriodInSec = 30;
 ///////////////////////////////////////////////////////////////////
-
-#ifdef WITH_APPKEY
-///////////////////////////////////////////////////////////////////
-// CHANGE HERE THE APPKEY, BUT IF GW CHECKS FOR APPKEY, MUST BE
-// IN THE APPKEY LIST MAINTAINED BY GW.
-uint8_t my_appKey[4]={5, 6, 7, 8};
-///////////////////////////////////////////////////////////////////
-#endif
 
 ///////////////////////////////////////////////////////////////////
 // ENCRYPTION CONFIGURATION AND KEYS FOR LORAWAN
@@ -178,7 +133,7 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 
 ///////////////////////////////////////////////////////////////////
 // LORAWAN OR EXTENDED DEVICE ADDRESS FOR LORAWAN CLOUD
-#if defined LORAWAN || defined EXTDEVADDR
+#if defined LORAWAN
 ///////////////////////////////////////////////////////////////////
 //ENTER HERE your Device Address from the TTN device info (same order, i.e. msb). Example for 0x12345678
 //unsigned char DevAddr[4] = { 0x12, 0x34, 0x56, 0x78 };
@@ -333,8 +288,6 @@ long getCmdValue(int &i, char* cmdstr, char* strBuff=NULL) {
 }   
 #endif
 
-#ifndef STRING_LIB
-
 char *ftoa(char *a, double f, int precision)
 {
  long p[] = {0,10,100,1000,10000,100000,1000000,10000000,100000000};
@@ -351,7 +304,6 @@ char *ftoa(char *a, double f, int precision)
  itoa(desimal, a, 10);
  return ret;
 }
-#endif
 
 #ifdef LOW_POWER
 
@@ -392,6 +344,23 @@ void lowPower(unsigned long time_ms) {
 }
 #endif
 
+void blinkLed(uint8_t n, uint16_t t) {
+    for (int i = 0; i < n; i++) {
+#if defined ARDUINO_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
+        //XIAO ESP32S3 has inverted logic for the built-in led
+        digitalWrite(LED_BUILTIN, LOW);  
+        delay(t);                      
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(t);      
+#else
+        digitalWrite(LED_BUILTIN, HIGH);  
+        delay(t);;                      
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(t);
+#endif   
+    }
+}
+
 /*****************************
  _____      _               
 /  ___|    | |              
@@ -403,23 +372,24 @@ void lowPower(unsigned long time_ms) {
                      |_|    
 ******************************/
 
-#ifdef ARDUINO_ARCH_ASR650X
-void onWakeUp() { }
-#endif
-
 void setup()
 {
 
   Serial.begin(115200);  
-  while(!Serial);//Ensure that the serial port is enabled
+  //while(!Serial);//Ensure that the serial port is enabled
   
+#ifdef ACTIVITY_PIN   
+  pinMode(ACTIVITY_PIN, OUTPUT);
+  digitalWrite(ACTIVITY_PIN, HIGH);
+#endif 
+
   // Print a start message
   PRINT_CSTSTR("LoRa + Low Power test for ESP32\n");
 
 // See http://www.nongnu.org/avr-libc/user-manual/using_tools.html
 // for the list of define from the AVR compiler
 
-#ifdef ESP32
+#ifdef ARDUINO_ARCH_ESP32
   PRINT_CSTSTR("ESP32 detected\n");
 #endif 
 #if defined ARDUINO_Heltec_WIFI_LoRa_32 || defined ARDUINO_WIFI_LoRa_32  || defined HELTEC_LORA
@@ -437,7 +407,7 @@ void setup()
 #if defined ESP32_DEV || defined MY_ESP32_CAM
   PRINT_CSTSTR("ESP32-CAM variant\n");
 #endif
-#if defined ESP32S3_DEV || defined MY_FREENOVE_ESP32S3_CAM
+#if defined ARDUINO_ESP32S3_DEV || defined MY_FREENOVE_ESP32S3_CAM
   PRINT_CSTSTR("FREENOVE_ESP32S3_CAM variant\n");
 #endif
 #if defined MY_FREENOVE_ESP32_CAM_DEV || defined MY_NONAME_ESP32_CAM_DEV
@@ -452,9 +422,7 @@ void setup()
   pinMode(12, OUTPUT);
   pinMode(13, INPUT);
   pinMode(4, OUTPUT);
-
   delay(10); // Important delay for some GPIO that need to be 0 at the beginning
-
   //        SCK, MISO, MOSI, CS/SS 
   SPI.begin(12,  13,   4,   16);
   // TODO: it is still not working :-(
@@ -467,34 +435,25 @@ void setup()
   pinMode(1, OUTPUT); //GPIO 1 = D0
   pinMode(4, INPUT);  //GPIO 4 = D3
   pinMode(5, OUTPUT); //GPIO 5 = D4
-
   delay(10); 
-
   //        SCK, MISO, MOSI, CS/SS 
   SPI.begin(1,   4,    5,    2);
-
 #elif defined MY_FREENOVE_ESP32S3_CAM
   pinMode(21, OUTPUT); //GPIO 21 = 21
   pinMode(47, OUTPUT); //GPIO 47 = 47
   pinMode(42, INPUT);  //GPIO 42 = 42
   pinMode(41, OUTPUT); //GPIO 41 = 41
-
   delay(10); 
-
   //        SCK, MISO,  MOSI, CS/SS 
   SPI.begin(47,  42,    41,   21);  
-
 #elif MY_FREENOVE_ESP32_CAM_DEV || defined MY_NONAME_ESP32_CAM_DEV
   pinMode(32, OUTPUT);
   pinMode(12, OUTPUT); 
   pinMode(13, INPUT);  
   pinMode(14, OUTPUT);
-
   delay(10); 
-
   //        SCK, MISO,  MOSI, CS/SS 
   SPI.begin(12,  13,    14,   32);  
-
 #else
   //start SPI bus communication
   SPI.begin();
@@ -631,7 +590,7 @@ void setup()
 *******************************************************************************************************/
 
 #ifdef WITH_EEPROM
-#if defined ARDUINO_ESP8266_ESP01 || defined ARDUINO_ESP8266_NODEMCU || defined ARDUINO_ARCH_ASR650X || defined ESP32 || defined MY_UPESY_WROOM
+#if defined ESP32
   EEPROM.begin(512);
 #endif
   // get config from EEPROM
@@ -719,7 +678,15 @@ void setup()
   // Print a success message
   PRINT_CSTSTR(" successfully configured\n");
 
-  //printf_begin();
+  pinMode(LED_BUILTIN, OUTPUT);
+  
+#if defined ARDUINO_XIAO_ESP32S3 || defined MY_XIAO_ESP32S3_SENSE
+  //XIAO ESP32S3 has inverted logic for the built-in led                     
+  digitalWrite(LED_BUILTIN, HIGH);  
+#else             
+  digitalWrite(LED_BUILTIN, LOW);
+#endif    
+
   delay(500);
 }
 
@@ -742,10 +709,17 @@ void loop(void)
   uint8_t app_key_offset=0;
   int e;
   float temp;
-  
+
 #ifndef LOW_POWER
   // 600000+random(15,60)*1000
   if (millis() > nextTransmissionTime) {
+
+#ifdef ACTIVITY_PIN   
+      PRINT_CSTSTR("Set activity pin to HIGH and wait for 5s\n");
+      digitalWrite(ACTIVITY_PIN, HIGH);
+      delay(5000);
+#endif
+
 #else
       //time for next wake up
       nextTransmissionTime=millis()+((idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
@@ -765,25 +739,15 @@ void loop(void)
 
       // for testing, uncomment if you just want to test, without a real temp sensor plugged
       temp = 22.5;
-      
-#if defined WITH_APPKEY && not defined LORAWAN
-      app_key_offset = sizeof(my_appKey);
-      // set the app key in the payload
-      memcpy(message,my_appKey,app_key_offset);
-#endif
 
       uint8_t r_size;
 
       // the recommended format if now \!TC/22.5
-#ifdef STRING_LIB
-      r_size=sprintf((char*)message+app_key_offset,"\\!TC/%s",String(temp).c_str());
-#else
       char float_str[10]; 
       //dtostrf takes about 1300 byte of program space more than our ftoa() procedure
       //dtostrf((float)temp, 4, 2, float_str);      
       ftoa(float_str,temp,2);
       r_size=sprintf((char*)message+app_key_offset,"\\!TC/%s",float_str);
-#endif
 
       PRINT_CSTSTR("Sending ");
       PRINT_STR("%s",(char*)(message+app_key_offset));
@@ -1140,6 +1104,12 @@ void loop(void)
         PRINT_CSTSTR("No downlink\n");
 #endif
 
+      blinkLed(2, 400);
+#ifdef ACTIVITY_PIN   
+      PRINT_CSTSTR("Set activity pin to LOW\n");
+      digitalWrite(ACTIVITY_PIN, LOW);
+#endif
+
 ///////////////////////////////////////////////////////////////////
 // LOW-POWER BLOCK - DO NOT EDIT
 // 
@@ -1163,6 +1133,14 @@ void loop(void)
         
       unsigned long waiting_t = nextTransmissionTime-now_millis;
 
+      // When testing in deep sleep mode, we wait 30s to allow flashing a new code if necessary
+      // otherwise, deep sleep disconnects the serial port and Arduino IDE cannot flash anymore
+      if (bootCount == 0) {
+          PRINT_CSTSTR("First start, delay of 30s for uploading program if necessary\n");           
+          delay(30000);  
+          waiting_time = 0;
+      }
+
       PRINTLN_VALUE("%ld",waiting_t);
       FLUSHOUTPUT;
 
@@ -1170,8 +1148,9 @@ void loop(void)
       
       PRINT_CSTSTR("Wake from power saving mode\n");
       LT.wake();      
-#else
+#else // #ifndef LOW_POWER
       PRINTLN;
+      PRINTLN_VALUE("%ld", millis());
       PRINT_CSTSTR("Will send next value at\n");
       // can use a random part also to avoid collision
       nextTransmissionTime=millis()+((idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
