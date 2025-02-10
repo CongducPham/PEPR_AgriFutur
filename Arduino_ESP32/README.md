@@ -16,7 +16,11 @@ The choice was finally set to the `XIAO ESP32-S3 Sense` which has a huge develop
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32S3-LoRaCam-PoC.jpg" width="400">
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_1.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_2.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_3.jpg" width="200">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_4.png" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_1.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_2.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_3.jpg" width="200">
+
+The LoRa radio module is a Modtronix inAir9 (868MHz band) based on Semtech SX1276 chip but you can use an RFM95W for instance with a breakout board (see for instance the PCBs developed in our seminal works on DIY LoRa, [https://github.com/CongducPham/LowCostLoRaGw](https://github.com/CongducPham/LowCostLoRaGw)). We actually bought many of those Modtronix inAir4/9/9B, back in 2015 when we started our activities on LoRa and when these radio modules were one of the first LoRa modules available on the market. Then, for integration purposes, we moved to the RFM95 radio modules that can be soldered on custom PCBs. So it is good that we can give these inAir modules a second life as with the `XIAO ESP32-S3 Sense` there is little need to design a custom PCB for integration purpose.
+
+As back-to-back transmission of image packets with LoRa may not be allowed by LoRaWAN radio module, we prefer to use a raw LoRa radio module (for instance instead of a RAK3172 radio module) in order to be able to optimize the whole LoRa transmission process, including for instance implementing innovative and efficient channel access control mechanisms to limit packet collisions.
 
 ## Low Power LoRaCAM?
 
