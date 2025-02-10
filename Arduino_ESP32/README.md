@@ -1,11 +1,36 @@
-Introduction on LoRaCAM prototyping and development process
-==
+# Introduction on LoRaCAM prototyping and development process
 
 In the PEPR AgriFutur project, in addition to more traditional sensors (soil humidity/temperature, air temperature/humidity, C02, ...) we will develop an ESP32S3-based advanced image sensor with LoRa transmission and embedded AI capabilities. We call it LoRaCAM. The objective is to used such image device to capture more advanced environmental conditions in order to better qualify and quantify the impact of agroecological practices.
 
 The work presented here is an update of our previous works on image transmission, first using IEEE 802.15.4 back in 2014, then LoRa in 2016:  [https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html). Now, we will use state-of-the-art ESP32 microcontrollers to control the camera and run embedded AI processing.
 
 The proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in this previous [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses. 
+
+## Which ESP32 Cam board?
+
+We tested several ESP32-based camera boards. The main criterion was to have enough pins left to connect an SPI LoRa radio module. 3 boards offer this capabilities: `Freenove ESP32-S3 WROOM`, `Freenove ESP32 WROVER v1.6` and `XIAO ESP32-S3 Sense`. 
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32-camera-board.png" width="600">
+
+The choice was finally set to the `XIAO ESP32-S3 Sense` which has a huge developer community and enough resource to run some embedded AI processing that we want to add in the future, and all this in a quite compact format. The current PoC based on the XIAO ESP32S3 Sense board is shown below. It will be improved over the duration of the project.
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32S3-LoRaCam-PoC.jpg" width="400">
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_1.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_2.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_3.jpg" width="200">
+
+## Low Power LoRaCAM?
+
+Using a camera, processing the image and eventually transmitting image packets definitely consume more then a simple sensor. It is important to have efficient low power solutions for running LoRaCAM on batteries for several months. Unfortunately, we were not able simply put the `XIAO ESP32-S3 Sense` in an efficient low power mode. It seems that the hardware power down method is not possible on that platform because the power down wire line is actually not connected. See for instance this [discussion thread](https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40) on Seeedstudio forum. Using software method (using `set_reg()` for instance) is not working neither, at least with the test we conducted. Maybe we missed something but it is not working. So the solution we are implementing at the moment is to use an Arduino Pro Mini to drive a MOSFET to power ON/OFF the LoRaCAM. It means that LoRaCAM will have a cold start each time it is waked up (actually power up) by the Arduino. It is however not that limiting as the deep sleep mode of ESP32S3 would have lead to the same behavior. The proposed wiring is illustrated below. 
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/XIAO-ESP32S3-Sense-wiring.png" width="800">
+
+The MOSFET is the BS170 N-channel which can support up to 500mA. In all our tests, a maximum of 180mA was reached when transmitting the packets with LoRa radio so normally an 2N7000 MOSFET rated at 200mA would also do. We use a prototyping board to connect everything (maybe we will design a dedicated PCB but it is not sure as the wiring is very simple) as illustrated below.
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/XIAO-ESP32S3-Sense-wiring-breadboard.png" width="800">
+
+In this wiring, you can see that D2 from the `XIAO ESP32-S3 Sense` is connected to A0 on the Arduino. When power up and active, LoRaCAM will set D2 to HIGH until all tasks are finished, i.e. capture the image, process and analyse the image, eventually encode the image and transmit the image packets. Then, when D2 is set to LOW by LoRaCAM, the Arduino will power down the entire system. The code for the Arduino would define the deep sleep period. With low power settings (power regulator and activity LED removed), the Arduino Pro Mini at 3.3V and 8MHz have a deep sleep current on 5uA which is very low. **Pictures of this design will be available soon**.
+
+# Tools
 
 In the following section, we are presenting the main tools, that have been updated, and that are intended to be used on a computer to test the image tool chain:
 
@@ -19,12 +44,7 @@ In the following section, we are presenting the main tools, that have been updat
 
 **Converting to BMP with ESP32S3**: Most of OVXXXX cameras that will be connected to the ESP32S3 (such as the OV2640) have built-in JPEG encoding capabilities and therefore will easily provide the capture image in JPEG format. With small image size and grayscale, the camera can also directly provide a frame buffer with raw image data. Anyway, the ESP32 camera lib provides conversion functions to easily convert from JPEG to BMP if needed (see usage of `fmt2bmp` in [https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c](https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c) for instance). Once the image is in BMP, it is easy to apply the proposed image encoding format, transmit each generated packet with LoRa and decode back to BMP at the receiver (e.g. the gateway for instance).
 
-**Which ESP32 Cam board?**: We tested several ESP32-based camera boards. The main criterion was to have enough pins left to connect an SPI LoRa radio module. 3 boards offer this capabilities: `Freenove ESP32-S3 WROOM`, `Freenove ESP32 WROVER v1.6` and `XIAO ESP32-S3 Sense`. The choice was finally set to the `XIAO ESP32-S3 Sense` which has a huge developer community and enough resource to run some embedded AI processing that we want to add in the future, and all this in a quite compact format.
-
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32-camera-board.png" width="600">
-
-A/ Encoding a BMP image
-==
+## Encoding a BMP image
 
 The `JPEGencoding.c` program is used to create a `.dat` file that will contain in text format the various packets to emulate the sending of encoded image packet by the image sensor using an optimized JPEG-like encoding technique. The author of the core components of the program is Vincent Lecuire, CRAN UMR 7039, Nancy-Université, CNRS. It has been slightly modified by C. Pham to add some useful features to automatize a number of steps. A reference to the article on the encoding technique is:
 
@@ -79,8 +99,7 @@ where the XXXX indicates the number of samples (XX) that are in the packet. The 
 
 The program produce a `.dat` file which name is composed of the MSS, the quality factor, the number packets and the real size in bytes, e.g.: `desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat`.
 
-B/ Decoding into BMP
-==
+## Decoding into BMP
 
 `decode_to_bmp.c` is a standalone image decoding command line tool that decodes in BMP format an image that has been compressed by our image sensor platform (see previous documentation as well: [http://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html](http://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html). 
 
@@ -103,8 +122,7 @@ Then the BMP image will be named:
 
 	decode-desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat-1-0003-1-P8-S1759.bmp
 	
-Parameters
---
+**Parameters:**
 
 	-SN n: indicate an image sequence number n
 	-src a: indicates a source image sensor address
@@ -112,14 +130,9 @@ Parameters
 	file_to_decode: this the .dat file from encoder
 	palette_image_file: can be the original BMP file or a palette BMP file to get palette color info 	
 	
-Decoding a real image capture from XIAO ESP32S3 Sense	
---	
+### Decoding a real image capture from XIAO ESP32S3 Sense	
 
-The PoC based on the XIAO ESP32S3 Sense board.
-
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32S3-LoRaCam-PoC.jpg" width="400">
-
-It can output the following encoded data in the Serial Monitor for an 128x128 grayscale BMP image:
+The PoC can output the following encoded data in the Serial Monitor for an 128x128 grayscale BMP image:
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png" width="700">
 
@@ -136,9 +149,10 @@ It is displayed below as PNG file for GitHub with the original size of both 128x
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.png" width="128">
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.png" width="400">
+
+**Of course, we will develop software at the gateway side to be able to receive, reconstruct the encoded image, decode the image and display the image in the next months.**
 	
-C/ Emulate sending and add packet drop
-==
+## Emulate sending and add packet drop
 
 `drop_img_pkt.c` can emulate the sending by writing in a file the packets, just like they have been sent. 
 
