@@ -1,5 +1,7 @@
 /*
- *  LoRaCAM takes picture, encode and send image with LoRa
+ *  LoRaCAM-AI takes picture, encode, process and send image with LoRa 
+ *  
+ *  Will integrate AI image recognition for various agriculture applications
  *
  *  Copyright (C) 2025 Congduc Pham
  *
@@ -22,7 +24,7 @@
  *  Based on ESP32 CameraWebServer and Arduino_LoRa_ucamII (https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html)
  *  Design:                 C. Pham
  *  Implementation:         C. Pham
- *  Last update:            Fev. 8th, 2025
+ *  Last update:            Fev. 14th, 2025
  *
  *  With #define WAIT_FOR_SERIAL_INPUT, for testing purposes, no deep sleep, a command starts with /@ and ends with #: /@Z40#Q40#
  *    "Z64#" -> sets the MSS size to 64, default is 90 for LoRa
@@ -34,7 +36,7 @@
  *    - deep sleep between capture, similar to full reset (deep sleep of camera not fully validated yet)
  *    - to flash a new code, connect board and upload before device goes in deep sleep.
  *      a 30s window is set for such purpose before the first deep sleep period
- *    - for real low power mode, we use an external Arduino Pro Mini with a MOSFET to power cycle the LoRaCAM
+ *    - for real low power mode, we use an external Arduino Pro Mini with a MOSFET to power cycle the LoRaCAM-AI
  *      uncomment RUN_AS_SLAVE in ConfigSettings.h. Then define and connect ACTIVITY_PIN accordingly
  */
 
@@ -93,7 +95,7 @@ void setupLedFlash(int pin);
 // LoRa + custom cam with optimized image encoding
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nNewGen LoRaCAM Sensor – Jan. 29th, 2025. C. Pham, UPPA, France\n"
+#define BOOT_START_MSG  "\nNewGen LoRaCAM-AI Sensor – Feb. 14th, 2025. C. Pham, UPPA, France\n"
 
 #ifdef WITH_CUSTOM_CAM
 #include "custom_cam.h"
@@ -844,6 +846,43 @@ void loop() {
       log_e("BMP Conversion failed");
   }
 
+#if defined LOW_POWER && defined LOW_POWER_DEEP_SLEEP
+  Serial.print("Set camera in deep sleep power saving mode\n");
+
+  // esp_camera_deinit() NOT WORKING on the XIAO ESP32S3 because the power down pin is not connected
+  // see https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40
+  if (PWDN_GPIO_NUM == -1) {
+      Serial.println("PWDN_GPIO_NUM - esp_camera_deinit() not working - too bad");
+      sensor_t *s = esp_camera_sensor_get();
+      // put the camera in standby mode
+      if (s->id.PID == OV2640_PID) {         
+          // https://github.com/espressif/esp32-camera/issues/672
+          Serial.println("OV2640 - use register standby");
+          Serial.println("sorry nothing works for now :-(");
+          //s->set_reg(s, 0x109, 0x10, 0x10);
+          // just to keep this information in case we need it
+          // s->set_reg(s, 0x109, 0x10, 0x00);   //camera to ready
+          //delay(1000);
+      }
+      if (s->id.PID == OV3660_PID || s->id.PID == OV5640_PID) {
+          Serial.println("OV3660|OV5640 - use register standby");
+          Serial.println("but not yet validated as working");
+          // from https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40
+          // but seems not to work as the camera is still heating :-(
+          //s->set_reg(s, 0x3008, 0xFF, 0x42);   //camera to standby
+          // just to keep this information in case we need it
+          // s->set_reg(s, 0x3008, 0xFF, 0x02);   //camera to ready
+          //delay(1000);
+      }  
+  }
+  else {
+      // close camera
+      esp_err_t err = esp_camera_deinit();
+      if (err != ESP_OK)
+      Serial.printf("Camera deinit failed with error 0x%x", err);
+  }    
+#endif
+
   blinkLed(2, 400);
   ///////////////////////////////////////////////////////////////////
   //here we pass buf as image buffer to our encoding procedure
@@ -895,39 +934,6 @@ void loop() {
   LT.setSleep(CONFIGURATION_RETENTION);
   Serial.println("Set LoRa module in deep sleep");
 #endif
-
-  // esp_camera_deinit() NOT WORKING on the XIAO ESP32S3 because the power down pin is not connected
-  // see https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40
-  if (PWDN_GPIO_NUM == -1) {
-      Serial.println("PWDN_GPIO_NUM - esp_camera_deinit() not working - too bad");
-      sensor_t *s = esp_camera_sensor_get();
-      // put the camera in standby mode
-      if (s->id.PID == OV2640_PID) {         
-          // https://github.com/espressif/esp32-camera/issues/672
-          Serial.println("OV2640 - use register standby");
-          Serial.println("sorry nothing works for now :-(");
-          //s->set_reg(s, 0x109, 0x10, 0x10);
-          // just to keep this information in case we need it
-          // s->set_reg(s, 0x109, 0x10, 0x00);   //camera to ready
-          //delay(1000);
-      }
-      if (s->id.PID == OV3660_PID || s->id.PID == OV5640_PID) {
-          Serial.println("OV3660|OV5640 - use register standby");
-          Serial.println("but not yet validated as working");
-          // from https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40
-          // but seems not to work as the camera is still heating :-(
-          //s->set_reg(s, 0x3008, 0xFF, 0x42);   //camera to standby
-          // just to keep this information in case we need it
-          // s->set_reg(s, 0x3008, 0xFF, 0x02);   //camera to ready
-          //delay(1000);
-      }  
-  }
-  else {
-      // close camera
-      esp_err_t err = esp_camera_deinit();
-      if (err != ESP_OK)
-      Serial.printf("Camera deinit failed with error 0x%x", err);
-  }    
   
   unsigned long waiting_time;
 

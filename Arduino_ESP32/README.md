@@ -1,6 +1,6 @@
-# Introduction on LoRaCAM prototyping and development process
+# Introduction on LoRaCAM-AI prototyping and development process
 
-In the PEPR AgriFutur project, in addition to more traditional sensors (soil humidity/temperature, air temperature/humidity, C02, ...) we will develop an ESP32S3-based advanced image sensor with LoRa transmission and embedded AI capabilities. We call it LoRaCAM. The objective is to used such image device to capture more advanced environmental conditions in order to better qualify and quantify the impact of agroecological practices.
+In the PEPR AgriFutur project, in addition to more traditional sensors (soil humidity/temperature, air temperature/humidity, C02, ...) we will develop an ESP32S3-based advanced image sensor with LoRa transmission and embedded AI capabilities. We call it LoRaCAM-AI. The objective is to used such image device to capture more advanced environmental conditions in order to better qualify and quantify the impact of agroecological practices.
 
 The work presented here is an update of our previous works on image transmission, first using IEEE 802.15.4 back in 2014, then LoRa in 2016:  [https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html). Now, we will use state-of-the-art ESP32 microcontrollers to control the camera and run embedded AI processing.
 
@@ -8,11 +8,11 @@ The proposed image encoding format is adapted to low bandwidth and lossy network
 
 ## Which ESP32 Cam board?
 
-We tested several ESP32-based camera boards. The main criterion was to have enough pins left to connect an SPI LoRa radio module. 3 boards offer this capabilities: `Freenove ESP32-S3 WROOM`, `Freenove ESP32 WROVER v1.6` and `XIAO ESP32-S3 Sense`. 
+We tested several ESP32-based camera boards. The main criterion was to have enough pins left to easily connect an SPI LoRa radio module. 3 boards offer this capabilities: `Freenove ESP32-S3 WROOM`, `Freenove ESP32 WROVER v1.6` and `XIAO ESP32-S3 Sense`. 
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32-camera-board.png" width="600">
 
-The choice was finally set to the `XIAO ESP32-S3 Sense` which has a huge developer community and enough resource to run some embedded AI processing that we want to add in the future, and all this in a quite compact format. The current PoC based on the XIAO ESP32S3 Sense board is shown below. It will be improved over the duration of the project. The source code is in the [Arduino_ESP32_LoRaCAM_on_esp32v3 folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_ESP32_LoRaCAM_on_esp32v3). 
+The choice was finally set to the `XIAO ESP32-S3 Sense` which has a huge developer community and enough resource to run some embedded AI processing that we want to add in the future, and all this in a quite compact format. The current PoC based on the XIAO ESP32S3 Sense board is shown below. It will be improved over the duration of the project. The source code is in the [Arduino_ESP32_LoRaCAM_AI_on_esp32v3 folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_ESP32_LoRaCAM_AI_on_esp32v3). 
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32S3-LoRaCam-PoC.jpg" width="400">
 
@@ -20,11 +20,11 @@ The choice was finally set to the `XIAO ESP32-S3 Sense` which has a huge develop
 
 The LoRa radio module is a Modtronix inAir9 (868MHz band) based on Semtech SX1276 chip but you can use an RFM95W for instance with a breakout board. See for instance the PCBs developed in our seminal works on DIY LoRa, [https://github.com/CongducPham/LowCostLoRaGw](https://github.com/CongducPham/LowCostLoRaGw), but there are many other breakout boards for RFM9x from the maker communities. We actually bought many of those Modtronix inAir4/9/9B, back in 2015 when we started our activities on LoRa, and when these radio modules from the Australian company were one of the first LoRa modules available on the market. Then, for integration purposes, we moved to the RFM95 radio modules that can be soldered on custom PCBs. So it is good that we can give these inAir modules a second life as with the `XIAO ESP32-S3 Sense` there is little need to design a custom PCB for integration purpose.
 
-As back-to-back transmission of image packets with LoRa may not be allowed by LoRaWAN radio module, we prefer to use a raw LoRa radio module (instead of a LoRaWAN RAK3172 radio module for instance) in order to be able to optimize the whole LoRa transmission process, including implementing innovative and efficient channel access control mechanisms to limit packet collisions between several LoRaCAM devices.
+As back-to-back transmission of image packets with LoRa may not be allowed by LoRaWAN radio module, we prefer to use a raw LoRa radio module (instead of a LoRaWAN RAK3172 radio module for instance) in order to be able to optimize the whole LoRa transmission process, including implementing innovative and efficient channel access control mechanisms to limit packet collisions between several LoRaCAM-AI devices.
 
-## Low Power LoRaCAM?
+## Low Power LoRaCAM-AI?
 
-Using a camera, processing the image and eventually transmitting image packets definitely consume more than a simple sensor. It is important to have efficient low power solutions for running LoRaCAM on batteries for several months. Unfortunately, we were not able simply put the `XIAO ESP32-S3 Sense` in an efficient low power mode. It seems that the hardware power down method is not possible on that platform because the power down wire line is actually not connected. See for instance this [discussion thread](https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40) on Seeedstudio forum. Using software method (using `set_reg()` for instance) is not working neither, at least with the test we conducted. Maybe we missed something but it is not working. So the solution we are implementing at the moment is to use an Arduino Pro Mini to drive a MOSFET to power ON/OFF the LoRaCAM. It means that LoRaCAM will have a cold start each time it is waked up (actually power up) by the Arduino. It is however not that limiting as the deep sleep mode of ESP32S3 would have lead to the same behavior. The proposed wiring is illustrated below. 
+Using a camera, processing the image and eventually transmitting image packets definitely consume more than a simple sensor. It is important to have efficient low power solutions for running LoRaCAM-AI on batteries for several months. Unfortunately, we were not able simply put the `XIAO ESP32-S3 Sense` in an efficient low power mode. It seems that the hardware power down method is not possible on that platform because the power down wire line is actually not connected. See for instance this [discussion thread](https://forum.seeedstudio.com/t/xiao-esp32s3-sense-camera-sleep-current/271258/40) on Seeedstudio forum. Using software method (using `set_reg()` for instance) is not working neither, at least with the test we conducted. Maybe we missed something but it is not working. So the solution we are implementing at the moment is to use an Arduino Pro Mini to drive a MOSFET to power ON/OFF the LoRaCAM-AI. It means that LoRaCAM-AI will have a cold start each time it is waked up (actually power up) by the Arduino. It is however not that limiting as the deep sleep mode of ESP32S3 would have lead to the same behavior. The proposed wiring is illustrated below. 
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/XIAO-ESP32S3-Sense-wiring.png" width="800">
 
@@ -32,9 +32,11 @@ The MOSFET is the BS170 N-channel which can support up to 500mA. In all our test
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/XIAO-ESP32S3-Sense-wiring-breadboard.png" width="800">
 
-In this wiring, you can see that D2 from the `XIAO ESP32-S3 Sense` is connected to A0 on the Arduino. When power up and active, LoRaCAM will set D2 to HIGH until all tasks are finished, i.e. capture the image, process and analyse the image, eventually encode the image and transmit the image packets. Then, when D2 is set to LOW by LoRaCAM, the Arduino will power down the entire system. The code for the Arduino would define the deep sleep period. With low power settings (power regulator and activity LED removed), the Arduino Pro Mini at 3.3V and 8MHz have a deep sleep current on 5uA which is very low. The source code of the control part is in the [Arduino_CTRL_MOSFET folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_CTRL_MOSFET). 
+In this wiring, you can see that D2 from the `XIAO ESP32-S3 Sense` is connected to A0 on the Arduino. When power up and active, LoRaCAM-AI will set D2 to HIGH until all tasks are finished, i.e. capture the image, process and analyse the image, eventually encode the image and transmit the image packets. Then, when D2 is set to LOW by LoRaCAM-AI, the Arduino will power down the entire system. The code for the Arduino would define the deep sleep period. With low power settings (power regulator and activity LED removed), the Arduino Pro Mini at 3.3V and 8MHz have a deep sleep current of about 5uA which is very low. The source code of the control part is in the [Arduino_CTRL_MOSFET folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_CTRL_MOSFET). **In the code, the deep sleep (`offPeriod`) has been set to 30s for test**.
 
-**Pictures of this design will be available soon**.
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_5.png" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_6.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_7.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_8.jpg" width="200">
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_9.png" width="350"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_10.jpg" width="350">
 
 # Tools
 

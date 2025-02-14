@@ -13,7 +13,7 @@
     #define WITH_LORA_MODULE
     //#define WAIT_FOR_SERIAL_INPUT
     // replace LOW_POWER as an external microcontroller will control the power cycling
-    //#define RUN_AS_SLAVE
+    #define RUN_AS_SLAVE
     // with RUN_AS_SAVE, will indicate activity with this pin set to HIGH
     //#define ACTIVITY_PIN1 41 // GPIO 41 = D12    
     //#define ACTIVITY_PIN2 42 // GPIO 42 = D11

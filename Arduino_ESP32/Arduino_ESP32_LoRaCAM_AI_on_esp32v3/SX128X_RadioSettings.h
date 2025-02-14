@@ -1,15 +1,8 @@
 #ifndef SX128X_RADIO_SETTINGS
 #define SX128X_RADIO_SETTINGS
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// add here some specific board define statements if you want to implement user-defined specific settings
-// A/ LoRa radio node from IoTMCU: https://www.tindie.com/products/IOTMCU/lora-radio-node-v10/
-//#define IOTMCU_LORA_RADIO_NODE
 // uncomment if you are sure you have an Heltec LoRa board and that it is not detected
 //#define HELTEC_LORA
-// uncomment if you are sure you have an ESP8266 board and that it is not detected
-//#define ESP8266
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*******************************************************************************************************
   Based from SX12XX example - Stuart Robinson 
