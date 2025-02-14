@@ -34,9 +34,9 @@ The MOSFET is the BS170 N-channel which can support up to 500mA. In all our test
 
 In this wiring, you can see that D2 from the `XIAO ESP32-S3 Sense` is connected to A0 on the Arduino. When power up and active, LoRaCAM-AI will set D2 to HIGH until all tasks are finished, i.e. capture the image, process and analyse the image, eventually encode the image and transmit the image packets. Then, when D2 is set to LOW by LoRaCAM-AI, the Arduino will power down the entire system. The code for the Arduino would define the deep sleep period. With low power settings (power regulator and activity LED removed), the Arduino Pro Mini at 3.3V and 8MHz have a deep sleep current of about 5uA which is very low. The source code of the control part is in the [Arduino_CTRL_MOSFET folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_CTRL_MOSFET). **In the code, the deep sleep (`offPeriod`) has been set to 30s for test**.
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_5.png" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_6.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_7.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_8.jpg" width="200">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_5.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_6.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_7.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_8.jpg" width="200">
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_9.png" width="350"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_10.jpg" width="350">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_9.jpg" width="300"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_10.jpg" width="300">
 
 # Tools
 
