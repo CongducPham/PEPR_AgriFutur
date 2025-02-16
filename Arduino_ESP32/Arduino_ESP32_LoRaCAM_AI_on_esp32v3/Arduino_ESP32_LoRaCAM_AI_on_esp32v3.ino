@@ -384,7 +384,7 @@ void setup() {
 #endif
         {
             Serial.print("LoRa Device found\n");
-            delay(1000);
+            delay(100);
         } else {
             Serial.print("No device responding\n");
             while (1) {
@@ -955,6 +955,7 @@ void loop() {
 
   // When testing in deep sleep mode, we wait 30s to allow flashing a new code if necessary
   // otherwise, deep sleep disconnects the serial port and Arduino IDE cannot flash anymore
+  // note that with external power control this will not happen
   if (bootCount == 0) {
       Serial.println("First start, delay of 30s for uploading program if necessary");
 #ifdef TEST_ENERGY        

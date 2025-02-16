@@ -22,7 +22,7 @@
  *  Version:                1.0
  *  Design:                 C. Pham
  *  Implementation:         C. Pham
- *  Last update:            Fev. 8th, 2025
+ *  Last update:            Fev. 14th, 2025
  *
  */
 
@@ -40,8 +40,8 @@
 #include "LowPower.h"
 #endif
 
-// MOSFET Gate on pin 8
-#define ctrlPin  8
+// MOSFET Gate on pin 9
+#define ctrlPin  9
 // monitor activity (HIGH level) on pin A0
 #define activity_pin A0
 // there can still be some voltage at LOW state from ESP32 activity_pin, so we set a threshold
@@ -50,8 +50,9 @@
 #define min_low_period 2000
 
 // set here the off period, typically 1h=60*60*1000L for instance
-// for test -> 30s = 30000ms
-unsigned long offPeriod = 30*1000L;
+// for test -> 30s = 30*1000L
+// for test -> 10mins = 10*60*1000L
+unsigned long offPeriod = 10*60*1000L;
 
 // set here the on period, typically 2mins for instance
 // 2mins = 2x60000ms

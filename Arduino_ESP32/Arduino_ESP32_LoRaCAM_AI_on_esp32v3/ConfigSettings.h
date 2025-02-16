@@ -6,7 +6,7 @@
 #ifdef ORIGINAL_CONFIG
     #define WITH_WEB_SERVER
 #else
-    #define TEST_IN_PROGRESS 10 // in minutes
+    //#define TEST_IN_PROGRESS 10 // in minutes
     //#define TEST_ENERGY
     //#define WITH_WEB_SERVER
     #define WITH_CUSTOM_CAM

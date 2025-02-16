@@ -13,8 +13,10 @@
   #include "local_lorawan.h"
 #endif
 
-#ifdef LORA_UCAM
+#ifdef WITH_LORA_MODULE
 unsigned int MSS = DEFAULT_LORA_MSS;
+#else
+unsigned int MSS = DEFAULT_MSS;
 #endif
 
 // Note: we are slightly changing the packet format as previously defined in
@@ -348,8 +350,8 @@ void SendPacket() {
         if (packetcount>0 && inter_binary_pkt != MIN_INTER_PKT_TIME) {
             unsigned long now_millis = millis();
 
-            Serial.println(now_millis);
-            Serial.println(lastSentTime);
+            //Serial.println(now_millis);
+            //Serial.println(lastSentTime);
 
             if ((now_millis - lastSentTime) < inter_binary_pkt) {
                 Serial.print("Wait for ");
@@ -361,7 +363,7 @@ void SendPacket() {
         // just the maximum pkt size plus some more bytes
         uint8_t myBuff[260];
         uint8_t dataSize = 0;
-        long startSendTime, stopSendTime, previousLastSendTime;
+        unsigned long startSendTime, stopSendTime, previousLastSendTime;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // for instance, if Q=20 (0x14) and the 9th (seq number 8, 0x08) image packet is: 
@@ -421,7 +423,7 @@ void SendPacket() {
         Serial.println(packetcount);
 #endif
 
-#ifdef LORA_UCAM        
+#ifdef WITH_LORA_MODULE        
         int pl;
 
         pl = dataSize + packetsize;
@@ -459,7 +461,7 @@ void SendPacket() {
 
         // we set lastSendTime before the call to the sending procedure in order to be able to send
         // packets back to back since the sending procedure can introduce a delay
-        lastSentTime = (unsigned long)startSendTime;
+        lastSentTime = startSendTime;
 
 #ifdef CUSTOM_LORAWAN
         // will return sent packet length if OK, otherwise 0 if transmission error
@@ -498,7 +500,12 @@ void SendPacket() {
 #endif
         }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-#endif
+#else // WITH_LORA_MODULE
+        previousLastSendTime = lastSentTime;
+        startSendTime = millis();
+        stopSendTime = startSendTime;
+        lastSentTime = startSendTime;
+#endif // WITH_LORA_MODULE
 
 #ifdef DISPLAY_PKT
 
@@ -506,7 +513,7 @@ void SendPacket() {
         lastSendDuration = stopSendTime - startSendTime;
         Serial.println(lastSendDuration);
 
-#ifdef LORA_UCAM
+#ifdef WITH_LORA_MODULE
         //TODO: something else to do?
 #endif
 #endif
@@ -515,7 +522,6 @@ void SendPacket() {
         Serial.print(packetsize);
         Serial.print(" ");
         Serial.println(stopSendTime - startSendTime);
-        // Serial.println("ms. ");
 #endif
     }
 
@@ -1005,8 +1011,18 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         //digitalWrite(capture_led, LOW);
         // here we transmit data
 
-        if (inter_binary_pkt != MIN_INTER_PKT_TIME)
-            while ((millis() - lastSentTime) < inter_binary_pkt);
+        if (packetcount>0 && inter_binary_pkt != MIN_INTER_PKT_TIME) {
+            unsigned long now_millis = millis();
+
+            //Serial.println(now_millis);
+            //Serial.println(lastSentTime);
+
+            if ((now_millis - lastSentTime) < inter_binary_pkt) {
+                Serial.print("Wait for ");
+                Serial.println(inter_binary_pkt - (now_millis - lastSentTime));
+                delay(inter_binary_pkt - (now_millis - lastSentTime));
+            }
+        }
 
         // just the maximum pkt size plus some more bytes
         uint8_t myBuff[260];
@@ -1059,7 +1075,7 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         Serial.println(packetcount);
 #endif
 
-#ifdef LORA_UCAM        
+#ifdef WITH_LORA_MODULE        
         int pl;
 
         pl = dataSize + packetsize;
@@ -1096,7 +1112,7 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
 
         // we set lastSendTime before the call to the sending procedure in order to be able to send
         // packets back to back since the sending procedure can introduce a delay
-        lastSentTime = (unsigned long)startSendTime;
+        lastSentTime = startSendTime;
 
 #ifdef CUSTOM_LORAWAN
         // will return sent packet length if OK, otherwise 0 if transmission error
@@ -1109,6 +1125,7 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         {
             stopSendTime = millis();
             nbSentPackets++;;
+            blinkLed(1, 200);
 
 #if defined RAW_LORA && defined WITH_SPI_COMMANDS
             uint16_t localCRC = LT.CRCCCITT(myBuff, pl, 0xFFFF);
@@ -1123,6 +1140,7 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         else // transmission error
         {
             stopSendTime=millis();
+            blinkLed(4, 80);
         
 #if defined RAW_LORA && defined WITH_SPI_COMMANDS
             // if here there was an error transmitting packet
@@ -1133,7 +1151,12 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
 #endif
         }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-#endif
+#else // WITH_LORA_MODULE
+        previousLastSendTime = lastSentTime;
+        startSendTime = millis();
+        stopSendTime = startSendTime;
+        lastSentTime = startSendTime;
+#endif // WITH_LORA_MODULE
 
 #ifdef DISPLAY_PKT
 
@@ -1141,7 +1164,7 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         lastSendDuration = stopSendTime - startSendTime;
         Serial.println(lastSendDuration);
 
-#ifdef LORA_UCAM
+#ifdef WITH_LORA_MODULE
         //TODO: something else to do?
 #endif
 #endif
@@ -1150,7 +1173,6 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         Serial.print(packetsize);
         Serial.print(" ");
         Serial.println(stopSendTime - startSendTime);
-        // Serial.println("ms. ");
 #endif
     }
 
@@ -1307,7 +1329,11 @@ void init_custom_cam() {
     bool ok_to_read_picture_data=false;
     bool ok_to_encode_picture_data=false;
 
+#ifdef WITH_LORA_MODULE
+    QualityFactor = DEFAULT_LORA_QUALITY_FACTOR;
+#else    
     QualityFactor = DEFAULT_QUALITY_FACTOR;
+#endif
 
     inImage.imageVsize=inImage.imageHsize=CAMDATA_LINE_SIZE;
     outImage.imageVsize=outImage.imageHsize=CAMDATA_LINE_SIZE;

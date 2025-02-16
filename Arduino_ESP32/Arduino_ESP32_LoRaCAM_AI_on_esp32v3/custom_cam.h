@@ -40,8 +40,6 @@ extern SX128XLT LT;
 extern uint8_t node_addr;
 extern void blinkLed(uint8_t n, uint16_t t);
 
-//have a LoRa module attached
-#define LORA_UCAM
 #define UCAM_ADDR 0x01
 //by default
 #define CAM_RES128X128
@@ -101,10 +99,11 @@ extern void blinkLed(uint8_t n, uint16_t t);
 #define DEFAULT_INTER_SNAPSHOT_TIME  60 // in s
 #endif
 
-#ifdef LORA_UCAM
+#define DEFAULT_QUALITY_FACTOR        20
+
+#ifdef WITH_LORA_MODULE
     #define MAX_PKT_SIZE                  238
     #define DEFAULT_LORA_MSS              90 //MAX_PKT_SIZE
-    #define DEFAULT_QUALITY_FACTOR        20
     #define DEFAULT_LORA_QUALITY_FACTOR   DEFAULT_QUALITY_FACTOR
 #endif
 
