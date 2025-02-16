@@ -132,6 +132,8 @@ In addition to the LED on the `XIAO ESP32-S3 Sense`, the Arduino Pro Mini will u
 ## First integration attempt
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_10.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_11.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_12.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_13.jpg" width="200">
+
+You can also watch a [video](https://iotsensingsystem.live-website.com/wp-content/uploads/2025/02/lora_cam-720p.mov) showing the operation of the LoRaCAM-AI with the LEDs indicating the various activity steps.
  
 # Tools
 
