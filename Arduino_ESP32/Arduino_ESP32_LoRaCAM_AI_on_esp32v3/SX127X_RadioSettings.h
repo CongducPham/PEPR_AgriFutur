@@ -69,7 +69,9 @@ const uint8_t CodeRate = LORA_CR_4_5;           //LoRa coding rate
 const uint8_t Optimisation = LDRO_AUTO;         //low data rate optimisation setting, normally set to auto
 // set to 1 if your radio is an HopeRF RFM92W, HopeRF RFM95W, Modtronix inAir9B, NiceRF1276
 // or you known from the circuit diagram that output use the PABOOST line instead of the RFO line
-const uint8_t PA_BOOST = 1;
+//const uint8_t PA_BOOST = 1;
+// inAir9 does not need PA_BOOST
+const uint8_t PA_BOOST = 0;
 // can be set to LORA_IQ_NORMAL or LORA_IQ_INVERTED
 const uint8_t IQ_Setting = LORA_IQ_NORMAL; 
 /*******************************************************************************************************

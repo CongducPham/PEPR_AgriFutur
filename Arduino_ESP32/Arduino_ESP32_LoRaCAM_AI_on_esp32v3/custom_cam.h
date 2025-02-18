@@ -68,7 +68,9 @@ extern void blinkLed(uint8_t n, uint16_t t);
 // in this case, the behavior is fully automatic
 //#define GET_PICTURE_ON_SETUP
 // take into account light change between snapshot, recommended.
-//#define LUM_HISTO
+#define LUM_HISTO
+//#define TEST_LUMINOSITY
+#define DARK_THRESHOLD          35
 // will insert the source addr in the image packet
 //#define WITH_SRC_ADDR 
 

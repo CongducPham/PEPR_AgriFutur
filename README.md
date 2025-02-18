@@ -1,6 +1,11 @@
 Sensing Platform for the PEPR AgriFutur project
 =======================================================
 
+Read the latest news
+-------
+
+Read the [latest News for the PEPR AgriFutur project](https://iotsensingsystem.live-website.com/news-on-pepr-agrifutur) that are maintained on the [IoT-Sensing-System at UPPA web site](https://iotsensingsystem.live-website.com).
+
 History
 -------
 - **Jan-25** Preliminary codes have been uploaded: the code for a Generic Simple Sensor Node and the code for a PoC LoRa image sensor node (LoRaCAM-AI).

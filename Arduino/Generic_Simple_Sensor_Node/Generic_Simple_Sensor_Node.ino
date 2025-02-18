@@ -19,10 +19,10 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Feb. 7th, 2025
+ * last update: Feb. 18th, 2025
  *
  * Feb. 7th, 2025 --> remove unused options in the code, focus on INTEL-IRRIS PCB/PCBA v4.1 & v5 and WaziSense v2 platforms
- * NEW: Support for 3 DSB1820 temperature sensors
+ * NEW: Support for up to 3 DSB1820 temperature sensors
  * NEW: Support for ambiant air temperature/humidity sensors (DHT22/AM2305/SHT1x/SHT2x/SHT3x)
  * Based on INTEL_IRRIS soil humidity sensor platform – July 19th, 2024
  */
@@ -92,7 +92,8 @@ TXOnlySerial debug_serial(2);
 ////////////////////////////////////////////////////////////////////
 // uncomment to have 1 soil temperature sensor ST
 // using a one-wire DS18B20 sensor
-// #define SOIL_TEMP_SENSOR
+// also needed for TWO_SOIL_TEMP_SENSOR and THREE_SOIL_TEMP_SENSOR
+//#define SOIL_TEMP_SENSOR
 // only for watermark sensors, not relevant for capacitive sensors
 #define LINK_SOIL_TEMP_TO_CENTIBAR
 // use SEN0308 capacitive calibration for low voltage
@@ -508,6 +509,13 @@ uint32_t TXPacketCount = 0;
 // the mechanism prevents the ATMega328P microcontroller to reboot constantly
 // the battery voltage is transmitted to the gateway and appears on the dashboard so that
 // end-user can be warned of low voltage on the deployed device
+//
+// info on brown-out detector: the default bootloader defines brown-out detection at 2.7V
+// this can be changed by changing the extended_fuse values in board.txt: 0xFC=4.3V 0xFD=2.7V 0xFE=1.8V
+// but you need to burn a new bootleader for the fuse information to be taken into account
+// https://forum.arduino.cc/t/ide-and-avrdude-command-line/1070148
+// https://forum.arduino.cc/t/what-do-the-fuse-settings-in-the-boards-txt-file-do/150791
+// 
 
 #ifdef MONITOR_BAT_VOLTAGE
 // https://github.com/Yveaux/arduino_vcc
@@ -1025,6 +1033,7 @@ void setup() {
                         PRINT_CSTSTR("GO SLEEP MODE\n");
                         nextTransmissionTime = ((idlePeriodInSec == 0) ? (unsigned long)idlePeriodInMin * 60 * 1000
                                                                        : (unsigned long)idlePeriodInSec * 1000);
+                        FLUSHOUTPUT;                                               
                         lowPower(nextTransmissionTime);
 #else
         PRINT_CSTSTR("STOP PROGRAM\n");
@@ -2326,6 +2335,7 @@ void loop(void) {
         }
 #ifdef WITH_EEPROM
         if (my_nodeConfig.hasRebooted < MAX_SUCCESSIVE_REBOOTS) {
+            // set hasRebooted before transmission because if the board reboots right after transmission we could detect it
             my_nodeConfig.hasRebooted++;
             EEPROM.put(0, my_nodeConfig);
             measure_and_send();
@@ -2339,6 +2349,7 @@ void loop(void) {
             PRINT_VALUE("%d", MAX_SUCCESSIVE_REBOOTS);
             PRINTLN_CSTSTR(" consecutive reboots");
         }
+        // if we arrive here then the board has not rebooted, so we clear hasRebooted
         my_nodeConfig.hasRebooted = 0;
         EEPROM.put(0, my_nodeConfig);
 #else

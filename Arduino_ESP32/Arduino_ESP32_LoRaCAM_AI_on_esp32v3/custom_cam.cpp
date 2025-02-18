@@ -1272,11 +1272,11 @@ void clearHistogram(short histo_data[]) {
     for (int i = 0; i < 255; i++) histo_data[i] = 0;
 }
 
-void computeHistogram(short histo_data[], uint8_t *data) {
+void computeHistogram(short histo_data[], InImageStruct InputImage) {
     clearHistogram(histo_data);
 
     for (int x = 0; x < CAMDATA_LINE_SIZE; x++)
-        for (int y = 0; y < CAMDATA_LINE_SIZE; y++) histo_data[data[x][y]]++;
+        for (int y = 0; y < CAMDATA_LINE_SIZE; y++) histo_data[InputImage.data[x][y]]++;
 }
 
 long computeMeanLuminosity(short histo_data[]) {
@@ -1319,7 +1319,7 @@ void copy_in_refImage() {
                 refImage.data[x][y] = inImage.data[x][y];
 
 #ifdef LUM_HISTO
-        computeHistogram(histoRefImage, refImage.data);
+        computeHistogram(histoRefImage, refImage);
         refImageLuminosity = computeMeanLuminosity(histoRefImage);
 #endif
     }
@@ -1398,6 +1398,9 @@ void set_quality_factor(uint8_t Q) {
 int encode_image(uint8_t* buf, bool transmit) {
     transmitting_data=transmit;
 
+    if (transmitting_data == false)
+        Serial.println("Transmission is disabled");
+
     //buf contains the BMP Header, the grayscale palette and the image data
     //skip the signature that should be "BM"
     bmp_header_t * bitmap  = (bmp_header_t*)&buf[2];
@@ -1414,6 +1417,24 @@ int encode_image(uint8_t* buf, bool transmit) {
         //set pointers to beginning of each line
         inImage.data[i]=start_of_image+inImage.imageHsize*i;
     }
+#endif
+
+#ifdef LUM_HISTO
+    computeHistogram(histoInImage, inImage);
+    inImageLuminosity = computeMeanLuminosity(histoInImage);
+    Serial.printf("inImage luminosity is %ld\n", inImageLuminosity);
+
+    if (inImageLuminosity < DARK_THRESHOLD) {
+        Serial.printf("inImage luminosity < %d, no transmission\n", DARK_THRESHOLD);
+        transmitting_data = false;    
+    }
+    else
+        Serial.printf("inImage luminosity > %d, passed\n", DARK_THRESHOLD);
+
+#ifdef TEST_LUMINOSITY    
+    Serial.println("testing luminosity, disabling transmission");
+    transmitting_data = false;
+#endif
 #endif
 
     return(encode_ucam_file_data());

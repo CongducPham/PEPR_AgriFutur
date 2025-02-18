@@ -24,7 +24,7 @@
  *  Based on ESP32 CameraWebServer and Arduino_LoRa_ucamII (https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html)
  *  Design:                 C. Pham
  *  Implementation:         C. Pham
- *  Last update:            Fev. 14th, 2025
+ *  Last update:            Fev. 18th, 2025
  *
  *  With #define WAIT_FOR_SERIAL_INPUT, for testing purposes, no deep sleep, a command starts with /@ and ends with #: /@Z40#Q40#
  *    "Z64#" -> sets the MSS size to 64, default is 90 for LoRa
@@ -33,11 +33,16 @@
  *
  *  Otherwise (should be considered as default setting)
  *    - periodic capture & LoRa transmission every hour
+ *    - an image luminosity computation is performed and if the image is too dark, there is no transmission
  *    - deep sleep between capture, similar to full reset (deep sleep of camera not fully validated yet)
  *    - to flash a new code, connect board and upload before device goes in deep sleep.
  *      a 30s window is set for such purpose before the first deep sleep period
  *    - for real low power mode, we use an external Arduino Pro Mini with a MOSFET to power cycle the LoRaCAM-AI
  *      uncomment RUN_AS_SLAVE in ConfigSettings.h. Then define and connect ACTIVITY_PIN accordingly
+ *
+ *  Important notice
+ *    - the current LoRaCAM-AI uses the Modtronix inAir9 which does not need PA_BOOST (see SX127X_RadioSettings.h)
+ *    - if you are using an inAir9B or an RFM9x breakout, set PA_BOOST = 1
  */
 
 #include "esp_camera.h"
@@ -224,14 +229,16 @@ void lowPower(unsigned long time_ms) {
     ++bootCount;
     Serial.println("Boot number: " + String(bootCount));
 
-    // Print the wakeup reason for ESP32
-    print_wakeup_reason();
-    esp_sleep_enable_timer_wakeup(time_ms * mS_TO_uS_FACTOR);  // set wake up source
-    //Serial.println("Setup ESP32 to sleep for every " + String(idlePeriodInMin) + " minutes and " +
-    //               String(idlePeriodInSec) + " Seconds");
-    Serial.println("Going to deep sleep now");
-    Serial.flush();
-    esp_deep_sleep_start();
+    if (time_ms > 0) {
+        // Print the wakeup reason for ESP32
+        print_wakeup_reason();
+        esp_sleep_enable_timer_wakeup(time_ms * mS_TO_uS_FACTOR);  // set wake up source
+        //Serial.println("Setup ESP32 to sleep for every " + String(idlePeriodInMin) + " minutes and " +
+        //               String(idlePeriodInSec) + " Seconds");
+        Serial.println("Going to deep sleep now");
+        Serial.flush();
+        esp_deep_sleep_start();
+    }
 }
 #endif // LOW_POWER
 
@@ -814,8 +821,12 @@ void loop() {
 #else // WAIT_FOR_SERIAL_INPUT
 
 #ifdef TEST_IN_PROGRESS
+#ifdef TEST_LUMINOSITY
+  interCamCaptureTime=5000;
+#else
   //60s * TEST_IN_PROGRESS
   interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*TEST_IN_PROGRESS*1000;
+#endif
 #else
   //increase the default 60s to 60mins
   interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*60*1000;  
@@ -942,8 +953,12 @@ void loop() {
       // In case of wrapping
       Serial.print("Something wrong with sleep time, back to default\n");
 #ifdef TEST_IN_PROGRESS
-      //60s * TEST_IN_PROGRESS
+#ifdef TEST_LUMINOSITY
+      interCamCaptureTime=5000;
+#else
+  //60s * TEST_IN_PROGRESS
       interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*TEST_IN_PROGRESS*1000;
+#endif
 #else
       //60mins
       interCamCaptureTime=DEFAULT_INTER_SNAPSHOT_TIME*60*1000;  
@@ -965,7 +980,10 @@ void loop() {
 #ifdef TEST_ENERGY        
       blinkLed(1, 800);
 #endif   
-      waiting_time = nextCamCaptureTime-millis();
+      if (millis() > nextCamCaptureTime)
+          waiting_time = 0;
+      else    
+          waiting_time = nextCamCaptureTime-millis();
   }
 
   Serial.printf("Go to deep sleep for %ld ms\n", waiting_time);
