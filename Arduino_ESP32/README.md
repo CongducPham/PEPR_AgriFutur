@@ -43,7 +43,9 @@ In this wiring, you can see that D2 from the `XIAO ESP32-S3 Sense` is connected 
 
 ## Without power control by Arduino Pro Mini 
 
-To flash and test the basic version you need at least the `XIAO ESP32-S3 Sense`. You can start by flashing with USB the LoRaCAM-AI code which is in the [Arduino_ESP32_LoRaCAM_AI_on_esp32v3 folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_ESP32_LoRaCAM_AI_on_esp32v3). We are using the Arduino IDE v2.3.4. First, install the `esp32 by Expressif System` Arduino core library with the board manager if you do not have this library. Install at least version v3.0.0, latest version if fine. Then, select `XIAO_ESP32S3` as target board and do not forget to enable PSRAM. Flash the example as it is. In the default configuration, LoRaCAM-AI will take a picture, encode it with Quality Factor 20 and transmit the generated packets with LoRa (SF12BW125 868.1MHz) at the pace of 1 packet every 5s. You can see the encoding of the image and the transmission of packets in the Serial Monitor. After transmission, LoRaCAM-AI will put itself in deep sleep mode for an hour. However, as indicated in the previous section, to achieve a real low power mode, an external Arduino Pro Mini is needed, which will be discussed in the next section. Even without the Arduino Pro Mini, when the XIAO is powered on, it will indicate through its activity pin (set to HIGH) that it is active, then, at the end of the image transmission, it will indicate through its activity pin (set to LOW) that it is ready to be powered off. Of course, without the Arduino Pro Mini, it will not be powered off and will then try to go in deep sleep.
+To flash and test the basic version you need at least the `XIAO ESP32-S3 Sense`. You can start by flashing with USB the LoRaCAM-AI code which is in the [Arduino_ESP32_LoRaCAM_AI_on_esp32v3 folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_ESP32_LoRaCAM_AI_on_esp32v3). We are using the Arduino IDE v2.3.4. First, install the `esp32 by Expressif System` Arduino core library with the board manager if you do not have this library. Install at least version v3.0.0, latest version if fine. Then, select `XIAO_ESP32S3` as target board and do not forget to enable PSRAM. Flash the example as it is. In the default configuration, LoRaCAM-AI will take a picture, encode it with Quality Factor 20 and transmit the generated packets with LoRa (SF12BW125 868.1MHz) at the pace of 1 packet every 5s. You can see the encoding of the image and the transmission of packets in the Serial Monitor. The packet format with a small packet header is explained in `SendPacket()` function in `custom_cam.cpp` file.
+
+After transmission, LoRaCAM-AI will put itself in deep sleep mode for an hour. However, as indicated in the previous section, to achieve a real low power mode, an external Arduino Pro Mini is needed, which will be discussed in the next section. Even without the Arduino Pro Mini, when the XIAO is powered on, it will indicate through its activity pin (set to HIGH) that it is active, then, at the end of the image transmission, it will indicate through its activity pin (set to LOW) that it is ready to be powered off. Of course, without the Arduino Pro Mini, it will not be powered off and will then try to go in deep sleep.
 
 ```
 Run as slave, set activity pins to HIGH
@@ -71,25 +73,26 @@ InImage memory allocation passed
 Ready to encode picture data
 Run as slave, re-set activity pins to HIGH
 Encoding picture data, Quality Factor is : 20
-MSS for packetization is : 90
+MSS for packetization is : 40
 Q: 0QT ok
-0056 00 00 D7 CE 1E 0D 2F 64 F5 75 CF E4 18 3B A1 38 82 BA 41 73 A1 AA 0C C2 0A B9 C7 6F C0 4C 85 61 EE 12 7B 62 AB 9F C0 3C B7 82 D9 90 E8 2F 79 AA 28 60 0A 65 92 94 93 8B B1 55 44 C8 CB 3F 2B 2E 8B 47 56 37 41 81 7C 4E 35 E8 05 6A E5 AF 9B FB ED 8A 6B BD 00 8B 
-Building packet : 0
-FF500014560000D7CE1E0D2F64F575CFE4183BA13882BA4173A1AA0CC20AB9C76FC04C8561EE127B62AB9FC03CB782D990E82F79AA28600A659294938BB15544C8CB3F2B2E8B47563741817C4E35E8056AE5AF9BFBED8A6BBD008B
-Sending packet : 0
-payload size is 91
-LoRaCAM uses native LoRaWAN packet format
+...
+0026 00 08 E2 BB 37 67 FE 39 29 4C E0 42 17 27 DE 32 06 68 31 8A 14 2C 23 DB C1 CA 8F A2 B3 25 B1 37 A4 06 16 07 BD 2F 
+Building packet : 2
+F70214260008E2BB3767FE39294CE0421727DE320668318A142C23DBC1CA8FA2B325B137A4061607BD2F
+Sending packet : 2
+payload size is 42
+LoRaCAM-AI uses native LoRaWAN packet format
 plain payload hex
-FF 50 00 14 56 00 00 D7 CE 1E 0D 2F 64 F5 75 CF E4 18 3B A1 38 82 BA 41 73 A1 AA 0C C2 0A B9 C7 6F C0 4C 85 61 EE 12 7B 62 AB 9F C0 3C B7 82 D9 90 E8 2F 79 AA 28 60 0A 65 92 94 93 8B B1 55 44 C8 CB 3F 2B 2E 8B 47 56 37 41 81 7C 4E 35 E8 05 6A E5 AF 9B FB ED 8A 6B BD 00 8B 
+F7 02 14 26 00 08 E2 BB 37 67 FE 39 29 4C E0 42 17 27 DE 32 06 68 31 8A 14 2C 23 DB C1 CA 8F A2 B3 25 B1 37 A4 06 16 07 BD 2F
 Encrypting
 encrypted payload
-98 F9 A4 DC 9E C3 30 3C 1F 60 F7 F9 43 30 14 6E B9 84 01 0A 0B 82 98 60 C2 7F 16 E1 E1 63 A7 5E 80 9E 18 77 AD 38 F8 B2 8D F7 7D 54 6D 79 D9 41 1F 5F E9 50 65 27 AE 4D FB 4B B5 00 AF 3F AE 7B 23 93 F0 F0 9F 6A 15 8C 16 6B 42 5D 1F EA EE B8 EC F6 F6 2B 92 0B B6 12 81 B3 9E 
+9D F3 7D 09 25 EC 73 25 54 F2 FD E0 FB 5D A2 BD F9 1E 8E 96 83 62 61 25 6F C7 FA 19 CD 21 5C BD E2 A1 5F 25 3F 7A 56 CB 2A 76
 calculate MIC with NwkSKey
 transmitted LoRaWAN-like packet:
 MHDR[1] | DevAddr[4] | FCtrl[1] | FCnt[2] | FPort[1] | EncryptedPayload | MIC[4]
-40 AA 2D 01 26 00 00 00 01 98 F9 A4 DC 9E C3 30 3C 1F 60 F7 F9 43 30 14 6E B9 84 01 0A 0B 82 98 60 C2 7F 16 E1 E1 63 A7 5E 80 9E 18 77 AD 38 F8 B2 8D F7 7D 54 6D 79 D9 41 1F 5F E9 50 65 27 AE 4D FB 4B B5 00 AF 3F AE 7B 23 93 F0 F0 9F 6A 15 8C 16 6B 42 5D 1F EA EE B8 EC F6 F6 2B 92 0B B6 12 81 B3 9E 57 8F A2 21 
-CRC 1790
-Packet Sent in 4104
+40 AA 2D 01 26 00 02 00 01 9D F3 7D 09 25 EC 73 25 54 F2 FD E0 FB 5D A2 BD F9 1E 8E 96 83 62 61 25 6F C7 FA 19 CD 21 5C BD E2 A1 5F 25 3F 7A 56 CB 2A 76 CB B2 78 67 
+CRC 7D74
+Packet Sent in 2466
 ...
 
 ```
@@ -103,22 +106,21 @@ InImage memory allocation passed
 Ready to encode picture data
 Run as slave, re-set activity pins to HIGH
 Encoding picture data, Quality Factor is : 20
-MSS for packetization is : 90
+MSS for packetization is : 40
 Q: 0QT ok
-0058 00 00 D7 CE 1E 0D 2F 67 D6 C2 A8 C6 28 48 B6 1C E5 48 DA C9 F6 D0 6F 5D 04 FD 6B 15 11 B4 9B 25 DB 4F 40 81 6C 8F 79 97 60 77 7E D9 90 E8 23 79 5E 79 D5 CF 4D 55 E5 6D 19 86 AA D1 87 98 E7 94 48 84 68 C7 3F 2B 2E 8B 46 CE 33 41 81 7C 4E 35 BC FB ED 66 32 47 CD A5 
-Building packet : 0
-FF500014580000D7CE1E0D2F67D6C2A8C62848B61CE548DAC9F6D06F5D04FD6B1511B49B25DB4F40816C8F799760777ED990E823795E79D5CF4D55E56D1986AAD18798E794488468C73F2B2E8B46CE3341817C4E35BCFBED663247CDA5
-Sending packet : 0
-Packet Sent in 0
-0056 00 1B 15 3D A4 79 F1 8D 36 5A 0C FF 25 B8 2E EE 79 2D 28 B9 4A CC 89 CE F9 68 9F 17 0C 32 39 B2 01 64 2E C8 B0 DF EB 4F B4 A3 B0 19 46 6F DF 8D D4 40 4C AC FF 73 B4 27 A4 0E C2 A8 A8 20 36 38 45 A1 9A 20 87 FB 33 A3 F2 E5 97 00 CF D0 0B 43 40 7D B1 C9 6C CF 
-Wait for 4995
-Building packet : 1
-FF50011456001B153DA479F18D365A0CFF25B82EEE792D28B94ACC89CEF9689F170C3239B201642EC8B0DFEB4FB4A3B019466FDF8DD4404CACFF73B427A40EC2A8A820363845A19A2087FB33A3F2E59700CFD00B43407DB1C96CCF
-Sending packet : 1
-Packet Sent in 0
-0056 00 3C 15 38 31 90 A9 FC 28 68 F2 35 BE C7 87 CD 79 8E A9 F8 A7 9B CB F2 00 87 07 EE 10 65 6D 41 8E 17 B3 00 82 96 31 6B 83 D2 2B 3C B9 F9 5A 50 74 BC 19 F6 22 B4 FF 29 EC D3 7A 95 02 BA 17 24 CC E3 85 7A A9 7D 40 4B 61 D5 07 17 06 67 05 6D 3E D9 6B 60 04 7F 
 ...
-
+0026 00 08 E2 BB 37 67 FE 39 29 4C E0 42 17 27 DE 32 06 68 31 8A 14 2C 23 DB C1 CA 8F A2 B3 25 B1 37 A4 06 16 07 BD 2F 
+Building packet : 2
+F70214260008E2BB3767FE39294CE0421727DE320668318A142C23DBC1CA8FA2B325B137A4061607BD2F
+Sending packet : 2
+Packet Sent in 0
+0022 00 0D EB 3D 4E 89 D1 C3 08 58 BF E5 26 B4 3F 31 9A 0E 0A 90 31 DD 5B 53 3B 28 BF 3F DC E6 66 B7 11 BF 
+Building packet : 3
+F7031422000DEB3D4E89D1C30858BFE526B43F319A0E0A9031DD5B533B28BF3FDCE666B711BF
+Sending packet : 3
+Packet Sent in 0
+0024 00 10 EF E1 39 D5 19 FA 35 64 93 AC 68 9B 93 E6 63 5F 15 50 A2 8E 05 FA 56 9B 05 9C 24 FB 6A FE B0 A2 2D 76 
+...
 ```
 
 The LED on the `XIAO ESP32-S3 Sense` will blink as follows: (1) after power up and an image is ready for encoding and transmission, the LED will slowly blink twice; (2) each time a packet has been successfully transmitted (real transmission) the LED will blink once. If a transmission error has been reported by the sending side radio module, the LED will blink 4 times fast; (3) when all packets have been transmitted, the LED will again slowly blink twice. This is when LoRaCAM-AI will try to put itself in deep sleep.

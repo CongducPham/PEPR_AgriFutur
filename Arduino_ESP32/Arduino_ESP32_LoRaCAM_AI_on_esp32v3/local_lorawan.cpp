@@ -73,7 +73,7 @@ unsigned char Direction = 0x00;
 ///////////////////////////////////////////////////////////////////
 //create a LoRaWAN packet meaning that the payload is encrypted
 
-uint8_t local_aes_lorawan_create_pkt(uint8_t* message, uint8_t pl, uint8_t app_key_offset) {
+uint8_t local_aes_lorawan_create_pkt(uint8_t* message, uint8_t pl, int fc, unsigned char* dev_addr) {
 
       //PRINT_STR("%s",(char*)(message+app_key_offset));
       //PRINTLN;
@@ -86,8 +86,13 @@ uint8_t local_aes_lorawan_create_pkt(uint8_t* message, uint8_t pl, uint8_t app_k
       }
       PRINTLN; 
 
+      uint16_t the_Frame_Counter_Up = 0;
+
+      if (fc == -1)
+        the_Frame_Counter_Up = Frame_Counter_Up;
+
       PRINT_CSTSTR("Encrypting\n");     
-      Encrypt_Payload((unsigned char*)message, pl, Frame_Counter_Up, Direction);
+      Encrypt_Payload((unsigned char*)message, pl, the_Frame_Counter_Up, Direction);
 
       PRINT_CSTSTR("encrypted payload\n");
       //Print encrypted message
@@ -115,16 +120,24 @@ uint8_t local_aes_lorawan_create_pkt(uint8_t* message, uint8_t pl, uint8_t app_k
       //Build the Radio Package, LoRaWAN format
       //See LoRaWAN specification
       LORAWAN_Data[OFF_DAT_HDR] = Mac_Header;
-    
-      LORAWAN_Data[OFF_DAT_ADDR] = DevAddr[3];
-      LORAWAN_Data[OFF_DAT_ADDR+1] = DevAddr[2];
-      LORAWAN_Data[OFF_DAT_ADDR+2] = DevAddr[1];
-      LORAWAN_Data[OFF_DAT_ADDR+3] = DevAddr[0];
+
+      if (dev_addr == NULL) {
+          LORAWAN_Data[OFF_DAT_ADDR] = DevAddr[3];
+          LORAWAN_Data[OFF_DAT_ADDR+1] = DevAddr[2];
+          LORAWAN_Data[OFF_DAT_ADDR+2] = DevAddr[1];
+          LORAWAN_Data[OFF_DAT_ADDR+3] = DevAddr[0];
+      }
+      else {
+          LORAWAN_Data[OFF_DAT_ADDR] = dev_addr[3];
+          LORAWAN_Data[OFF_DAT_ADDR+1] = dev_addr[2];
+          LORAWAN_Data[OFF_DAT_ADDR+2] = dev_addr[1];
+          LORAWAN_Data[OFF_DAT_ADDR+3] = dev_addr[0];        
+      }
     
       LORAWAN_Data[OFF_DAT_FCT] = Frame_Control;
     
-      LORAWAN_Data[OFF_DAT_SEQNO] = (Frame_Counter_Up & 0x00FF);
-      LORAWAN_Data[OFF_DAT_SEQNO+1] = ((Frame_Counter_Up >> 8) & 0x00FF);
+      LORAWAN_Data[OFF_DAT_SEQNO] = (the_Frame_Counter_Up & 0x00FF);
+      LORAWAN_Data[OFF_DAT_SEQNO+1] = ((the_Frame_Counter_Up >> 8) & 0x00FF);
     
       LORAWAN_Data[OFF_DAT_OPTS] = Frame_Port;
     
@@ -143,7 +156,7 @@ uint8_t local_aes_lorawan_create_pkt(uint8_t* message, uint8_t pl, uint8_t app_k
     
       PRINT_CSTSTR("calculate MIC with NwkSKey\n");
       //Calculate MIC
-      Calculate_MIC(LORAWAN_Data, MIC, LORAWAN_Package_Length, Frame_Counter_Up, Direction);
+      Calculate_MIC(LORAWAN_Data, MIC, LORAWAN_Package_Length, the_Frame_Counter_Up, Direction);
     
       //Load MIC in package
       for (int i=0; i < 4; i++)

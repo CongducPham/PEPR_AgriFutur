@@ -22,11 +22,15 @@ unsigned int MSS = DEFAULT_MSS;
 // Note: we are slightly changing the packet format as previously defined in
 // https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/imagesensor.html
 #ifdef WITH_SRC_ADDR
-// 0xFE 0x50->0x54 for image packets, node addr, sequence number, quality factor and packet size
-uint8_t pktPreamble[PREAMBLE_SIZE] = {0xFE, 0x50, UCAM_ADDR, 0x00, 0x00, 0x00};
+// 0xFE, node addr, sequence number, quality factor and packet size
+uint8_t pktPreamble[PREAMBLE_SIZE] = {0xFE, UCAM_ADDR2, 0x00, 0x00, 0x00};
 #else
-// 0xFF 0x50->0x54 for image packets, sequence number, quality factor and packet size
-uint8_t pktPreamble[PREAMBLE_SIZE] = {0xFF, 0x50, 0x00, 0x00, 0x00};
+// 0xF0..0xFF, sequence number, quality factor and packet size
+uint8_t pktPreamble[PREAMBLE_SIZE] = {0xF0, 0x00, 0x00, 0x00};
+#endif
+
+#if defined TRANSMIT_IMAGE_INDICATION_WAZIGATE && defined USE_XLPP
+XLPP lpp(120);
 #endif
 
 // default behavior is to use framing bytes
@@ -76,6 +80,7 @@ unsigned int QualityFactor;
 uint8_t nbSentPackets = 0;
 unsigned long lastSentTime = 0;
 unsigned long lastSendDuration = 0;
+unsigned long totalSendDuration = 0;
 unsigned long inter_binary_pkt=DEFAULT_INTER_PKT_TIME;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,7 +100,8 @@ struct position {
 uint8_t **AllocateUintMemSpace(int Horizontal, int Vertical) {
     uint8_t **Array;
 
-    if ((Array = (uint8_t **)calloc(Vertical, sizeof(uint8_t *))) == NULL) return NULL;
+    if ((Array = (uint8_t **)calloc(Vertical, sizeof(uint8_t *))) == NULL)
+        return NULL;
 
 #ifdef ALLOCATE_DEDICATED_INIMAGE_BUFFER
     for (int i = 0; i < Vertical; i++) {
@@ -109,7 +115,8 @@ uint8_t **AllocateUintMemSpace(int Horizontal, int Vertical) {
 float **AllocateFloatMemSpace(int Horizontal, int Vertical) {
     float **Array;
 
-    if ((Array = (float **)calloc(Vertical, sizeof(float *))) == NULL) return NULL;
+    if ((Array = (float **)calloc(Vertical, sizeof(float *))) == NULL)
+        return NULL;
 
     for (int i = 0; i < Vertical; i++) {
         Array[i] = (float *)calloc(Horizontal, sizeof(float));
@@ -123,7 +130,8 @@ float **AllocateFloatMemSpace(int Horizontal, int Vertical) {
 short **AllocateShortMemSpace(int Horizontal, int Vertical) {
     short **Array;
 
-    if ((Array = (short **)calloc(Vertical, sizeof(short *))) == NULL) return NULL;
+    if ((Array = (short **)calloc(Vertical, sizeof(short *))) == NULL)
+        return NULL;
 
     for (int i = 0; i < Vertical; i++) {
         Array[i] = (short *)calloc(Horizontal, sizeof(short));
@@ -354,9 +362,15 @@ void SendPacket() {
             //Serial.println(lastSentTime);
 
             if ((now_millis - lastSentTime) < inter_binary_pkt) {
-                Serial.print("Wait for ");
-                Serial.println(inter_binary_pkt - (now_millis - lastSentTime));
-                delay(inter_binary_pkt - (now_millis - lastSentTime));
+                unsigned long w = inter_binary_pkt - (now_millis - lastSentTime);
+                Serial.printf("Wait for %ld", w);
+#ifdef DELAY_WITH_LIGHT_SLEEP                
+                Serial.flush();
+                esp_sleep_enable_timer_wakeup(w*1000L);
+                esp_light_sleep_start();
+#else                
+                delay(w);
+#endif                
             }
         }
 
@@ -367,35 +381,35 @@ void SendPacket() {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // for instance, if Q=20 (0x14) and the 9th (seq number 8, 0x08) image packet is: 
-//    003F 00E4C1129592397FDDBFF13790E9D5DC473DBDCDFDAA2031705C6D283EC3A4B316415CB9CD281CEFBF1B44A296533ED59645E1D33DF4824A5C4D514A8C0CF7
+//    0022 0027AF25AA94FACC74BCF579746ADB7B0D9998D77E4A04204A2046D5A646BD1E7E63
 // then the generated payload is (with framing bytes and without WITH_SRC_ADDR)
-//    FF 50 08 14 3F 00E4C1129592397FDDBFF13790E9D5DC473DBDCDFDAA2031705C6D283EC3A4B316415CB9CD281CEFBF1B44A296533ED59645E1D33DF4824A5C4D514A8C0CF7
+// the first byte (here F7) is actually random between F0 and FF for each new image, set in encode_image()
+//    F7 08 14 22 0027AF25AA94FACC74BCF579746ADB7B0D9998D77E4A04204A2046D5A646BD1E7E63
 // in LoRaWAN mode, the payload will be first encrypted (using AppSkey and NwkSkey in local_lorawan.cpp)
-//    42B05B3C5BDA5AAD4A428D1D1E1517E5D74C4E3AC7464B295F20954CB01FB65CA10A37D841800B8B1BE175509025EFE7AC0D0ED7AD2EE439F954304BEC4E356749E2EE0E
+//    4AE8470A64FD1149F243E5E815745D6D94B67C941698EE43EC973B4CCB4FACE42F7249628CF5
 // and put in a LoRaWAN packet with the LoRaWAN header
 //    MHDR[1] | DevAddr[4] | FCtrl[1] | FCnt[2] | FPort[1] | EncryptedPayload | MIC[4]
-//    40 AA2D0126 00 0800 01 42B05B3C5BDA5AAD4A428D1D1E1517E5D74C4E3AC7464B295F20954CB01FB65CA10A37D841800B8B1BE175509025EFE7AC0D0ED7AD2EE439F954304BEC4E356749E2EE0E 15893440
+//    40 AA2D0126 00 0800 01 4AE8470A64FD1149F243E5E815745D6D94B67C941698EE43EC973B4CCB4FACE42F7249628CF5 C4263871
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         if (with_framing_bytes) {
             myBuff[0] = pktPreamble[0];
-            myBuff[1] = 0x50 + currentCam;
 
 #ifdef WITH_SRC_ADDR
-            myBuff[2] = pktPreamble[2];
-            // set the sequence number
-            myBuff[3] = (uint8_t)packetcount;
-            // set the Quality Factor
-            myBuff[4] = (uint8_t)QualityFactor;
-            // set the packet size
-            myBuff[5] = (uint8_t)(packetsize + 2);
-#else
+            myBuff[1] = pktPreamble[2];
             // set the sequence number
             myBuff[2] = (uint8_t)packetcount;
             // set the Quality Factor
             myBuff[3] = (uint8_t)QualityFactor;
             // set the packet size
             myBuff[4] = (uint8_t)(packetsize + 2);
+#else
+            // set the sequence number
+            myBuff[1] = (uint8_t)packetcount;
+            // set the Quality Factor
+            myBuff[2] = (uint8_t)QualityFactor;
+            // set the packet size
+            myBuff[3] = (uint8_t)(packetsize + 2);
 #endif
             dataSize += sizeof(pktPreamble);
         }
@@ -447,11 +461,11 @@ void SendPacket() {
 ///////////////////////////////////
 #ifdef WITH_AES
 #ifdef LORAWAN
-        Serial.print("LoRaCAM uses native LoRaWAN packet format\n");
+        Serial.print("LoRaCAM-AI uses native LoRaWAN packet format\n");
 #else
-        Serial.print("LoRaCAM uses encapsulated LoRaWAN packet format only for encryption\n");
+        Serial.print("LoRaCAM-AI uses encapsulated LoRaWAN packet format only for encryption\n");
 #endif
-        pl=local_aes_lorawan_create_pkt(myBuff, pl, 0);
+        pl=local_aes_lorawan_create_pkt(myBuff, pl);
 #endif
         Serial.flush();
         
@@ -622,7 +636,11 @@ int encode_ucam_file_data() {
     long startCamGlobalEncodeTime = 0;
     long startEncodeTime = 0;
     long totalEncodeDuration = 0;
-    long totalSendDuration = 0;
+    totalSendDuration = 0;
+
+    // reset
+    packetcount = 0L;
+    count = 0L;    
     totalPacketizationDuration = 0;
 
     Serial.print(F("Encoding picture data, Quality Factor is : "));
@@ -736,9 +754,6 @@ int encode_ucam_file_data() {
     Serial.printf("V : %d %.2X\n", CAMDATA_LINE_SIZE, CAMDATA_LINE_SIZE);
     Serial.printf("Real encoded image file size : %d\n", count);
 
-    // reset
-    packetcount = 0L;
-    count = 0L;
     return 0;
 }
 
@@ -1018,9 +1033,15 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
             //Serial.println(lastSentTime);
 
             if ((now_millis - lastSentTime) < inter_binary_pkt) {
-                Serial.print("Wait for ");
-                Serial.println(inter_binary_pkt - (now_millis - lastSentTime));
-                delay(inter_binary_pkt - (now_millis - lastSentTime));
+                unsigned long w = inter_binary_pkt - (now_millis - lastSentTime);
+                Serial.printf("Wait for %ld", w);
+#ifdef DELAY_WITH_LIGHT_SLEEP                
+                Serial.flush();
+                esp_sleep_enable_timer_wakeup(w*1000L);
+                esp_light_sleep_start();
+#else                
+                delay(w);
+#endif 
             }
         }
 
@@ -1099,11 +1120,11 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
 ///////////////////////////////////
 #ifdef WITH_AES
 #ifdef LORAWAN
-        Serial.print("LoRaCAM uses native LoRaWAN packet format\n");
+        Serial.print("LoRaCAM-AI uses native LoRaWAN packet format\n");
 #else
-        Serial.print("LoRaCAM uses encapsulated LoRaWAN packet format only for encryption\n");
+        Serial.print("LoRaCAM-AI uses encapsulated LoRaWAN packet format only for encryption\n");
 #endif
-        pl=local_aes_lorawan_create_pkt(myBuff, pl, 0);
+        pl=local_aes_lorawan_create_pkt(myBuff, pl);
 #endif
 
         previousLastSendTime = lastSentTime;
@@ -1190,8 +1211,12 @@ int encode_ucam_file_data() {
     long startCamPktEncodeTime = 0;
     long stopCamPktEncodeTime = 0;
     long stopCamQuantizatioTime = 0;
-    long totalSendDuration = 0;
+    totalSendDuration = 0;
     long totalEncodeDuration = 0;
+
+    // reset
+    packetcount = 0L;
+    count = 0L;
 
     Serial.print(F("Encoding picture data, Quality Factor is : "));
     Serial.println(QualityFactor);
@@ -1255,9 +1280,6 @@ int encode_ucam_file_data() {
     Serial.printf("V : %d %.2X\n", CAMDATA_LINE_SIZE, CAMDATA_LINE_SIZE)
     Serial.printf("Real encoded image file size : %d\n", count); 
 
-    // reset
-    packetcount = 0L;
-    count = 0L;
     return 0;
 }
 #endif  // #ifdef CRAN_NEW_CODING
@@ -1396,6 +1418,9 @@ void set_quality_factor(uint8_t Q) {
 }
 
 int encode_image(uint8_t* buf, bool transmit) {
+
+    int imageStatus = 1;
+
     transmitting_data=transmit;
 
     if (transmitting_data == false)
@@ -1426,10 +1451,13 @@ int encode_image(uint8_t* buf, bool transmit) {
 
     if (inImageLuminosity < DARK_THRESHOLD) {
         Serial.printf("inImage luminosity < %d, no transmission\n", DARK_THRESHOLD);
+        imageStatus = 0;
         transmitting_data = false;    
     }
-    else
+    else {
         Serial.printf("inImage luminosity > %d, passed\n", DARK_THRESHOLD);
+        imageStatus = 1;
+    } 
 
 #ifdef TEST_LUMINOSITY    
     Serial.println("testing luminosity, disabling transmission");
@@ -1437,5 +1465,56 @@ int encode_image(uint8_t* buf, bool transmit) {
 #endif
 #endif
 
-    return(encode_ucam_file_data());
+    // between 0 and 15
+    long randNumber = random(0, 15);
+    // change first byte of preambule each new image 0xF0 .. 0xFF
+    pktPreamble[0] = 0xF0 + randNumber;
+    Serial.printf("Packet image prefix will be %.2X\n", pktPreamble[0]);
+    // actually r will always be 0
+    int r = encode_ucam_file_data();
+
+#if defined TRANSMIT_IMAGE_INDICATION_WAZIGATE && defined USE_XLPP
+    if (transmit) {
+        // Create lpp payload.
+        lpp.reset();
+        //we start at channel 10 for the image indication
+        uint8_t ch=10;
+
+        Serial.println("Transmit image indication (#pkt, #byte, #min:sec) to WaziGate");
+        if (imageStatus) {
+          lpp.addAnalogOutput(ch, packetcount);
+          lpp.addAnalogOutput(ch+1, (float)count/1000.0);
+
+          uint8_t durationMinute = (uint8_t)((float)totalSendDuration/1000.0/60.0);
+          float durationSecond = (((float)totalSendDuration/1000.0/60.0) - durationMinute) * 0.6;
+          lpp.addAnalogOutput(ch+2, (float)durationMinute + durationSecond);
+        }
+        else {
+          lpp.addDigitalOutput(ch, 0);
+          lpp.addDigitalOutput(ch+1, 0.0);
+          lpp.addDigitalOutput(ch+2, 0.0);
+        }
+
+        int pl;
+        // the device address for statistiques on Wazigate would by default {0x26, 0x01, UCAM_ADDR1+1, UCAM_ADDR2};
+        DevAddr[2] = (unsigned char)((uint8_t)DevAddr[2]+1);
+        pl=local_aes_lorawan_create_pkt(lpp.buf, lpp.len, 0);
+        // set back the correct device addr for image packets
+        DevAddr[2] = (unsigned char)((uint8_t)DevAddr[2]-1);
+#ifdef DELAY_WITH_LIGHT_SLEEP        
+        Serial.println("Going light sleep 5s");
+        Serial.flush();
+        esp_sleep_enable_timer_wakeup(5000000);
+        esp_light_sleep_start();
+#else        
+        delay(5000);
+#endif
+        if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX))
+            return 0;
+        else
+            // the only case where the function can return 1
+            return 1;
+    }
+#endif 
+    return r;   
 }

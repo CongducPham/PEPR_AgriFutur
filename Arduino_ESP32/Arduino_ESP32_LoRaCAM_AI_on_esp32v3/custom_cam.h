@@ -37,10 +37,11 @@ extern SX127XLT LT;
 extern SX128XLT LT;
 #endif
 
-extern uint8_t node_addr;
+extern unsigned char DevAddr[4];
 extern void blinkLed(uint8_t n, uint16_t t);
 
-#define UCAM_ADDR 0x01
+#define UCAM_ADDR1 0x2D
+#define UCAM_ADDR2 0xAA
 //by default
 #define CAM_RES128X128
 //#define CAM_RES240X240
@@ -74,10 +75,23 @@ extern void blinkLed(uint8_t n, uint16_t t);
 // will insert the source addr in the image packet
 //#define WITH_SRC_ADDR 
 
+// use esp_light_sleep_start() instead of delay()
+// use in "production mode" as the serial port is not available in light sleep
+// so flashing needs to manually put the ESP32S3 in boot mode
+//#define DELAY_WITH_LIGHT_SLEEP
+
+// to test a simple image counter to WaziGate, may become obsolete when real reception of image will be implemented
+#define TRANSMIT_IMAGE_INDICATION_WAZIGATE
+
+#ifdef TRANSMIT_IMAGE_INDICATION_WAZIGATE
+#define USE_XLPP
+#include <xlpp.h>
+#endif
+
 #ifdef WITH_SRC_ADDR 
-#define PREAMBLE_SIZE            6
-#else
 #define PREAMBLE_SIZE            5
+#else
+#define PREAMBLE_SIZE            4
 #endif
 
 #define MIN_PKT_SIZE                      32
@@ -105,7 +119,7 @@ extern void blinkLed(uint8_t n, uint16_t t);
 
 #ifdef WITH_LORA_MODULE
     #define MAX_PKT_SIZE                  238
-    #define DEFAULT_LORA_MSS              90 //MAX_PKT_SIZE
+    #define DEFAULT_LORA_MSS              40 //MAX_PKT_SIZE
     #define DEFAULT_LORA_QUALITY_FACTOR   DEFAULT_QUALITY_FACTOR
 #endif
 

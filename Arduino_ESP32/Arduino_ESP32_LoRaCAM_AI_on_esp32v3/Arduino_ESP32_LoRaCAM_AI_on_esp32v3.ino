@@ -156,8 +156,9 @@ uint8_t node_addr=8;
 // unsigned char DevAddr[4] = {0x26, 0x01, 0x2D, 0xAA};
 ///////////////////////////////////////////////////////////////////
 // The default address in ABP mode for image sensor devices is 26012DAA
+// UCAM_ADDR1 = 0x2D and UCAM_ADDR2 = 0xAA defined in custom_cam.h
 // if you need a different address for another image sensor device, use AB, AC,..., AF instead
-unsigned char DevAddr[4] = {0x26, 0x01, 0x2D, 0xAA};
+unsigned char DevAddr[4] = {0x26, 0x01, UCAM_ADDR1, UCAM_ADDR2};
 #else
 ///////////////////////////////////////////////////////////////////
 // DO NOT CHANGE HERE
@@ -899,13 +900,16 @@ void loop() {
   //here we pass buf as image buffer to our encoding procedure
   //second parameter true/false=enable/disable transmission of packets
   bool with_transmission = true;
-  encode_image(buf, with_transmission);
+  int r = encode_image(buf, with_transmission);
   //
   ///////////////////////////////////////////////////////////////////
 
   free(buf);
 
-  blinkLed(2, 400);
+  if (r)
+      blinkLed(4, 150);
+  else  
+      blinkLed(2, 400);
 
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
   uint64_t fr_end = esp_timer_get_time();

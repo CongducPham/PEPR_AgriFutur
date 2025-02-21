@@ -1,17 +1,17 @@
 IRD PCB v4.1
 ----
 
-This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototyping and even integration purpose. It allows much simpler wiring of the soil humidity sensor, the watermark sensors and the soil temperature sensor (placeholder for associated resistors are already there).
+This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototyping and even integration purpose. It allows much simpler wiring of the soil humidity sensor, the watermark sensors and the soil temperature sensor (placeholder for associated resistors are already there). It is based on the PCB developed for the [PRIMA INTEL-IRRIS](https://intel-irris.eu/) project. In PEPR AgriFutur, a larger variety of physical sensors will be connected.
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ird-pcb-4-1-raw-top.png" width="400">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/raw-pcbv4.1-top.png" width="400">
 
-This new PCB also integrates by default a low-cost solar charging circuit to add solar panel and rechargeable NiMh batteries. The whole solar circuit appears on the back of the PCB (left part of the PCB) as illustrated below.
+This PCB also integrates by default a low-cost solar charging circuit to add solar panel and rechargeable NiMh batteries. The whole solar circuit appears on the back of the PCB (left part of the PCB) as illustrated below.
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ird-pcb-4-1-raw-bottom.png" width="400">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/raw-pcbv4.1-bottom.png" width="400">
 
 You can download the Gerber zipped archive and view them on an [online Gerber viewer](https://www.pcbgogo.com/GerberViewer.html).
 
-- Arduino ProMini IRD PCB v4.1 for RFM95W/RFM96W zipped Gerber archive, 2 layer board of 30.89x79.5mm [.zip](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_4_1/Gerber_PCB4_1_IISS_2023_09_27.zip)
+- Arduino ProMini IRD PCB v4.1 for RFM95W/RFM96W zipped Gerber archive, 2 layer board of 30.89x79.5mm [.zip](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_4_1/Gerber_IISS_4.1-version-for-PEPR-AgriFutur_PCB4_IISS_2025-02-19.zip)
 
 The raw PCB will of course not have the additional electronic components. While it is possible to add these component manually, in practice it is not recommended as the components are small and manually soldering them is prone to errors. 
 
@@ -22,17 +22,13 @@ Instead, the fully assembled PCB (PCBA) with solar circuit can be ordered fully 
 
 You can download the BOM & CPL files to order the fully assembled board from PCB manufacturers. You can look at the tutorial produced in the context of the INTEL-IRRIS project on how to order PCB that are fully assembled by the manufacturer: [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs, including PCBA](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB-update-PCBA.pdf).  
 
-- Bill of Materiels (BOM) file for the IRD PCB v4.1 RFM95W 868 [.xls](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_4_1/BOM_SMT_TB_RFM95_868_IISS_PCB4_1_wH2.xlsx)
+- Bill of Materiels (BOM) file for the IRD PCB v4.1 RFM95W 868 [.xls](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_4_1/BOM_SMT_TB_RFM95_868_IISS_PCB4_1_wH2_last-modified.xlsx). If you want the version without CN1 nor CN5 to have more flexibility to connect physical sensors, you can take [this one](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_4_1/BOM_SMT_TB_RFM95_868_IISS_PCB4_1_wH2_last-modified-noCN1-noCN5.xlsx)
 
-- CPL file for the IRD PCB v4.1 [.csv](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_4_1/CPL.csv)
+- CPL file for the IRD PCB v4.1 [.csv](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_4_1/CPL_PCB4_1_RFM9X.csv)
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ird-pcb-4-1-3D-top.png" width="400">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/pcbav4.1-top.png" width="400">
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ird-pcb-4-1-3D-bottom.png" width="400">
-
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ird-pcb-4-1-real-top-removebg-preview.png" width="400">
-
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ird-pcb-4-1-real-bottom-removebg-preview.png" width="400">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/pcbav4.1-bottom.png" width="400">
 
 Read [INTEL-IRRIS Newsletter #4](https://intel-irris.eu/intel-irris-newsletter-4) that presented a brief description with additional images.
 

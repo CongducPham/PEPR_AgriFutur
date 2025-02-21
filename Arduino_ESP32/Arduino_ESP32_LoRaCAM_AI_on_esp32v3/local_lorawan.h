@@ -15,7 +15,6 @@
 #include "Base64.h" 
 #endif
 
-extern uint8_t node_addr;
 extern unsigned char DevAddr[4];
 
 /* FROM lorabase.h of LMIC */
@@ -40,7 +39,7 @@ enum {
 
 /*------------------------ */
 
-uint8_t local_aes_lorawan_create_pkt(uint8_t* message, uint8_t pl, uint8_t app_key_offset);
+uint8_t local_aes_lorawan_create_pkt(uint8_t* message, uint8_t pl, int fc=-1, unsigned char* dev_addr=NULL);
 int8_t local_lorawan_decode_pkt(uint8_t* message, uint8_t pl);
 
 #endif
