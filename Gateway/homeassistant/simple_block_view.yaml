@@ -1,0 +1,116 @@
+title: Farm
+views:
+  - path: default_view
+    title: Home
+    cards:
+      - type: entities
+        entities:
+          - entity: person.intelirris
+      - type: vertical-stack
+        title: Capacitive Sensor      
+        cards:
+          - type: sensor
+            entity: sensor.soil_area_1_raw_value_from_sen0308
+            graph: line
+          - type: sensor
+            entity: sensor.soil_area_1_battery_voltage
+            graph: line
+            icon: mdi:battery
+          - type: gauge
+            entity: sensor.soil_area_1_raw_value_from_sen0308
+            needle: true
+            min: -1
+            max: 550
+            segments:
+              - from: -1
+                color: '#000000'
+              - from: 0
+                color: '#139feb'
+              - from: 84
+                color: '#15a43e'
+              - from: 167
+                color: '#9ac97b'                    
+              - from: 250
+                color: '#fdc009'
+              - from: 334
+                color: '#fb2041'
+              - from: 416
+                color: '#d1000f'        
+          - type: gauge
+            entity: sensor.soil_area_1_soil_value_index
+            needle: true
+            min: -1
+            max: 6
+            segments:
+              - from: -2
+                color: '#000000'
+              - from: 0
+                color: '#d1000f'
+              - from: 1
+                color: '#fb2041'
+              - from: 2
+                color: '#fdc009'
+              - from: 3
+                color: '#9ac97b'
+              - from: 4
+                color: '#15a43e'
+              - from: 5
+                color: '#139feb'                
+
+      - type: vertical-stack
+        title: Tensiometer Sensor      
+        cards:
+          - type: sensor
+            entity: sensor.soil_area_2_centibars_from_wm200
+            graph: line
+          - type: sensor
+            entity: sensor.soil_area_2_resistance_value_from_wm200
+            graph: line
+          - type: sensor
+            entity: sensor.soil_area_2_soil_temperature_sensor
+            graph: line
+            icon: mdi:thermometer
+          - type: sensor
+            entity: sensor.soil_area_2_battery_voltage
+            graph: line
+            icon: mdi:battery
+          - type: gauge
+            entity: sensor.soil_area_2_centibars_from_wm200
+            needle: true
+            min: 0
+            max: 255
+            segments:
+              - from: 0
+                color: '#139feb'
+              - from: 10
+                color: '#15a43e'
+              - from: 30
+                color: '#fdc009'
+              - from: 60
+                color: '#fb2041'
+              - from: 100
+                color: '#d1000f' 
+              - from: 240
+                color: '#000000'           
+          - type: gauge
+            entity: sensor.soil_area_2_soil_value_index
+            needle: true
+            min: -2
+            max: 6
+            segments:
+              - from: -2
+                color: '#000000'
+              - from: 0
+                color: '#d1000f'
+              - from: 1
+                color: '#fb2041'
+              - from: 2
+                color: '#fdc009'
+              - from: 3
+                color: '#9ac97b'
+              - from: 4
+                color: '#15a43e'
+              - from: 5
+                color: '#139feb'                                                            
+               
+

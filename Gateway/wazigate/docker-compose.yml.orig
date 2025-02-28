@@ -1,0 +1,158 @@
+version: "3.9"
+
+services:
+  wazigate-system:
+    container_name: waziup.wazigate-system
+    image: waziup/wazigate-system:$WAZIGATE_TAG
+    build:
+      context: ./wazigate-system
+      x-bake:
+        platforms: "linux/arm/v7"
+    volumes:
+      - ./apps/waziup.wazigate-system:/var/lib/waziapp
+      - /var/run:/var/run
+      - /sys/class/gpio:/sys/class/gpio
+      - /dev/mem:/dev/mem
+      - /var/run/wazigate-host.sock:/var/run/wazigate-host.sock
+    privileged: true
+    healthcheck:
+      test: curl --fail --unix-socket /var/lib/waziapp/proxy.sock http://localhost/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 30 # Will try for 5 minutes
+    restart: unless-stopped
+    extra_hosts: 
+      - "wazigate:172.17.0.1"
+      - "waziup.wazigate-edge:172.17.0.1"
+      - "wazigate-edge:172.17.0.1"
+
+  wazigate-lora:
+    container_name: waziup.wazigate-lora
+    image: waziup/wazigate-lora:$WAZIGATE_TAG
+    build:
+      context: ./wazigate-lora
+      x-bake:
+        platforms: "linux/arm64"
+    labels: 
+      - io.waziup.waziapp=waziup.wazigate-lora
+    volumes:
+      - ./apps/waziup.wazigate-lora:/var/lib/waziapp
+    healthcheck:
+      test: curl --fail --unix-socket /var/lib/waziapp/proxy.sock http://localhost/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 30 # Will try for 5 minutes      
+    restart: unless-stopped
+    extra_hosts: 
+      - "wazigate:172.17.0.1"
+      - "waziup.wazigate-edge:172.17.0.1"
+
+  wazigate-lora-forwarders:
+    container_name: waziup.wazigate-lora.forwarders
+    image: waziup/wazigate-lora-forwarders:$WAZIGATE_TAG
+    build: 
+      context: ./wazigate-lora/forwarders
+      x-bake:
+        platforms: "linux/arm64"
+    tty: true 
+    volumes:
+      - ./apps/waziup.wazigate-lora/forwarders/:/root/conf
+      - /var/run/dbus:/var/run/dbus
+      - /sys/class/gpio:/sys/class/gpio
+      - /dev:/dev
+    environment:
+      - ENABLE_MULTI_SPI=1
+      - ENABLE_MULTI_USB=1
+      - ENABLE_SINGLE_SPI=1
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    labels:
+      - io.waziup.waziapp=waziup.wazigate-lora
+    privileged: true  
+    restart: unless-stopped
+    extra_hosts: 
+      - "wazigate:172.17.0.1"
+      - "waziup.wazigate-edge:172.17.0.1"
+      - "wazigate-edge:172.17.0.1"
+      
+  postgresql:
+    container_name: postgres
+    image: postgres:alpine3.15
+    platform: linux/arm64/v8
+    volumes:
+      - ./apps/waziup.wazigate-lora/postgresql/initdb:/docker-entrypoint-initdb.d
+      - postgresqldata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "chirpstack_ns"]
+      interval: 10s
+      timeout: 5s
+      retries: 5  
+    command: postgres -c autovacuum=off 
+    restart: unless-stopped
+    extra_hosts: 
+      - "wazigate:172.17.0.1"
+      - "waziup.wazigate-edge:172.17.0.1"
+
+  chirpstack-gateway-bridge:
+    container_name: waziup.wazigate-lora.chirpstack-gateway-bridge
+    image: waziup/chirpstack-gateway-bridge:3.9.2
+    platform: linux/arm/v7
+    #chirpstack/chirpstack-gateway-bridge:3.13.2
+    labels: 
+      - io.waziup.waziapp=waziup.wazigate-lora
+    volumes:
+      - ./apps/waziup.wazigate-lora/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
+    ports:
+      - 1700:1700/udp
+    restart: unless-stopped
+    extra_hosts: 
+      - "wazigate:172.17.0.1"
+      - "waziup.wazigate-edge:172.17.0.1"
+      - "wazigate-edge:172.17.0.1"
+
+  chirpstack-application-server:
+    container_name: waziup.wazigate-lora.chirpstack-application-server
+    image: waziup/chirpstack-application-server:3.13.2
+    platform: linux/arm/v7 
+    #chirpstack/chirpstack-application-server:3.17.4 
+    labels: 
+      - io.waziup.waziapp=waziup.wazigate-lora
+    volumes:
+      - ./apps/waziup.wazigate-lora/chirpstack-application-server:/etc/chirpstack-application-server
+      - /var/run/redis:/var/run/redis
+    ports:
+      - 8080:8080 
+    restart: unless-stopped
+    extra_hosts: 
+      - "wazigate:172.17.0.1"
+      - "waziup.wazigate-edge:172.17.0.1"
+      - "wazigate-edge:172.17.0.1"
+
+  chirpstack-network-server:
+    container_name: waziup.wazigate-lora.chirpstack-network-server
+    image: waziup/chirpstack-network-server:3.11.0
+    platform: linux/arm/v7
+    #chirpstack/chirpstack-network-server:3.15.5
+    labels:
+      - io.waziup.waziapp=waziup.wazigate-lora
+    volumes:
+      - ./apps/waziup.wazigate-lora/chirpstack-network-server:/etc/chirpstack-network-server
+      - /var/run/redis:/var/run/redis
+    restart: unless-stopped
+    extra_hosts: 
+      - "wazigate:172.17.0.1"
+      - "waziup.wazigate-edge:172.17.0.1"
+      - "wazigate-edge:172.17.0.1"
+
+
+#-------------------------#
+
+networks:
+  default:
+    name: wazigate
+
+volumes:
+  postgresqldata:
+    name: postgresqldata

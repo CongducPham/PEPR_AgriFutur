@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  rak5146_lora_packet_forwarder_for_wazigate:
+    image: rak5146_lora_packet_forwarder_for_wazigate
+    container_name: rak5146_lora_packet_forwarder_for_wazigate
+    privileged: true
+    restart: never #
+
+networks:
+  default:
+    external:
+      name: wazigate

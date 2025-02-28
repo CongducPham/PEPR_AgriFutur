@@ -1,0 +1,242 @@
+# See https://www.chirpstack.io/network-server/install/config/ for a full
+# configuration example and documentation.
+#
+# This file is for the EU868 band. See the examples/ folder for more
+# configuration examples.
+
+[postgresql]
+dsn="postgres://chirpstack_ns:chirpstack_ns@postgresql/chirpstack_ns?sslmode=disable"
+
+[redis]
+servers=[
+  "/var/run/redis/redis.sock",
+]
+
+[network_server]
+net_id="000000"
+
+[network_server.band]
+# LoRaWAN band to use.
+#
+# Valid values are:
+# * AS923    (AS923 without frequency offset) 923.2MHz
+# * AS923-2  (AS923 with -1.80 MHz frequency offset) 921.4MHz
+# * AS923-3  (AS923 with -6.60 MHz frequency offset) 916.6MHz
+# * AS923-4  (AS923 with -5.90 MHz frequency offset) 917.3MHz
+# * AU915
+# * CN470
+# * CN779
+# * EU433
+# * EU868
+# * IN865
+# * KR920
+# * RU864
+# * US915
+# * ISM2400  (LoRaWAN 2.4GHz: https://lora-developers.semtech.com/library/tech-papers-and-guides/physical-layer-proposal-2.4ghz)
+
+name="EU868"
+
+# Enforce 400ms dwell time.
+#
+# Some regions require the configuration of the dwell time, which will
+# limit the time-on-air to 400ms. Please refer to the LoRaWAN Regional
+# Parameters specification for more information.
+#
+# When configured and required in the configured region, ChirpStack Network Server will
+# use the TxParamSetup mac-command to communicate this to the devices.
+uplink_dwell_time_400ms=false
+downlink_dwell_time_400ms=false
+
+# Uplink max. EIRP.
+#
+# This defines the maximum allowed device EIRP which must be configured
+# for some regions. Please refer the LoRaWAN Regional Parameters specification
+# for more information. Set this to -1 to use the default value for this
+# region.
+#
+# When required in the configured region, ChirpStack Network Server will use the
+# TxParamSetup mac-command to communicate this to the devices.
+# For regions where the TxParamSetup mac-command is not implemented, this
+# setting is ignored.
+uplink_max_eirp=-1
+
+# Enforce repeater compatibility.
+#
+# Most band configurations define the max payload size for both an optional
+# repeater encapsulation layer as for setups where a repeater will never
+# be used. The latter case increases the max payload size for some data-rates.
+# In case a repeater might used, set this flag to true.
+repeater_compatible=false
+  
+# Installation margin (dB) used by the ADR engine.
+#
+# A higher number means that the network-server will keep more margin,
+# resulting in a lower data-rate but decreasing the chance that the
+# device gets disconnected because it is unable to reach one of the
+# surrounded gateways.
+installation_margin=10
+
+# RX window (Class-A).
+#
+# Set this to:
+# 0: RX1 / RX2
+# 1: RX1 only
+# 2: RX2 only
+rx_window=0
+
+# Class A RX1 delay
+#
+# 0=1sec, 1=1sec, ... 15=15sec. A higher value means ChirpStack Network Server has more
+# time to respond to the device as the delay between the uplink and the
+# first receive-window will be increased.
+rx1_delay=1
+
+# RX1 data-rate offset
+#
+# Please consult the LoRaWAN Regional Parameters specification for valid
+# options of the configured network_server.band.name.
+rx1_dr_offset=0
+
+# RX2 data-rate
+#
+# When set to -1, the default RX2 data-rate will be used for the configured
+# LoRaWAN band.
+#
+# Please consult the LoRaWAN Regional Parameters specification for valid
+# options of the configured network_server.band.name.
+rx2_dr=-1
+
+# RX2 frequency
+#
+# When set to -1, the default RX2 frequency will be used.
+#
+# Please consult the LoRaWAN Regional Parameters specification for valid
+# options of the configured network_server.band.name.
+rx2_frequency=-1
+
+# Prefer RX2 on RX1 data-rate less than.
+#
+# Prefer RX2 over RX1 based on the RX1 data-rate. When the RX1 data-rate
+# is smaller than the configured value, then the Network Server will
+# first try to schedule the downlink for RX2, failing that (e.g. the gateway
+# has already a payload scheduled at the RX2 timing) it will try RX1.
+rx2_prefer_on_rx1_dr_lt=0
+
+# Prefer RX2 on link budget.
+#
+# When the link-budget is better for RX2 than for RX1, the Network Server will first
+# try to schedule the downlink in RX2, failing that it will try RX1.
+rx2_prefer_on_link_budget=false
+
+# Prefer gateways for downlink with given uplink (SNR) margin.
+#
+# When receiving an uplink (by multiple gateways), the Network Server will
+# prefer the gateways that have at least the configured margin for the uplink
+# SNR when sending a downlink. Margin:
+#   uplink SNR - required SNR for spreading factor
+#
+#  * In case multiple gateways match, the Network Server will select a random
+#    gateway from the match.
+#  * In case non of the gateways have the desired margin or the uplink
+#    modulation was not LoRa, then the gateway with the best SNR (or RSSI
+#    in case of FSK) will be selected when sending a downlink.
+gateway_prefer_min_margin=10
+
+# Downlink TX Power (dBm)
+#
+# When set to -1, the downlink TX Power from the configured band will
+# be used.
+#
+# Please consult the LoRaWAN Regional Parameters and local regulations
+# for valid and legal options. Note that the configured TX Power must be
+# supported by your gateway(s).
+downlink_tx_power=-1
+
+# Disable mac-commands
+#
+# When set to true, ChirpStack Network Server will not handle and / or schedule any
+# mac-commands. However, it is still possible for an external controller
+# to handle and / or schedule mac-commands. This is intended for testing
+# only.
+disable_mac_commands=false
+
+# Disable ADR
+#
+# When set, this globally disables ADR.
+disable_adr=false
+
+# Max mac-command error count.
+#
+# When a mac-command is nACKed for more than the configured value, then the
+# ChirpStack Network Server will stop sending this mac-command to the device.
+# This setting prevents that the Network Server will keep sending mac-commands
+# on every downlink in case of a malfunctioning device.
+max_mac_command_error_count=3
+
+# Enable only a given sub-set of channels
+#
+# Use this when ony a sub-set of the by default enabled channels are being
+# used. For example when only using the first 8 channels of the US band.
+# Note: when left blank, all channels will be enabled.
+#
+# For the US band, there are 64 125kHz channels (0-63) with 8 500kHz
+# channels (65-71) with frequencies in the middle of each
+# sub-band of 125kHz channels.
+# Most US LoRa gateways recieve on only one sub-band which consists of
+# 8 125kHz channels and 1 500 kHz channel
+#
+# Example: (sub-band 1)
+# enabled_uplink_channels=[0, 1, 2, 3, 4, 5, 6, 7, 64]
+# Exmaple: (sub-band 2)
+# enabled_uplink_channels=[8, 9, 10, 11, 12, 13, 14, 15, 65]
+enabled_uplink_channels=[]
+
+# ADR plugins.
+#
+# By default, the 'default' ADR algorithm is available. The number of available
+# ADR algorithms can be extended through plugins. This setting can be configured
+# to a list of one or multiple plugins.
+adr_plugins=[]
+
+
+# Extra channel configuration.
+#
+# Use this for LoRaWAN regions where it is possible to extend the by default
+# available channels with additional channels (e.g. the EU band).
+# The first 5 channels will be configured as part of the OTAA join-response
+# (using the CFList field).
+# The other channels (or channel / data-rate changes) will be (re)configured
+# using the NewChannelReq mac-command.
+#
+# Example:
+# [[network_server.network_settings.extra_channels]]
+# frequency=867100000
+# min_dr=0
+# max_dr=5
+
+# [[network_server.network_settings.extra_channels]]
+# frequency=867300000
+# min_dr=0
+# max_dr=5
+
+# [[network_server.network_settings.extra_channels]]
+# frequency=867500000
+# min_dr=0
+# max_dr=5
+
+# [[network_server.network_settings.extra_channels]]
+# frequency=867700000
+# min_dr=0
+# max_dr=5
+
+# [[network_server.network_settings.extra_channels]]
+# frequency=867900000
+# min_dr=0
+# max_dr=5
+
+[network_server.gateway.backend.mqtt]
+server="tcp://waziup.wazigate-edge:1883"
+client_id="chirpstack-network-server"
+
+[join_server.default]
+server="http://waziup.wazigate-lora.chirpstack-application-server:8003"

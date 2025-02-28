@@ -1,0 +1,14 @@
+[Unit]
+Description=Python script to drive OLED screen for INTEL-IRRIS Wazigate
+StartLimitIntervalSec=600
+StartLimitBurst=2
+After=network.target wazigate.service
+
+[Service]
+Type=oneshot
+ExecStartPre=-/bin/sleep 120
+ExecStart=python /home/pi/oled/oled-service.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

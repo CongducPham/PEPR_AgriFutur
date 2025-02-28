@@ -1,0 +1,98 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+  
+panel_iframe:
+  configurator:
+    title: Configurator
+    icon: mdi:wrench
+    url: http://wazigate.local:3218
+    require_admin: true
+    
+sensor capacitive:
+  - platform: rest
+    resource: http://localhost/devices/63b809a068f3190820643ee8/sensors/temperatureSensor_0/value
+    name: SOIL-AREA-1/Raw value from SEN0308
+  - platform: rest
+    resource: http://localhost/devices/63b809a068f3190820643ee8/sensors/analogInput_6/value
+    name: SOIL-AREA-1/Battery voltage
+    unit_of_measurement: "Volts"
+  - platform: rest
+    resource: http://localhost/devices/63b809a068f3190820643ee8/sensors/temperatureSensor_0
+    name: SOIL-AREA-1/soil value index
+    value_template: "{{ value_json.meta.value_index_iiwa }}"       
+  - platform: rest
+    resource: http://localhost/devices/63b809a068f3190820643ee8/sensors/temperatureSensor_0
+    name: SOIL-AREA-1/soil condition
+    value_template: > 
+      {% if value_json.meta.value_index_iiwa == -1 %}
+        no sensor         
+      {% elif value_json.meta.value_index_iiwa == 0 %}
+        very dry
+      {% elif value_json.meta.value_index_iiwa == 1 %}
+        dry     
+      {% elif value_json.meta.value_index_iiwa == 2 %}
+        dry-wet   
+      {% elif value_json.meta.value_index_iiwa == 3 %}
+        wet-dry   
+      {% elif value_json.meta.value_index_iiwa == 4 %}
+        wet 
+      {% else %}
+        saturated
+      {% endif %}  
+                              
+sensor tensiometer:  
+  - platform: rest
+    resource: http://localhost/devices/63b809a168f3190820643eec/sensors/temperatureSensor_0/value
+    name: SOIL-AREA-2/centibars from WM200
+    unit_of_measurement: "cbar"   
+  - platform: rest
+    resource: http://localhost/devices/63b809a168f3190820643eec/sensors/temperatureSensor_1/value
+    name: SOIL-AREA-2/resistance value from WM200
+    value_template: "{{ value_json | multiply(10) | round(0)}}"      
+    unit_of_measurement: "Ohms"  
+  - platform: rest
+    resource: http://localhost/devices/63b809a168f3190820643eec/sensors/temperatureSensor_5/value
+    name: SOIL-AREA-2/Soil Temperature Sensor
+    unit_of_measurement: "°C"  
+  - platform: rest
+    resource: http://localhost/devices/63b809a168f3190820643eec/sensors/analogInput_6/value
+    name: SOIL-AREA-2/Battery voltage  
+    unit_of_measurement: "Volts"  
+  - platform: rest
+    resource: http://localhost/devices/63b809a168f3190820643eec/sensors/temperatureSensor_0
+    name: SOIL-AREA-2/soil value index
+    value_template: "{{ value_json.meta.value_index_iiwa }}"  
+  - platform: rest
+    resource: http://localhost/devices/63b809a168f3190820643eec/sensors/temperatureSensor_0
+    name: SOIL-AREA-2/soil condition
+    value_template: > 
+      {% if value_json.meta.value_index_iiwa == -2 %}
+        sensor error   
+      {% elif value_json.meta.value_index_iiwa == -1 %}
+        no sensor         
+      {% elif value_json.meta.value_index_iiwa == 0 %}
+        very dry
+      {% elif value_json.meta.value_index_iiwa == 1 %}
+        dry     
+      {% elif value_json.meta.value_index_iiwa == 2 %}
+        dry-wet   
+      {% elif value_json.meta.value_index_iiwa == 3 %}
+        wet-dry   
+      {% elif value_json.meta.value_index_iiwa == 4 %}
+        wet 
+      {% else %}
+        saturated
+      {% endif %}        

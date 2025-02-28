@@ -1,0 +1,30 @@
+title: Farm
+views:
+  - path: default_view
+    title: Home
+    cards:
+      - type: entities
+        entities:
+          - person.intelirris
+      - type: entities
+        title: Capacitive Sensor      
+        entities:
+          - entity: sensor.soil_area_1_raw_value_from_sen0308
+            secondary_info: last-updated
+          - entity: sensor.soil_area_1_battery_voltage
+            secondary_info: last-updated
+            icon: mdi:battery
+      - type: entities
+        title: Tensiometer Sensor      
+        entities:
+          - entity: sensor.soil_area_2_centibars_from_wm200
+            secondary_info: last-updated
+          - entity: sensor.soil_area_2_resistance_value_from_wm200
+            secondary_info: last-updated
+          - entity: sensor.soil_area_2_soil_temperature_sensor
+            icon: mdi:thermometer
+            secondary_info: last-updated
+          - entity: sensor.soil_area_2_battery_voltage
+            secondary_info: last-updated
+            icon: mdi:battery
+

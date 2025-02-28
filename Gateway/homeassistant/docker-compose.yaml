@@ -1,0 +1,23 @@
+version: '3'
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - /opt/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    
+  hass-configurator:
+    container_name: hassconf
+    image: causticlab/hass-configurator-docker
+    restart: unless-stopped
+    ports:
+      - "3218:3218/tcp"
+    volumes:
+      - /opt/hassconf/config:/config
+      - /opt/homeassistant/config:/hass-config
+    depends_on:
+      - homeassistant    

@@ -1,0 +1,2 @@
+#backup starter-kit default devices every 6 hours
+0 3,9,15,21 * * * /home/pi/scripts/backup_everything.sh tousbdrive

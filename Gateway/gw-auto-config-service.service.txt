@@ -1,0 +1,11 @@
+[Unit]
+Description=Shell script to perform auto configuration for INTEL-IRRIS Wazigate
+After=network.target wazigate.service
+
+[Service]
+Type=oneshot
+ExecStartPre=-/bin/sleep 20
+ExecStart=/home/pi/gw-auto-config-main.sh
+
+[Install]
+WantedBy=multi-user.target

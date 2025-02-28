@@ -1,0 +1,30 @@
+Main version history
+
+Feb 24, 2025
+------------
+- rebrand gateway to generic gateway that will be improved independently from INTEL-IRRIS project
+
+For all changes up to Feb 24, 2025
+see https://github.com/CongducPham/PRIMA-Intel-IrriS/commits/main for all commits
+---------------------------------------------------------------------------------
+
+Feb 5, 2023
+-----------
+- if /boot/gateway.zip then unzip -o /boot/gateway.zip to /home/pi to update the whole distribution
+
+Jan 9, 2023
+-----------
+- add Home Assistant integration for starter-kit default devices
+
+Nov 6, 2022
+-----------
+- Update for WaziGate v2
+
+Jun 15, 2022 
+------------
+- add INTEL-IRRIS WaziGate auto configuration features
+- add RTC support by default
+
+Mar 14, 2022 
+------------
+- add main INTEL-IRRIS WaziGate features including OLED service
