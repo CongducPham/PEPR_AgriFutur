@@ -1,11 +1,12 @@
 #ifndef CONFIG_SETTINGS
 #define CONFIG_SETTINGS
 
-//#define ORIGINAL_CONFIG
+// you can use WITH_WEB_SERVER and CUSTOM_CAM_CONFIG to fine tune camera settings
+//#define WITH_WEB_SERVER
+//#define ORIGINAL_CAM_CONFIG
+#define CUSTOM_CAM_CONFIG
 
-#ifdef ORIGINAL_CONFIG
-    #define WITH_WEB_SERVER
-#else
+#if not defined WITH_WEB_SERVER
     #define TEST_IN_PROGRESS 10 // in minutes
     //#define TEST_ENERGY
     //#define WITH_WEB_SERVER

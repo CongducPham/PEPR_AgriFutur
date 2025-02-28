@@ -32,12 +32,11 @@ The MOSFET is the BS170 N-channel which can support up to 500mA. In all our test
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/XIAO-ESP32S3-Sense-wiring-breadboard.png" width="800">
 
-In this wiring, you can see that D2 from the `XIAO ESP32-S3 Sense` is connected to A0 on the Arduino. When power up and active, LoRaCAM-AI will set D2 to HIGH until all tasks are finished, i.e. capture the image, process and analyse the image, eventually encode the image and transmit the image packets. Then, when D2 is set to LOW by LoRaCAM-AI, the Arduino will power down the entire system. The code for the Arduino would define the deep sleep period. With low power settings (power regulator and activity LED removed), the Arduino Pro Mini at 3.3V and 8MHz have a deep sleep current of about 5uA which is very low. The source code of the control part is in the [Arduino_CTRL_MOSFET folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_CTRL_MOSFET). **In the code, the deep sleep (`offPeriod`) has been set to 30s for test**.
+In this wiring, you can see that D2 from the `XIAO ESP32-S3 Sense` is connected to A0 on the Arduino. When power up and active, LoRaCAM-AI will set D2 to HIGH until all tasks are finished, i.e. capture the image, process and analyse the image, eventually encode the image and transmit the image packets. Then, when D2 is set to LOW by LoRaCAM-AI, the Arduino will power down the entire system. The code for the Arduino would define the deep sleep period. With low power settings (power regulator and activity LED removed), the Arduino Pro Mini at 3.3V and 8MHz have a deep sleep current of about 5uA which is very low. The source code of the control part is in the [Arduino_CTRL_MOSFET folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_CTRL_MOSFET). **In the code, the deep sleep (`offPeriod`) has been set to 10mins for test**.
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_5.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_6.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_7.jpg" width="200">
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_8.jpg" width="300"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_9.jpg" width="300">
-
 
 # Flashing and testing LoRaCAM-AI
 
@@ -123,11 +122,11 @@ Packet Sent in 0
 ...
 ```
 
-The LED on the `XIAO ESP32-S3 Sense` will blink as follows: (1) after power up and an image is ready for encoding and transmission, the LED will slowly blink twice; (2) each time a packet has been successfully transmitted (real transmission) the LED will blink once. If a transmission error has been reported by the sending side radio module, the LED will blink 4 times fast; (3) when all packets have been transmitted, the LED will again slowly blink twice. This is when LoRaCAM-AI will try to put itself in deep sleep.
+The LED on the `XIAO ESP32-S3 Sense` will blink as follows: (1) after power up and an image is ready for encoding and transmission, the LED will slowly blink twice; (2) each time a packet has been successfully transmitted (real transmission) the LED will blink once. If a transmission error has been reported by the sending side radio module, the LED will blink 4 times fast (the packet can however not be received at the gateway for various reasons); (3) when all packets have been transmitted, the LED will again slowly blink twice. This is when LoRaCAM-AI will try to put itself in deep sleep.
 
 ## Adding the power control by Arduino Pro Mini
 
-To achieve a real low power mode, an external Arduino Pro Mini is needed as well as a MOSFET, as described previously. Take the 3.3V and 8MHz version. Remove the power regulator and the activity LED as described in this [INTEL-IRRIS project tutorial, slide 54](https://docs.google.com/viewer?url=https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/Tutorials/Intel-Irris-IOT-platform-PCBv4-PCBA.pdf). Then, flash the Arduino Pro Mini with the [Arduino_CTRL_MOSFET code](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_CTRL_MOSFET). You can use the default configuration if you wired the components as described previously. If everything is flashed and wired correctly, switching ON will first power the Arduino Pro Mini which will then power the `XIAO ESP32-S3 Sense`.
+To achieve a real low power mode, an external Arduino Pro Mini is needed as well as a MOSFET, as described previously. Take the 3.3V and 8MHz version of the Arduino Pro Mini for the lowest energy consumption. Then, remove the power regulator and the activity LED as described in this [INTEL-IRRIS project tutorial, slide 54](https://docs.google.com/viewer?url=https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/Tutorials/Intel-Irris-IOT-platform-PCBv4-PCBA.pdf). Finally, flash the Arduino Pro Mini with the [Arduino_CTRL_MOSFET code](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_CTRL_MOSFET). You can use the default configuration if you wired the components as described previously. If everything is flashed and wired correctly, switching ON will first power the Arduino Pro Mini which will then power the `XIAO ESP32-S3 Sense`.
 
 In addition to the LED on the `XIAO ESP32-S3 Sense`, the Arduino Pro Mini will use its LED as follows: (1) after power on, and after each wake up, the LED will blink 5 times fast; (2) each time that the activity pin from the ESP32 goes below the defined activity threshold, the LED will blink once; (3) when the activity pin has been below the activity threshold for at least 2s, the LED will slowly blink 4 times, indicating that the power to the ESP32 is going to be cut. This is when the Arduino Pro Mini will go in deep sleep. In the default configuration, the deep sleep period is set to 10mins but it can typically be 1 hour for instance.
 
@@ -136,6 +135,14 @@ In addition to the LED on the `XIAO ESP32-S3 Sense`, the Arduino Pro Mini will u
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_10.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_11.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_12.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_13.jpg" width="200">
 
 You can also watch this [video](https://iotsensingsystem.live-website.com/loracam-ai-first-poc-is-promising) showing the operation of the LoRaCAM-AI with the LEDs indicating the various activity steps.
+ 
+## Fine tuning camera parameters
+
+To be updated.
+
+## Receiving image data on WaziGate LoRa gateway
+
+To be updated.
  
 # Tools
 

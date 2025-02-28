@@ -1,7 +1,7 @@
 /*
  *  LoRaCAM-AI takes picture, encode, process and send image with LoRa 
  *  
- *  Will integrate AI image recognition for various agriculture applications
+ *  Will integrate AI image recognition for various agriculture/environmental applications
  *
  *  Copyright (C) 2025 Congduc Pham
  *
@@ -539,29 +539,26 @@ void setup() {
     config.pin_sccb_scl = SIOC_GPIO_NUM;
     config.pin_pwdn = PWDN_GPIO_NUM;
     config.pin_reset = RESET_GPIO_NUM;
-#ifdef ORIGINAL_CONFIG
+#ifdef WITH_WEB_SERVER    
+#ifdef ORIGINAL_CAM_CONFIG
     config.xclk_freq_hz = 20000000;
-#else
-    // C.PHAM – Jan. 20th, 2025
-    config.xclk_freq_hz = 10000000;
-#endif
-    config.frame_size = FRAMESIZE_UXGA;
-#ifdef ORIGINAL_CONFIG
+    config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
     config.pixel_format = PIXFORMAT_JPEG;  // for streaming
+    //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition    
 #else
-    // C.PHAM – Jan. 20th, 2025
+    config.xclk_freq_hz = 10000000;
+    config.grab_mode = CAMERA_GRAB_LATEST;
     config.pixel_format = PIXFORMAT_GRAYSCALE;  // for getting BMP
 #endif
-    // config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
-#ifdef ORIGINAL_CONFIG
-    config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
-#else
-    // C.PHAM – Jan. 20th, 2025
+#else // WITH_WEB_SERVER
+    config.xclk_freq_hz = 10000000;
     config.grab_mode = CAMERA_GRAB_LATEST;
+    config.pixel_format = PIXFORMAT_GRAYSCALE;  // for getting BMP
 #endif
+    //config.frame_size = FRAMESIZE_UXGA;
+    // drop down frame size for higher initial frame rate
+    config.frame_size = FRAMESIZE_SVGA; 
     config.fb_location = CAMERA_FB_IN_PSRAM;
-    config.jpeg_quality = 12;
-    config.fb_count = 1;
 
     // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
     //                      for larger pre-allocated frame buffer.
@@ -572,12 +569,13 @@ void setup() {
             config.grab_mode = CAMERA_GRAB_LATEST;
         } else {
             // Limit the frame size when PSRAM is not available
-            config.frame_size = FRAMESIZE_SVGA;
+            config.frame_size = FRAMESIZE_QVGA;
             config.fb_location = CAMERA_FB_IN_DRAM;
+            config.fb_count = 1;
         }
     } else {
         // Best option for face detection/recognition
-#if defined ORIGINAL_CONFIG || defined CAM_RES240X240
+#if defined CAM_RES240X240
         config.frame_size = FRAMESIZE_240X240;
 #else
         config.frame_size = FRAMESIZE_128X128;
@@ -601,7 +599,66 @@ void setup() {
     }
 
     sensor_t *s = esp_camera_sensor_get();
-    
+
+    // https://randomnerdtutorials.com/esp32-cam-ov2640-camera-settings/
+    // somefow default settings from the CameraWebServer example
+    /*
+    s->set_brightness(s, 0);     // -2 to 2
+    s->set_contrast(s, 0);       // -2 to 2
+    s->set_saturation(s, 0);     // -2 to 2
+    s->set_special_effect(s, 0); // 0 to 6 (0 - No Effect, 1 - Negative, 2 - Grayscale, 3 - Red Tint, 4 - Green Tint, 5 - Blue Tint, 6 - Sepia)
+    s->set_whitebal(s, 1);       // 0 = disable , 1 = enable
+    s->set_awb_gain(s, 1);       // 0 = disable , 1 = enable
+    s->set_wb_mode(s, 0);        // 0 to 4 - if awb_gain enabled (0 - Auto, 1 - Sunny, 2 - Cloudy, 3 - Office, 4 - Home)
+    s->set_exposure_ctrl(s, 1);  // 0 = disable , 1 = enable
+    s->set_aec2(s, 0);           // 0 = disable , 1 = enable
+    s->set_ae_level(s, 0);       // -2 to 2
+    s->set_aec_value(s, 300);    // 0 to 1200
+    s->set_gain_ctrl(s, 1);      // 0 = disable , 1 = enable
+    s->set_agc_gain(s, 0);       // 0 to 30
+    s->set_gainceiling(s, (gainceiling_t)0);  // 0 to 6
+    s->set_bpc(s, 0);            // 0 = disable , 1 = enable
+    s->set_wpc(s, 1);            // 0 = disable , 1 = enable
+    s->set_raw_gma(s, 1);        // 0 = disable , 1 = enable
+    s->set_lenc(s, 1);           // 0 = disable , 1 = enable
+    s->set_hmirror(s, 0);        // 0 = disable , 1 = enable
+    s->set_vflip(s, 0);          // 0 = disable , 1 = enable
+    s->set_dcw(s, 1);            // 0 = disable , 1 = enable
+    s->set_colorbar(s, 0);       // 0 = disable , 1 = enable    
+    */
+
+#ifdef CUSTOM_CAM_CONFIG
+    // we will manually control
+    //
+    // Set brightness (-2 to 2)
+    s->set_brightness(s, -2); // Minimum brightness
+    s->set_contrast(s, 0);       // -2 to 2
+    s->set_saturation(s, 0);     // -2 to 2
+    s->set_special_effect(s, 0); // 0 to 6 (0 - No Effect, 1 - Negative, 2 - Grayscale, 3 - Red Tint, 4 - Green Tint, 5 - Blue Tint, 6 - Sepia)
+    s->set_whitebal(s, 1);       // 0 = disable , 1 = enable
+    s->set_awb_gain(s, 1);       // 0 = disable , 1 = enable
+    s->set_wb_mode(s, 0);        // 0 to 4 - if awb_gain enabled (0 - Auto, 1 - Sunny, 2 - Cloudy, 3 - Office, 4 - Home)
+    // Disable automatic exposure control (AEC)
+    s->set_exposure_ctrl(s, 0);
+    s->set_aec2(s, 0);           // 0 = disable , 1 = enable
+    s->set_ae_level(s, 0);       // -2 to 2
+    // Set manual exposure value (0 to 1200)
+    s->set_aec_value(s, 0); // Decrease value for lower brightness
+    // Disable automatic gain control (AGC)
+    s->set_gain_ctrl(s, 0);
+    // Set manual gain (0 to 30)
+    s->set_agc_gain(s, 5); // Decrease value for lower brightness
+    s->set_gainceiling(s, (gainceiling_t)0);  // 0 to 6
+    s->set_bpc(s, 0);            // 0 = disable , 1 = enable
+    s->set_wpc(s, 1);            // 0 = disable , 1 = enable
+    s->set_raw_gma(s, 1);        // 0 = disable , 1 = enable
+    s->set_lenc(s, 1);           // 0 = disable , 1 = enable
+    s->set_hmirror(s, 0);        // 0 = disable , 1 = enable
+    s->set_vflip(s, 0);          // 0 = disable , 1 = enable
+    s->set_dcw(s, 1);            // 0 = disable , 1 = enable
+    s->set_colorbar(s, 0);       // 0 = disable , 1 = enable   
+#endif
+
     /*
     // TEST: set back to enable the camera after the standby mode
     // not sure that it works
@@ -622,10 +679,6 @@ void setup() {
         s->set_vflip(s, 1);        // flip it back
         s->set_brightness(s, 1);   // up the brightness just a bit
         s->set_saturation(s, -2);  // lower the saturation
-    }
-    // drop down frame size for higher initial frame rate
-    if (config.pixel_format == PIXFORMAT_JPEG) {
-        s->set_framesize(s, FRAMESIZE_QVGA);
     }
 
 #if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)

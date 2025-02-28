@@ -71,7 +71,7 @@ extern void blinkLed(uint8_t n, uint16_t t);
 // take into account light change between snapshot, recommended.
 #define LUM_HISTO
 //#define TEST_LUMINOSITY
-#define DARK_THRESHOLD          35
+#define DARK_THRESHOLD          20
 // will insert the source addr in the image packet
 //#define WITH_SRC_ADDR 
 
@@ -80,7 +80,8 @@ extern void blinkLed(uint8_t n, uint16_t t);
 // so flashing needs to manually put the ESP32S3 in boot mode
 //#define DELAY_WITH_LIGHT_SLEEP
 
-// to test a simple image counter to WaziGate, may become obsolete when real reception of image will be implemented
+// to get image transmission statistique on a dedicated device
+// if LoRaCAM-AI addr is 2DAA, then the image stat device is by default 2EAA
 #define TRANSMIT_IMAGE_INDICATION_WAZIGATE
 
 #ifdef TRANSMIT_IMAGE_INDICATION_WAZIGATE

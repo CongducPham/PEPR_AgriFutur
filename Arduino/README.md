@@ -22,7 +22,7 @@ Default configuration
 - Capacitive sensor connected to A0 (signal) and A1 (power)
 - Single-channel LoRaWAN uplink transmission to gateway
 - Cayenne LPP data format
-- EU868 band 868.1MHzc(can be changed to 433MHz band)
+- EU868 band 868.1MHz (can be changed to 433MHz band)
 - Device address is 26011DAA
 - 1 measure and transmission every 1 hour
 - Battery voltage is included in transmitted messages
@@ -61,4 +61,4 @@ A simple Field Tester tool that can be flashed on a dedicated device to perform 
 
 Enjoy!
 C. Pham
-Scientific Leader for the Sensing Platform
+Scientific Leader for the PEPR AgriFutur Sensing Platform

@@ -134,25 +134,11 @@ static esp_err_t bmp_handler(httpd_req_t *req) {
   // bool frame2bmp(camera_fb_t * fb, uint8_t ** out, size_t * out_len)
   // bool fmt2bmp(uint8_t *src, size_t src_len, uint16_t width, uint16_t height, pixformat_t format, uint8_t ** out, size_t * out_len)
   // bool jpg2bmp(const uint8_t *src, size_t src_len, uint8_t ** out, size_t * out_len)
-  // frame2bmp calls fmt2bmp which calls jpg2bmp if format is PIXFORMAT_JPEG to decode the JPED image
+  // frame2bmp calls fmt2bmp which calls jpg2bmp if format is PIXFORMAT_JPEG to decode the JPEG image
   // when format is PIXFORMAT_GRAYSCALE a grayscale palette will be created by fmt2bmp
   // the BMP header, the palette and the image data are stored in buf (passed as out to frame2bmp) which is then allocated in fmt2bmp
   // note that for PIXFORMAT_GRAYSCALE, the image data is simply copied from fb->buf which is given to fmt2bmp as uint8_t *src
   // see https://github.com/espressif/esp32-camera/blob/master/conversions/to_bmp.c
-  //
-  // TODO add the encoding into CRAN encoded format
-  //    - buf contains the whole BMP image (BMP header + palette + image data)
-  //    - can call
-  //        - JPEGencoding(InImageStruct *InputImage , OutImageStruct *OutputImage)
-  //        - JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOffset)
-  //    - to build the encoded image packets for transmission
-  //    - put all required functions in CRANEncoding.cpp
-  //    - reuse mqc.h
-  //    - bmp.h may not be really necessary
-  //
-  //  TODO determine how the .dat file will be generated
-  //    - option 1: when bmp_handler is "manually called" 
-  //    - option 2: add a button like the "Get still" button which calls capture_handler for JPEG image
   //
   esp_camera_fb_return(fb);
   if (!converted) {

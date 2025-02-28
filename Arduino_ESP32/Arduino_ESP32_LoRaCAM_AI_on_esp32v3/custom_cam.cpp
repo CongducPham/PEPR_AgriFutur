@@ -65,8 +65,8 @@ bool detectedIntrusion = false;
 
 #ifdef LUM_HISTO
 // to store the image histogram
-short histoRefImage[255];
-short histoInImage[255];
+uint16_t histoRefImage[255];
+uint16_t histoInImage[255];
 long refImageLuminosity;
 long inImageLuminosity;
 #endif
@@ -1290,25 +1290,25 @@ int encode_ucam_file_data() {
 
 #ifdef LUM_HISTO
 
-void clearHistogram(short histo_data[]) {
+void clearHistogram(uint16_t histo_data[]) {
     for (int i = 0; i < 255; i++) histo_data[i] = 0;
 }
 
-void computeHistogram(short histo_data[], InImageStruct InputImage) {
+void computeHistogram(uint16_t histo_data[], InImageStruct InputImage) {
     clearHistogram(histo_data);
 
     for (int x = 0; x < CAMDATA_LINE_SIZE; x++)
         for (int y = 0; y < CAMDATA_LINE_SIZE; y++) histo_data[InputImage.data[x][y]]++;
 }
 
-long computeMeanLuminosity(short histo_data[]) {
-    double luminosity = 0;
+long computeMeanLuminosity(uint16_t histo_data[]) {
+    long luminosity = 0;
 
-    for (int i = 0; i < 255; i++) luminosity += histo_data[i] * i;
+    for (int i = 0; i < 255; i++) luminosity += (long)histo_data[i] * i;
 
     luminosity = luminosity / (CAMDATA_LINE_SIZE * CAMDATA_LINE_SIZE);
 
-    return (long)luminosity;
+    return luminosity;
 }
 
 #endif
@@ -1449,6 +1449,7 @@ int encode_image(uint8_t* buf, bool transmit) {
     inImageLuminosity = computeMeanLuminosity(histoInImage);
     Serial.printf("inImage luminosity is %ld\n", inImageLuminosity);
 
+#ifdef DARK_THRESHOLD
     if (inImageLuminosity < DARK_THRESHOLD) {
         Serial.printf("inImage luminosity < %d, no transmission\n", DARK_THRESHOLD);
         imageStatus = 0;
@@ -1458,6 +1459,7 @@ int encode_image(uint8_t* buf, bool transmit) {
         Serial.printf("inImage luminosity > %d, passed\n", DARK_THRESHOLD);
         imageStatus = 1;
     } 
+#endif
 
 #ifdef TEST_LUMINOSITY    
     Serial.println("testing luminosity, disabling transmission");
@@ -1480,7 +1482,7 @@ int encode_image(uint8_t* buf, bool transmit) {
         //we start at channel 10 for the image indication
         uint8_t ch=10;
 
-        Serial.println("Transmit image indication (#pkt, #byte, #min:sec) to WaziGate");
+        Serial.println("Transmit image indication (#pkt, #byte, #min:sec, luminosity) to WaziGate");
         if (imageStatus) {
           lpp.addAnalogOutput(ch, packetcount);
           lpp.addAnalogOutput(ch+1, (float)count/1000.0);
@@ -1488,11 +1490,13 @@ int encode_image(uint8_t* buf, bool transmit) {
           uint8_t durationMinute = (uint8_t)((float)totalSendDuration/1000.0/60.0);
           float durationSecond = (((float)totalSendDuration/1000.0/60.0) - durationMinute) * 0.6;
           lpp.addAnalogOutput(ch+2, (float)durationMinute + durationSecond);
+          lpp.addAnalogOutput(ch+3, (uint8_t)inImageLuminosity);
         }
         else {
-          lpp.addDigitalOutput(ch, 0);
-          lpp.addDigitalOutput(ch+1, 0.0);
-          lpp.addDigitalOutput(ch+2, 0.0);
+          lpp.addAnalogOutput(ch, 0);
+          lpp.addAnalogOutput(ch+1, 0.0);
+          lpp.addAnalogOutput(ch+2, 0.0);
+          lpp.addAnalogOutput(ch+3, (uint8_t)inImageLuminosity);
         }
 
         int pl;
