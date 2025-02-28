@@ -24,7 +24,7 @@ You can read and watch the following tutorials/videos that have been produced fo
 Default configuration for the customized gateway
 ===
 
-This configuration works out-of-the box with the `Generic_Simple_Sensor_Node` Arduino code.
+This configuration works out-of-the box with the `Generic_Simple_Sensor_Node` Arduino code used to build a default capacitive device and a default tensionmeter device.
 
 - LoRaWAN mode (single channel)
 - Cayenne LPP data format
@@ -32,14 +32,14 @@ This configuration works out-of-the box with the `Generic_Simple_Sensor_Node` Ar
 - 2 pre-configured devices with address 26011DAA and 26011DB1
 - 26011DAA is a soil humidity device with the capacitive SEN0308 sensor
 	- Device name is `SOIL-AREA-1`
-	- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
-	- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
+	- `temperatureSensor_0` as the internal default logical sensor on the gateway for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
+	- `temperatureSensor_5` as the internal default logical sensor on the gateway for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
 	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
 - 26011DB1 is a soil humidity device with the Watermark WM200 tensiometer sensor
 	- Device name is `SOIL-AREA-2`
-	- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. It provides the converted resistance value in centibar, Taking into account the soil temperature data. Display will show `Soil Humidity Sensor/centibars from WM200`
-	- `temperatureSensor_1` as the internal default logical sensor on the WaziGate for soil humidity data. It provides the raw resistance value measured from the Watermark sensor. The value is scaled down by 10, so to get the real resistance value one must multiply by 10. Display will show `Soil Humidity Sensor/scaled value from WM200 real=x10`	
-	- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
+	- `temperatureSensor_0` as the internal default logical sensor on the gateway for soil humidity data. It provides the converted resistance value in centibar, Taking into account the soil temperature data. Display will show `Soil Humidity Sensor/centibars from WM200`
+	- `temperatureSensor_1` as the internal default logical sensor on the gateway for soil humidity data. It provides the raw resistance value measured from the Watermark sensor. The value is scaled down by 10, so to get the real resistance value one must multiply by 10. Display will show `Soil Humidity Sensor/scaled value from WM200 real=x10`	
+	- `temperatureSensor_5` as the internal default logical sensor on the gateway for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
 	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
 
 Insert the SD card in the Raspberry Pi and then power the Raspberry Pi. The customized gateway is ready when the main `GenericSensorPlatform` screen appears on the OLED indicating `SOIL-AREA-1` and `SOIL-AREA-2` devices. You may see a succession of `[ Internet NO ]` and/or `[ Internet OK ]` and black screen before the main main screen appears on the OLED.
@@ -53,7 +53,7 @@ Manual installation on top of general WaziGate distribution
 
 **The SD card image has already everything installed. Manual installation procedure is provided for information only.**
 
-The customized gateway distribution consists in a pre-configured Raspberry Pi WaziGate ready to receive data from 1 capacitive SEN0308 sensor device and 1 Watermark water tension sensor device. The starter-kit will be shipped with only one version of the soil humidity device (either capacitive SEN0308 or Watermark water tension sensor).
+By default, the customized gateway distribution consists in a pre-configured Raspberry Pi gateway ready to receive data from 1 capacitive SEN0308 sensor device and 1 Watermark water tension sensor device. This configuration is referred to as the `starter-kit`configuration. This configuration and the `starter-kit` term comes from the initial [PRIMA INTEL-IRRIS project](http://intel-irris.eu) in which we developed the building blocks for the Generic Sensor Platform.
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-dashboard.png" width="700">
 

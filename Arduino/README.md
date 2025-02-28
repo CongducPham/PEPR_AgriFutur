@@ -4,19 +4,20 @@ Generic Simple Sensor Node
 This is the source code of the Generic Simple Sensor Node device. It can currently be configured for building various sensing device variants:
 
 - 1 soil humidity capacitive sensor device (e.g. DFRobot SEN0308 or Pino-Tech SoilWatch10)
-- 1 Irrometer Watermark WM200 tensiometer device
-- 2 Irrometer Watermark WM200 tensiometer device
-- 1 Ambiant Air Temperature/Humididy (Sensirion SHT2x) device
-- 1 CO2 sensor (SCD30) device
+- 1 Irrometer Watermark WM200 tensiometer sensor device
+- 2 Irrometer Watermark WM200 tensiometer sensor device
+- 1 Ambiant Air Temperature/Humididy (Sensirion SHT2x) sensor device
+- 1 CO2 sensor (SCD30) sensor device
 - for all these variants above mentioned, an additional soil temperature sensor (Dallas DS18B20) can be added.
-- 2 or 3 soil temperature sensors device
+- a 2-soil-temperature sensor device
+- a 3-soil-temperature sensor device
 - more to come
 
 The target PCBs are PCBA v4.1 (RFM95W LoRa) and PCBA v4.1v5 (RAK3172 LoRaWAN). It is **configured by default for PCBA v4.1**, as single-channel limited LoRaWAN 1.0 device for both uplink and downlink transmissions (only ABP, no OTAA). Comment `#define IRD_PCBA` in `BoardSettings.h` if you are using the raw IRD PCB v4.1 (just the raw PCB).  If you are using solar panel with the IRD PCBA v4.1/v5 then you also need to uncomment `#define SOLAR_BAT` in `BoardSettings.h`. For IRD PCBA v5 which is based in the RAK3172 LoRaWAN radio module, you need to also uncomment `SOFT_SERIAL_DEBUG` in `BoardSettings.h` and select `RAK3172` in `RadioSettings.h`. 
 
 Related tutorial slides and videos will come soon!
 
-Default configuration
+Default configuration of the code
 ===
 
 - Capacitive sensor connected to A0 (signal) and A1 (power)
@@ -50,6 +51,7 @@ Summary of LPP channels used by the device:
 - ch11: soil temperature, 3rd DS18B20
 - ch12: not used
 - ...
+- ch19: not used
 - ch20: v_bat outside tx (only for TEST_LOW_BAT, debug mode)
 - ch21: current_vcc (only for TEST_LOW_BAT, debug mode)
 - ch22: low voltage indication (only for TEST_LOW_BAT, debug mode)

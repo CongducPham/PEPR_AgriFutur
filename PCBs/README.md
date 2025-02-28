@@ -58,9 +58,9 @@ You can download the BOM & CPL files to order the fully assembled board from PCB
 
 - CPL file for the PCB v5 [.csv](https://github.com/CongducPham/PEPR_AgriFutur/raw/main/PCBs/IRD_PCB_5/CPL_PCB5_RAK3172.csv)
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/pcbav5_top.png" width="400">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/pcbav5-top.png" width="400">
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/pcbav5_bottom.png" width="400">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/pcbav5-bottom.png" width="400">
 
 
 
