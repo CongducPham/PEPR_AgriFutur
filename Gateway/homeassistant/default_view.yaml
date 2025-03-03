@@ -14,7 +14,7 @@ views:
               - entity: sensor.soil_area_1_raw_value_from_sen0308
                 secondary_info: last-updated
               - entity: sensor.soil_area_1_soil_temperature_sensor
-                secondary_info: last-updated                
+                secondary_info: last-updated
               - entity: sensor.soil_area_1_battery_voltage
                 secondary_info: last-updated
                 icon: mdi:battery
@@ -68,7 +68,6 @@ views:
               - type: sensor
                 entity: sensor.soil_area_1_soil_condition
                 secondary_info: last-updated
-
       - type: vertical-stack
         cards:
           - type: entities
@@ -132,3 +131,20 @@ views:
               - type: sensor
                 entity: sensor.soil_area_2_soil_condition
                 secondary_info: last-updated
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: LoRaCAM-AI-STATS-2EAA
+            entities:
+              - entity: sensor.loracam_ai_stats_2eaa_number_of_packets
+                secondary_info: last-updated
+              - entity: sensor.loracam_ai_stats_2eaa_size_in_bytes
+                secondary_info: last-updated
+              - entity: sensor.loracam_ai_stats_2eaa_time_on_air
+                secondary_info: last-updated
+              - entity: sensor.loracam_ai_stats_2eaa_luminosity
+                secondary_info: last-updated
+          - type: picture-entity
+            entity: camera.loracam_ai_dev_2daa
+            show_name: true
+            show_state: false

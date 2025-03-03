@@ -138,11 +138,17 @@ You can also watch this [video](https://iotsensingsystem.live-website.com/loraca
  
 ## Fine tuning camera parameters
 
-To be updated.
+It may be necessary to fine tune the parameters for the camera (OV2640/OV3660/OV5640). In the [Arduino_ESP32_LoRaCAM_AI_on_esp32v3 code](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_ESP32_LoRaCAM_AI_on_esp32v3/), by default, the automatic exposure control and the automatic gain control are disabled. As we kept the [`CameraWebServer`](https://github.com/limengdu/SeeedStudio-XIAO-ESP32S3-Sense-camera) example developed by Espressif, you can configure the code to run the web server in order to set the camera parameters and capture BMP images with a web browser to determine which settings are suitable for your application.
+
+First, open the LoRaCAM-AI code which is in the [Arduino_ESP32_LoRaCAM_AI_on_esp32v3 folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_ESP32_LoRaCAM_AI_on_esp32v3) with the Arduino IDE and edit `ConfigSettings.h` to uncomment `#define WITH_WEB_SERVER`. Flash the LoRaCAM-AI and you should see a message indicating the IP address on which the web server can be accessed. Open the web server with a web browser and you should see the well-known `CameraWebServer` [example welcome page](https://wiki.seeedstudio.com/xiao_esp32s3_camera_usage/).
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/camerawebserver.png" width="600">
+
+From here it differs a little bit from the original `CameraWebServer` example because JPG capture (the `Get Still` button) and video streaming (the `Start Stream` button) are not available as the camera is configured for none JPG and grayscale images. So the only functionalities are to change the camera parameters and to use the BMP capture function which can be activated by entering in the URL bar of your web browser something like `http://192.168.0.31/bmp`. Hit the `ENTER` key on your host computer and the `capture.bmp` file should be downloaded into your download folder. Display the .bmp image and see whether the camera settings are good or not and repeat the operation until you are satisfied. Then, set in the `Arduino_ESP32_LoRaCAM_AI_on_esp32v3.ino` program the camera parameters you are happy with. Finally, do not forget to comment back in `ConfigSettings.h` the `#define WITH_WEB_SERVER` statement. Then flash the LoRaCAM-AI to have the normal mode of periodic image capture and transmission.
 
 ## Receiving image data on WaziGate LoRa gateway
 
-To be updated.
+This will be discussed and presented in the this [README](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Gateway/scripts/loracam-ai/README.md) in the `Gateway` part.
  
 # Tools
 

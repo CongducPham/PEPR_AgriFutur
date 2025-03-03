@@ -1,8 +1,8 @@
 #!/bin/bash
 
-logger -t gw-auto-config "create-2-loracam-ai"
+logger -t gw-auto-config "create-1-loracam-ai"
 
-echo "create-2-loracam-ai" >> /boot/gw-auto-config.log
+echo "create-1-loracam-ai" >> /boot/gw-auto-config.log
 
 cd /home/pi/scripts
 
@@ -21,12 +21,6 @@ echo "--> calling create_loracam-ai-device.sh 2DAA" >> /boot/gw-auto-config.log
 echo "--> calling create_loracam-ai-stats.sh 2DAA 2EAA" >> /boot/gw-auto-config.log
 ./loracam-ai/create_loracam-ai-stats.sh 2DAA 2EAA
 
-#create LoRaCAM-AI-DEV-2DAB device with address 26012DAB
-echo "--> calling create_loracam-ai-device.sh 2DAB" >> /boot/gw-auto-config.log
-./loracam-ai/create_loracam-ai-device.sh 2DAB
 
-#create LoRaCAM-AI-STATS-2EAA device with address 26012EAB, linked to LoRaCAM-AI-DEV-2DAB
-echo "--> calling create_loracam-ai-stats.sh 2DAB 2EAB" >> /boot/gw-auto-config.log
-./loracam-ai/create_loracam-ai-stats.sh 2DAB 2EAB
 
 

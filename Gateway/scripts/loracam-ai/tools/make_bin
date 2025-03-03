@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "make bin for JPGencoding, decode_to_bmp and drop_img_pkt"
+echo "update of Jan. 2025"
+
+g++ -o JPEGencoding JPEGencoding.c 
+g++ -o JPEGencoding-pkt JPEGencoding-pkt.c 
+g++ -o decode_to_bmp decode_to_bmp.c
+g++ -o drop_img_pkt drop_img_pkt.c
+
+echo "Done"

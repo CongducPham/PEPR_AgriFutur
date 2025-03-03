@@ -1,0 +1,67 @@
+Some useful command using `curl` in a terminal on the gateway:
+
+Show all devices:
+
+  > curl -X GET "http://localhost/devices" -H  "accept: application/json"
+  
+Show a particular device:
+
+  > curl -X GET "http://localhost/devices/644b819668f31909dabad2b8" -H  "accept: application/json"  
+  
+Show all sensors for a particular device:  
+
+  > curl -X GET "http://localhost/devices/644b819668f31909dabad2b8/sensors" -H  "accept: application/json"
+  
+Show information, including last value and its timestamps, for a particular sensor for a particular device:
+
+  > curl -X GET "http://localhost/devices/644b819668f31909dabad2b8/sensors/temperatureSensor_0" -H  "accept: application/json"
+  
+Show all values for a particular sensor for a particular device (can be large amount of data):  
+
+  > curl -X GET "http://localhost/devices/644b819668f31909dabad2b8/sensors/temperatureSensor_0/values" -H  "accept: application/json"
+  
+Show all values for a particular sensor for a particular device, in the last 10 days for instance:  
+
+  > DATE=`date --date='10 days ago' +"%Y-%m-%dT%H:%M:%S%:z" | sed 's/:/%3A/g' | sed 's/+/%2B/g'`
+  > curl -X GET "http://localhost/devices/644b819668f31909dabad2b8/sensors/temperatureSensor_0/values?from=$DATE" -H  "accept: application/json"
+
+Show the last value for a particular sensor for a particular device:  
+
+  > curl -X GET "http://localhost/devices/644b819668f31909dabad2b8/sensors/temperatureSensor_0/value" -H  "accept: application/json"  
+
+Show all codecs defined on the gateway: 
+  
+  > curl -X GET "http://localhost/codecs" -H  "accept: application/json"
+
+Show all docker containers
+
+  > docker container list
+  waziup.wazigate-system
+  waziup.wazigate-lora
+  waziup.wazigate-lora.chirpstack-application-server
+  waziup.wazigate-lora.chirpstack-gateway-bridge
+  waziup.wazigate-lora.forwarders
+  waziup.wazigate-lora.chirpstack-network-server
+  waziup.intel-irris-waziapp
+  homeassistant
+  hassconf
+  
+Show logs for waziup.wazigate-lora (replace container name for others)
+
+  > docker logs -f --tail 500 --timestamps waziup.wazigate-lora
+  
+Copy a file into a Docker container (adapt file name and container name for other cases)
+
+  > docker cp configuration.yaml homeassistant:/config  
+  
+Bash into a container (replace container name for others)
+
+  > docker exec -it waziup.intel-irris-waziapp bash
+  
+Execute a command in a container (replace container name for others)
+
+  > docker exec -it waziup.wazigate-lora.forwarders more conf/single_chan_pkt_fwd/global_conf.json
+  > docker exec -it waziup.wazigate-lora.chirpstack-network-server more /etc/chirpstack-network-server/chirpstack-network-server.toml 
+  > docker exec -it waziup.wazigate-lora.chirpstack-gateway-bridge more /etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml  
+  
+    

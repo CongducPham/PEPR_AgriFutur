@@ -217,10 +217,26 @@ if len(sys.argv) > 2:
     except:
         print("cannot decode automatically")
         print(path_prefix+"/decode_to_bmp not found")    
+    
+    print("copy to /opt/homeassistant/config/www/loracam-ai") 
+    try:
+        subprocess.check_output("sudo cp decode-"
+            +outputFile+"* /opt/homeassistant/config/www/loracam-ai", shell = True
+        )        
+    except:
+        print("copy decoded bmp to /opt/homeassistant/config/www/loracam-ai failed")
+        
+    print("copy as "+"last-"+dev_name+"-image.bmp")
+    try:
+        subprocess.check_output("sudo cp decode-"
+            +outputFile+"* /opt/homeassistant/config/www/loracam-ai/"+"last-"+dev_name+"-image.bmp", shell = True
+        )        
+    except:
+        print("copy to /opt/homeassistant/config/www/loracam-ai/"+"last-"+dev_name+"-image.bmp failed")     
 
 else:
-    print("get_last_image_dat.py requires at least 2 arguments")
-    print("e.g.: python get_last_image_dat.py 192.168.0.29 67b6fe8568f3190a22e91c6f")
+    print("get_last_image_dat_on_gw_for_ha.py requires at least 2 arguments")
+    print("e.g.: python get_last_image_dat_on_gw_for_ha.py localhost 67b6fe8568f3190a22e91c6f")
     print("      optional arguments: 2025-02-24T12:43:15+01:00 FE")
     print("  --> start date to consider and prefix of image packets")
     print("      optional 3rd, 4th or 5th argument: ../AGRIFUTUR")        

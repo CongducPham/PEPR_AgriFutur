@@ -1,0 +1,14 @@
+[Unit]
+Description=LoRaCAM-AI script to get last image from LoRaCAM-AI devices
+StartLimitIntervalSec=600
+StartLimitBurst=2
+After=network.target wazigate.service
+
+[Service]
+Type=oneshot
+ExecStartPre=-/bin/sleep 120
+ExecStart=/home/pi/loracam-ai/loracam-ai-service.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

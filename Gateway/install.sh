@@ -14,6 +14,9 @@ then
 	echo "Installing jq"
 	sudo apt install -y jq
 
+	echo "Installing nodejs for custom codecs in Javascript"
+	sudo apt install -y nodejs
+	
 	##see https://www.raspberryme.com/ajout-dune-horloge-temps-reel-ds3231-au-raspberry-pi/
 	echo "adding support for additional DS3231 RTC module"
 	sudo apt install -y i2c-tools
@@ -64,16 +67,27 @@ then
 	else
 		#WaziGate v2
 		echo "update /var/lib/wazigate/start.sh"
-		sudo cp wazigate/start.sh /var/lib/wazigate/		
+		sudo cp wazigate/start.sh /var/lib/wazigate/
+				
 		echo "Enabling auto-config service at boot"
 		sudo cp gw-auto-config-service.service.txt /etc/systemd/system/gw-auto-config-service.service
-		sudo systemctl enable gw-auto-config-service.service	
+		sudo systemctl enable gw-auto-config-service.service
+			
 		#update start.sh for multi_chan_pkt_fwd, until default WaziGate distrib fixes the bug with RST pin
 		docker cp /home/pi/scripts/multi_chan_pkt_fwd/start.sh waziup.wazigate-lora.forwarders:/root/
 		docker exec -it --user root waziup.wazigate-lora.forwarders chown root:root /root/start.sh
 	fi
 
-	cd oled
+  # install the software and services for the LoRaCAM-AI
+	cd /home/pi/loracam-ai
+	./install.sh
+  
+  # add custom codec for SenseCapS2120 8-in-1 weather station
+  cd /home/pi/scripts/sensecaps2120
+  ./create_codec-sensecaps2120.sh
+  
+  # install the software and services for the OLED
+	cd /home/pi/oled
 	./install.sh
 fi
 

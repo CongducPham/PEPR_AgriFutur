@@ -56,7 +56,7 @@ if len(sys.argv) > 2:
 
     #########################
     dev_id = sys.argv[2]
-    sens_id = "imagePkt"
+    sensor_id = "imagePkt"
 
     WaziGate_url = BASE_URL + "devices/" + dev_id
     try:
@@ -75,13 +75,14 @@ if len(sys.argv) > 2:
         last_value_full = {"sensors": []}
         sys.exit("Something bad happened")
 
+    dev_name = last_value_full["name"]
+    
     last_value = {"time": datetime.utcnow().isoformat(timespec="seconds")}
-
     print(last_value["time"])
 
-    for sens_dict in last_value_full["sensors"]:
-        if sens_dict["id"] == sens_id:
-            last_value = sens_dict
+    for sensor_dict in last_value_full["sensors"]:
+        if sensor_dict["id"] == sensor_id:
+            last_value = sensor_dict
 
     ##################
     # try:
@@ -143,7 +144,7 @@ if len(sys.argv) > 2:
 
     # curl -X GET "http://192.168.0.29/devices/67b6fe8568f3190a22e91c6f/sensors/imagePkt/values?from=2025-02-21T10%3A29%3A35%2B01%3A00" -H "accept: application/json"
 
-    WaziGate_url = BASE_URL+'devices/'+dev_id+'/sensors/'+sens_id+'/values?from='+date_from
+    WaziGate_url = BASE_URL+'devices/'+dev_id+'/sensors/'+sensor_id+'/values?from='+date_from
     
     try:
         response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
@@ -153,14 +154,14 @@ if len(sys.argv) > 2:
         sys.exit("Something bad happened")
 
     try:
-        sens_values = json.loads(response.text)
+        sensor_values = json.loads(response.text)
     except:
         print("could not parse JSON")
         print(WaziGate_url)
         print(response.text)
-        sens_values = []
+        sensor_values = []
 
-    # print(sens_values)
+    # print(sensor_values)
 
     print("=========================================")
 
@@ -172,7 +173,7 @@ if len(sys.argv) > 2:
 
     images_data = {}
 
-    for vals in sens_values:
+    for vals in sensor_values:
         if not isinstance(vals["value"], str): # some old initial value 800
             continue
         if len(prefixes) > 0 and not (vals["value"][:2].upper() in prefixes): # prefixes exist and dont match
@@ -250,7 +251,7 @@ if len(sys.argv) > 2:
 
         final_last_image_raw = "00" + nPktHex + " " + last_image_raw
 
-        outputFile = "{0}_image_dat.txt".format(images_data[imd]["date"])
+        outputFile = "{0}_".format(images_data[imd]["date"]) + dev_name + ".txt"
 
         with open(outputFile, "w") as outfile:
             outfile.write(final_last_image_raw)
@@ -266,11 +267,15 @@ if len(sys.argv) > 2:
             else:
                 path_prefix = "."
                       
-        subprocess.check_output(path_prefix+"/decode_to_bmp "
-            +outputFile+" "+path_prefix+"/128x128-ESP32S3-test.bmp", shell = True
-        )
+        try:
+            subprocess.check_output(path_prefix+"/decode_to_bmp "
+                +outputFile+" "+path_prefix+"/128x128-ESP32S3-test.bmp", shell = True
+            )
+        except:
+            print("cannot decode automatically")
+            print(path_prefix+"/decode_to_bmp not found") 
 
-        # outputFile = "{0}_image_dat_raw.txt".format(images_data[imd]["date"])
+        # outputFile = "{0}_".format(images_data[imd]["date"]) + dev_name + "_raw.txt"
 
         # with open(outputFile, "w") as outfile:
         #     outfile.write(images_data[imd]["raw"])
