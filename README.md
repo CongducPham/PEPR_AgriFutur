@@ -29,7 +29,7 @@ For the LoRaCAM image sensor, the [Tools folder](https://github.com/CongducPham/
 
 Images from LoRaCAM-AI devices are integrated in the gateway dashboard using Home Assistant. Read this specific [README](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Gateway/scripts/loracam-ai/README.md) to understand how images from LoRaCAM-AI devices are handled and processed by the gateway.
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ha-default-view.png" width="700">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ha_default_view.png" width="700">
 
 Enjoy!
 C. Pham
