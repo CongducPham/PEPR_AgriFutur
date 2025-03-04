@@ -11,6 +11,10 @@ else
   # Split into array
   read -ra loracams <<< "$DEVICES"
 
+  #${loracams[@]}	Expands to all terms
+  #${loracams[0]}	First term
+  #${#loracams[@]}	Number of terms
+
   # Loop through loracams
   for loracam in "${loracams[@]}"; do
     echo "LoRaCAM-AI id: $loracam"

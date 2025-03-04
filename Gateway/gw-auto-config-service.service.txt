@@ -1,5 +1,5 @@
 [Unit]
-Description=Shell script to perform auto configuration for INTEL-IRRIS Wazigate
+Description=Shell script to perform auto configuration for customized gateway
 After=network.target wazigate.service
 
 [Service]

@@ -64,4 +64,8 @@ Execute a command in a container (replace container name for others)
   > docker exec -it waziup.wazigate-lora.chirpstack-network-server more /etc/chirpstack-network-server/chirpstack-network-server.toml 
   > docker exec -it waziup.wazigate-lora.chirpstack-gateway-bridge more /etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml  
   
+Check the status of a service (there are 3 custom services gw-auto-config-service.service, default-oled-service.service and loracam-ai-service)
+
+  > systemctl status default-oled-service.service  
+  
     

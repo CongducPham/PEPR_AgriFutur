@@ -554,6 +554,10 @@ void setup() {
     config.xclk_freq_hz = 10000000;
     config.grab_mode = CAMERA_GRAB_LATEST;
     config.pixel_format = PIXFORMAT_GRAYSCALE;  // for getting BMP
+    // TODO
+    // for face detection/recognition, we may need to use PIXFORMAT_RGB565
+    // then convert into BMP for transmission, along with image cropping if necessary
+    //config.pixel_format = PIXFORMAT_RGB565; 
 #endif
     //config.frame_size = FRAMESIZE_UXGA;
     // drop down frame size for higher initial frame rate
@@ -643,7 +647,7 @@ void setup() {
     s->set_aec2(s, 0);           // 0 = disable , 1 = enable
     s->set_ae_level(s, 0);       // -2 to 2
     // Set manual exposure value (0 to 1200)
-    s->set_aec_value(s, 10); // Decrease value for lower brightness
+    s->set_aec_value(s, 3); // Decrease value for lower brightness
     // Disable automatic gain control (AGC)
     s->set_gain_ctrl(s, 0);
     // Set manual gain (0 to 30)
