@@ -643,11 +643,12 @@ void setup() {
     s->set_aec2(s, 0);           // 0 = disable , 1 = enable
     s->set_ae_level(s, 0);       // -2 to 2
     // Set manual exposure value (0 to 1200)
-    s->set_aec_value(s, 0); // Decrease value for lower brightness
+    s->set_aec_value(s, 10); // Decrease value for lower brightness
     // Disable automatic gain control (AGC)
     s->set_gain_ctrl(s, 0);
     // Set manual gain (0 to 30)
-    s->set_agc_gain(s, 5); // Decrease value for lower brightness
+    s->set_agc_gain(s, 1); // Decrease value for lower brightness
+    // Not usefull when automatic gain control (AGC) is disabled
     s->set_gainceiling(s, (gainceiling_t)0);  // 0 to 6
     s->set_bpc(s, 0);            // 0 = disable , 1 = enable
     s->set_wpc(s, 1);            // 0 = disable , 1 = enable
