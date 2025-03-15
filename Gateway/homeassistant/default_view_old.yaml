@@ -3,6 +3,9 @@ views:
   - path: default_view
     title: Home
     cards:
+      - type: entities
+        entities:
+          - entity: person.intelirris
       - type: vertical-stack
         cards:
           - type: entities
@@ -18,8 +21,6 @@ views:
           - type: grid
             columns: 2
             cards:
-              - type: picture
-                image: /local/sensors/capacitive_temp.png
               - type: gauge
                 entity: sensor.soil_area_1_raw_value_from_sen0308
                 needle: true
@@ -41,32 +42,54 @@ views:
                   - from: 416
                     color: '#d1000f'
               - type: sensor
+                entity: sensor.soil_area_1_soil_temperature_sensor
+                graph: line
+                icon: mdi:thermometer
+              - type: gauge
+                entity: sensor.soil_area_1_soil_value_index
+                needle: true
+                min: -1
+                max: 6
+                segments:
+                  - from: -2
+                    color: '#000000'
+                  - from: 0
+                    color: '#d1000f'
+                  - from: 1
+                    color: '#fb2041'
+                  - from: 2
+                    color: '#fdc009'
+                  - from: 3
+                    color: '#9ac97b'
+                  - from: 4
+                    color: '#15a43e'
+                  - from: 5
+                    color: '#139feb'
+              - type: sensor
                 entity: sensor.soil_area_1_soil_condition
                 secondary_info: last-updated
-              - type: picture-entity
+              - type: picture-entity              
                 entity: sensor.soil_area_1_soil_value_index
                 secondary_info: last-updated
-                image: /local/sensors/no_sensor.svg
-                style:
-                  width: 10%
-                show_name: false
+                image: /local/sensors/no_sensor.svg        
+                show_name: true
                 show_state: false
                 state_image:
-                  '0': /local/sensors/level0.svg
-                  '1': /local/sensors/level1.svg
-                  '2': /local/sensors/level2.svg
-                  '3': /local/sensors/level3.svg
-                  '4': /local/sensors/level4.svg
-                  '5': /local/sensors/level5.svg
                   '-2': /local/sensors/no_sensor.svg
-                  '-1': /local/sensors/no_sensor.svg
+                  '-1': /local/images/no_sensor.svg
+                  '0': /local/sensors/level0.svg
+                  '0': /local/sensors/level1.svg
+                  '0': /local/sensors/level2.svg
+                  '0': /local/sensors/level3.svg
+                  '0': /local/sensors/level4.svg
+                  '0': /local/sensors/level5.svg                
       - type: vertical-stack
         cards:
           - type: entities
             title: Tensiometer Sensor
             entities:
               - entity: sensor.soil_area_2_centibars_from_wm200
-                secondary_info: last-changed
+                secondary_info: last-updated
               - entity: sensor.soil_area_2_resistance_value_from_wm200
                 secondary_info: last-updated
               - entity: sensor.soil_area_2_soil_temperature_sensor
@@ -78,8 +101,6 @@ views:
           - type: grid
             columns: 2
             cards:
-              - type: picture
-                image: /local/sensors/tensiometer_temp.png
               - type: gauge
                 entity: sensor.soil_area_2_centibars_from_wm200
                 needle: true
@@ -99,23 +120,47 @@ views:
                   - from: 240
                     color: '#000000'
               - type: sensor
+                entity: sensor.soil_area_2_soil_temperature_sensor
+                graph: line
+                icon: mdi:thermometer
+              - type: gauge
+                entity: sensor.soil_area_2_soil_value_index
+                needle: true
+                min: -2
+                max: 6
+                segments:
+                  - from: -2
+                    color: '#000000'
+                  - from: 0
+                    color: '#d1000f'
+                  - from: 1
+                    color: '#fb2041'
+                  - from: 2
+                    color: '#fdc009'
+                  - from: 3
+                    color: '#9ac97b'
+                  - from: 4
+                    color: '#15a43e'
+                  - from: 5
+                    color: '#139feb'
+              - type: sensor
                 entity: sensor.soil_area_2_soil_condition
                 secondary_info: last-updated
-              - type: picture-entity
+              - type: picture-entity              
                 entity: sensor.soil_area_2_soil_value_index
                 secondary_info: last-updated
-                image: /local/sensors/no_sensor.svg
-                show_name: false
+                image: /local/sensors/no_sensor.svg         
+                show_name: true
                 show_state: false
                 state_image:
-                  '0': /local/sensors/level0.svg
-                  '1': /local/sensors/level1.svg
-                  '2': /local/sensors/level2.svg
-                  '3': /local/sensors/level3.svg
-                  '4': /local/sensors/level4.svg
-                  '5': /local/sensors/level5.svg
                   '-2': /local/sensors/no_sensor.svg
-                  '-1': /local/sensors/no_sensor.svg
+                  '-1': /local/images/no_sensor.svg
+                  '0': /local/sensors/level0.svg
+                  '0': /local/sensors/level1.svg
+                  '0': /local/sensors/level2.svg
+                  '0': /local/sensors/level3.svg
+                  '0': /local/sensors/level4.svg
+                  '0': /local/sensors/level5.svg                
       - type: vertical-stack
         cards:
           - type: entities
@@ -131,6 +176,6 @@ views:
                 secondary_info: last-updated
           - type: picture-entity
             entity: camera.loracam_ai_dev_2daa
-            name: Last image from 2DAA
+            name: "Last image from 2DAA"
             show_name: true
             show_state: false

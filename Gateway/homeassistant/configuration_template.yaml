@@ -100,7 +100,7 @@ sensor tensiometer:
       {% else %}
         saturated
       {% endif %}
-      
+          
 sensor loracam:  
   - platform: rest
     resource: http://localhost/devices/LCST1/sensors/analogOutput_10/value

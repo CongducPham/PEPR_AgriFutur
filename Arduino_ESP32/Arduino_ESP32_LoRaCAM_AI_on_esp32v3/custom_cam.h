@@ -54,11 +54,10 @@ extern void blinkLed(uint8_t n, uint16_t t);
 #define DISPLAY_PKT
 //#define DISPLAY_FILLPKT
 //#define DISPLAY_BLOCK
-//#define DISPLAY_PGM
 // get and print stats for image encoding
 #define DISPLAY_ENCODE_STATS
 // get and print stats for each packet sent
-//#define DISPLAY_PACKETIZATION_SEND_STATS
+#define DISPLAY_PACKETIZATION_SEND_STATS
 // get and print stats for eack packet packetized
 //#define DISPLAY_PACKETIZATION_STATS
 // will periodically take a snapshot and transmit the image

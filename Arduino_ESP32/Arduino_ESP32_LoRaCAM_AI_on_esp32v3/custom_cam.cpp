@@ -335,18 +335,14 @@ void SendPacket() {
 
 #ifdef DISPLAY_PKT
     Serial.print(F("00"));
-    Serial.print(packetsize + 2, HEX);
+    Serial.printf("%.2X", packetsize + 2);
     Serial.print(F(" "));
     Serial.print(F("00 "));
-    if (packetoffset < 0x10) Serial.print(F("0"));
-    Serial.print(packetoffset, HEX);
+    Serial.printf("%.2X", packetoffset);
 
     for (int x = 0; x < packetsize; x++) {
         Serial.print(F(" "));
-
-        if (packet[x] < 0x10) Serial.print(F("0"));
-
-        Serial.print(packet[x], HEX);
+        Serial.printf("%.2X", packet[x]);
     }
     Serial.println(F(" "));
 #endif
@@ -363,7 +359,7 @@ void SendPacket() {
 
             if ((now_millis - lastSentTime) < inter_binary_pkt) {
                 unsigned long w = inter_binary_pkt - (now_millis - lastSentTime);
-                Serial.printf("Wait for %ld", w);
+                Serial.printf("Wait for %ld\n", w);
 #ifdef DELAY_WITH_LIGHT_SLEEP                
                 Serial.flush();
                 esp_sleep_enable_timer_wakeup(w*1000L);
@@ -428,8 +424,7 @@ void SendPacket() {
 
 #ifdef DISPLAY_PKT
         for (int x = 0; x < dataSize + packetsize; x++) {
-            if (myBuff[x] < 0x10) Serial.print(F("0"));
-            Serial.print(myBuff[x], HEX);
+            Serial.printf("%.2X", myBuff[x]);
         }
         Serial.println("");
 
@@ -521,26 +516,24 @@ void SendPacket() {
         lastSentTime = startSendTime;
 #endif // WITH_LORA_MODULE
 
-#ifdef DISPLAY_PKT
-
-        Serial.print(F("Packet Sent in "));
         lastSendDuration = stopSendTime - startSendTime;
-        Serial.println(lastSendDuration);
-
-#ifdef WITH_LORA_MODULE
-        //TODO: something else to do?
-#endif
-#endif
 
 #ifdef DISPLAY_PACKETIZATION_SEND_STATS
-        Serial.print(packetsize);
-        Serial.print(" ");
-        Serial.println(stopSendTime - startSendTime);
+        Serial.print(F("Packet Sent in "));
+        Serial.println(lastSendDuration);
 #endif
     }
 
     count += packetsize;
     packetcount++;
+    
+    // we adjust the waiting time to be twice the packet transmission time
+    // will be reset to DEFAULT_INTER_PKT_TIME for next image
+    // TODO: can certainly be improved
+    if (lastSendDuration < 1000)
+      inter_binary_pkt = DEFAULT_INTER_PKT_TIME / 2;
+    else if (lastSendDuration < 2200)
+      inter_binary_pkt = DEFAULT_INTER_PKT_TIME - 1000;
 }
 
 int FillPacket(int Block[8][8], bool *full) {
@@ -602,9 +595,7 @@ int FillPacket(int Block[8][8], bool *full) {
 
     for (int x = 0; x < packetsize; x++) {
 #ifdef DISPLAY_FILLPKT
-        if (buffer[x] < 0x10) Serial.print(F("0"));
-
-        Serial.print(buffer[x], HEX);
+        Serial.printf("%.2X", buffer[x]);
         Serial.print(F(" "));
 #endif
         packet[x] = buffer[x];
@@ -642,6 +633,8 @@ int encode_ucam_file_data() {
     packetcount = 0L;
     count = 0L;    
     totalPacketizationDuration = 0;
+    // reset for a new image
+    inter_binary_pkt = DEFAULT_INTER_PKT_TIME;    
 
     Serial.print(F("Encoding picture data, Quality Factor is : "));
     Serial.println(QualityFactor);
@@ -685,10 +678,7 @@ int encode_ucam_file_data() {
             for (i = 0; i < 8; i++) {
                 for (j = 0; j < 8; j++) {
                     Block[i][j] = (int)inImage.data[row_mix + i][col_mix + j];
-
-                    if (Block[i][j] < 0x10) Serial.print(F("0"));
-
-                    Serial.print(Block[i][j], HEX);
+                    Serial.printf("%.2X", Block[i][j]);
                     Serial.print(F(" "));
                 }
                 Serial.println("");
@@ -1002,18 +992,14 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
 
 #ifdef DISPLAY_PKT
     Serial.print(F("00"));
-    Serial.print(packetsize + 2, HEX);
+    Serial.printf("%.2X", packetsize + 2);
     Serial.print(F(" "));
     Serial.print(F("00 "));
-    if (packetoffset < 0x10) Serial.print(F("0"));
-    Serial.print(packetoffset, HEX);
+    Serial.printf("%.2X", packetoffset);
 
     for (int x = 0; x < packetsize; x++) {
         Serial.print(F(" "));
-
-        if (packet[x] < 0x10) Serial.print(F("0"));
-
-        Serial.print(packet[x], HEX);
+        Serial.printf("%.2X", packet[x]);
     }
     Serial.println(F(" "));
 #endif
@@ -1034,7 +1020,7 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
 
             if ((now_millis - lastSentTime) < inter_binary_pkt) {
                 unsigned long w = inter_binary_pkt - (now_millis - lastSentTime);
-                Serial.printf("Wait for %ld", w);
+                Serial.printf("Wait for %ld\n", w);
 #ifdef DELAY_WITH_LIGHT_SLEEP                
                 Serial.flush();
                 esp_sleep_enable_timer_wakeup(w*1000L);
@@ -1087,8 +1073,7 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
 
 #ifdef DISPLAY_PKT
         for (int x = 0; x < dataSize + packetsize; x++) {
-            if (myBuff[x] < 0x10) Serial.print("0");
-            Serial.print(myBuff[x], HEX);
+            Serial.printf("%.2X", myBuff[x]);
         }
         Serial.println("");
 
@@ -1179,26 +1164,24 @@ unsigned int JPEGpacketization(OutImageStruct *InputImage, unsigned int BlockOff
         lastSentTime = startSendTime;
 #endif // WITH_LORA_MODULE
 
-#ifdef DISPLAY_PKT
-
-        Serial.print(F("Packet Sent in "));
         lastSendDuration = stopSendTime - startSendTime;
-        Serial.println(lastSendDuration);
-
-#ifdef WITH_LORA_MODULE
-        //TODO: something else to do?
-#endif
-#endif
 
 #ifdef DISPLAY_PACKETIZATION_SEND_STATS
-        Serial.print(packetsize);
-        Serial.print(" ");
-        Serial.println(stopSendTime - startSendTime);
+        Serial.print(F("Packet Sent in "));
+        Serial.println(lastSendDuration);
 #endif
     }
 
     count += packetsize;
     packetcount++;
+
+    // we adjust the waiting time to be twice the packet transmission time
+    // will be reset to DEFAULT_INTER_PKT_TIME for next image
+    // TODO: can certainly be improved
+    if (lastSendDuration < 1000)
+      inter_binary_pkt = DEFAULT_INTER_PKT_TIME / 2;
+    else if (lastSendDuration < 2200)
+      inter_binary_pkt = DEFAULT_INTER_PKT_TIME - 1000;
 
     return (BlockOffset);
 }
@@ -1217,6 +1200,8 @@ int encode_ucam_file_data() {
     // reset
     packetcount = 0L;
     count = 0L;
+    // reset for a new image
+    inter_binary_pkt = DEFAULT_INTER_PKT_TIME;
 
     Serial.print(F("Encoding picture data, Quality Factor is : "));
     Serial.println(QualityFactor);
