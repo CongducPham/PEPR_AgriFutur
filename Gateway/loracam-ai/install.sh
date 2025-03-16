@@ -10,6 +10,7 @@ echo "--> Compile LoRaCAM-AI image related tools"
 cd tools
 ./make_bin
 
+cd /home/pi/loracam-ai
 echo "--> Enabling LoRaCAM-AI service at boot"
 sudo cp loracam-ai-service.service.txt /etc/systemd/system/loracam-ai-service.service
 sudo systemctl enable loracam-ai-service.service

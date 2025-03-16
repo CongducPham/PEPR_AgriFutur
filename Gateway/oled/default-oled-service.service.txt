@@ -1,5 +1,5 @@
 [Unit]
-Description=Python script to drive OLED screen for INTEL-IRRIS Wazigate
+Description=Python script to drive OLED screen for generic gateway
 StartLimitIntervalSec=600
 StartLimitBurst=2
 After=network.target wazigate.service

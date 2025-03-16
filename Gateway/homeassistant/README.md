@@ -83,6 +83,8 @@ When you will integrate a [LoRaCAM-AI device](https://github.com/CongducPham/PEP
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ha_default_view.png" width="700">
 
+You may need to restart Home Assistant: go to `Developer Tools` and click on `RESTART`.
+
 Test the Home Assistant `www` page
 -----
 
@@ -95,7 +97,8 @@ Use the Home Assistant mobile app
 
 You can install the Home Assistant mobile app on your Android and iOS smartphone. Then, with your smartphone, connect to the WaziGate' WiFi (WAZIGATE_XXXXXXXXXXXX). Then with your smartphone brower, open `http://10.42.0.1:8123`. You will be asked to login (use the `intelirris` user). You may also need to add a server in which case, select `Enter Address Manually`, enter `http://10.42.0.1:8123` and click on `Connect`. You may then need to select the INTEL-IRRIS server and click on `Activate` to connect to the HA server.
   
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ha_mobile_app.png" width="300">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ha_phone_capacitive.PNG" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ha_phone_tensiometer.PNG" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ha_phone_loracam-ai.PNG" width="200">
+
 
 Enjoy!
 C. Pham
