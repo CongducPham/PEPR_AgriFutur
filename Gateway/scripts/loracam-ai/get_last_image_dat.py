@@ -157,67 +157,70 @@ if len(sys.argv) > 2:
 
     print("Search for prefix", prefix)
 
-    for vals in sensor_values:
-        if vals["value"][:2].upper() == prefix:
-            nPkt = nPkt + 1
-            line = vals["value"][6:].replace("\n", "").replace("\r", "")
-            imgPkt = re.sub(r"(.{2})", r"\1 ", line)
-            last_image_raw = last_image_raw + "00" + imgPkt.upper()
-
-            if not first_chunk_parsed:
-                first_chunk_parsed = True
-                try:
-                    time_first = datetime.fromisoformat(vals["time"])
-                    print("no except")
-                    print(time_first)
-                except:
+    if prefix[0] == 'F':
+        for vals in sensor_values:
+            if vals["value"][:2].upper() == prefix:
+                nPkt = nPkt + 1
+                line = vals["value"][6:].replace("\n", "").replace("\r", "")
+                imgPkt = re.sub(r"(.{2})", r"\1 ", line)
+                last_image_raw = last_image_raw + "00" + imgPkt.upper()
+    
+                if not first_chunk_parsed:
+                    first_chunk_parsed = True
                     try:
-                        time_first = datetime.strptime(
-                            vals["time"], "%Y-%m-%dT%H:%M:%S%z"
-                        )
-                        print("except 1")
+                        time_first = datetime.fromisoformat(vals["time"])
+                        print("no except")
                         print(time_first)
                     except:
-                        time_first = datetime.strptime(
-                            vals["time"], "%Y-%m-%dT%H:%M:%S.%fZ"
-                        )
-                        print("except 2")
-                        print(time_first)
-
-                last_image_date = time_first.strftime("%Y-%m-%d-%H-%M-%S")
-
-            print(vals["value"])
-
-        nPktHex = hex(nPkt).upper()[2:]
-        final_last_image_raw = "00" + nPktHex + " " + last_image_raw
-
-    outputFile = "{0}_".format(last_image_date) + dev_name + ".txt"
- 
-    with open(outputFile, "w") as outfile:
-        outfile.write(final_last_image_raw)
-
-    print(outputFile)
-    print("decode with: ./decode_to_bmp", outputFile, "128x128-ESP32S3-test.bmp")
+                        try:
+                            time_first = datetime.strptime(
+                                vals["time"], "%Y-%m-%dT%H:%M:%S%z"
+                            )
+                            print("except 1")
+                            print(time_first)
+                        except:
+                            time_first = datetime.strptime(
+                                vals["time"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                            )
+                            print("except 2")
+                            print(time_first)
     
-    if len(sys.argv) > 3 and sys.argv[3][0]=='.':
-        path_prefix = sys.argv[3]
-    else:
-        if len(sys.argv) > 4 and sys.argv[4][0]=='.':
-            path_prefix = sys.argv[4]
+                    last_image_date = time_first.strftime("%Y-%m-%d-%H-%M-%S")
+    
+                print(vals["value"])
+    
+            nPktHex = hex(nPkt).upper()[2:]
+            final_last_image_raw = "00" + nPktHex + " " + last_image_raw
+    
+        outputFile = "{0}_".format(last_image_date) + dev_name + ".txt"
+     
+        with open(outputFile, "w") as outfile:
+            outfile.write(final_last_image_raw)
+    
+        print(outputFile)
+        print("decode with: ./decode_to_bmp", outputFile, "128x128-ESP32S3-test.bmp")
+        
+        if len(sys.argv) > 3 and sys.argv[3][0]=='.':
+            path_prefix = sys.argv[3]
         else:
-            if len(sys.argv) > 5 and sys.argv[5][0]=='.':
-                path_prefix = sys.argv[5]
-            else:    
-                path_prefix = "."
-                      
-    try:
-        subprocess.check_output(path_prefix+"/decode_to_bmp "
-            +outputFile+" "+path_prefix+"/128x128-ESP32S3-test.bmp", shell = True
-        )
-    except:
-        print("cannot decode automatically")
-        print(path_prefix+"/decode_to_bmp not found")    
+            if len(sys.argv) > 4 and sys.argv[4][0]=='.':
+                path_prefix = sys.argv[4]
+            else:
+                if len(sys.argv) > 5 and sys.argv[5][0]=='.':
+                    path_prefix = sys.argv[5]
+                else:    
+                    path_prefix = "."
+                          
+        try:
+            subprocess.check_output(path_prefix+"/decode_to_bmp "
+                +outputFile+" "+path_prefix+"/128x128-ESP32S3-test.bmp", shell = True
+            )
+        except:
+            print("cannot decode automatically")
+            print(path_prefix+"/decode_to_bmp not found")
 
+    else:
+        print("prefix seems not valid")            
 else:
     print("get_last_image_dat.py requires at least 2 arguments")
     print("e.g.: python get_last_image_dat.py 192.168.0.29 67b6fe8568f3190a22e91c6f")

@@ -156,38 +156,42 @@ if len(sys.argv) > 2:
     else:
         prefix = last_value["value"][:2].upper()
 
-    for vals in sens_values:
-        if vals["value"][:2].upper() == prefix:
-            last_image_raw += vals["value"] + "\n"
-            if not first_chunk_parsed:
-                first_chunk_parsed = True
-                try:
-                    time_first = datetime.fromisoformat(vals["time"])
-                    print("no except")
-                    print(time_first)
-                except:
+    if prefix[0] == 'F':
+        for vals in sens_values:
+            if vals["value"][:2].upper() == prefix:
+                last_image_raw += vals["value"] + "\n"
+                if not first_chunk_parsed:
+                    first_chunk_parsed = True
                     try:
-                        time_first = datetime.strptime(
-                            vals["time"], "%Y-%m-%dT%H:%M:%S%z"
-                        )
-                        print("except 1")
+                        time_first = datetime.fromisoformat(vals["time"])
+                        print("no except")
                         print(time_first)
                     except:
-                        time_first = datetime.strptime(
-                            vals["time"], "%Y-%m-%dT%H:%M:%S.%fZ"
-                        )
-                        print("except 2")
-                        print(time_first)
-
-                last_image_date = time_first.strftime("%Y-%m-%d-%H-%M-%S")
-
-    outputFile = "{0}_image_pkt.txt".format(last_image_date)
-
-    with open(outputFile, "w") as outfile:
-        outfile.write(last_image_raw)
-
-    print(outputFile)
-    print("display in dat file: python image_pkt_to_image_dat.py ", outputFile)
+                        try:
+                            time_first = datetime.strptime(
+                                vals["time"], "%Y-%m-%dT%H:%M:%S%z"
+                            )
+                            print("except 1")
+                            print(time_first)
+                        except:
+                            time_first = datetime.strptime(
+                                vals["time"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                            )
+                            print("except 2")
+                            print(time_first)
+    
+                    last_image_date = time_first.strftime("%Y-%m-%d-%H-%M-%S")
+    
+        outputFile = "{0}_image_pkt.txt".format(last_image_date)
+    
+        with open(outputFile, "w") as outfile:
+            outfile.write(last_image_raw)
+    
+        print(outputFile)
+        print("display in dat file: python image_pkt_to_image_dat.py ", outputFile)
+        
+    else:
+        print("prefix seems not valid") 
 else:
     print("get_last_image_pkt.py requires at least 2 arguments")
     print("e.g.: python get_last_image_pkt.py 192.168.0.29 67b6fe8568f3190a22e91c6f")
