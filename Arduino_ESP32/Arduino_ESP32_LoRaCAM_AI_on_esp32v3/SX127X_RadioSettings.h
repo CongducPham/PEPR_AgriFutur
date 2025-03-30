@@ -60,7 +60,7 @@
 const uint32_t Offset = 0;                      //offset frequency for calibration purposes
 #ifdef LORAWAN
 const uint8_t Bandwidth = LORA_BW_125;          //LoRa bandwidth for LoRaWAN mode, DO NOT CHANGE
-const uint8_t SpreadingFactor = LORA_SF12;      //Change here LoRa spreading factor for LoRaWAN mode
+const uint8_t SpreadingFactor = LORA_SF10;      //Change here LoRa spreading factor for LoRaWAN mode
 #else
 const uint8_t Bandwidth = LORA_BW_125;          //LoRa bandwidth
 const uint8_t SpreadingFactor = LORA_SF12;      //LoRa spreading factor

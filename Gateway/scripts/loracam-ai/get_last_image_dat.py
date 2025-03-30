@@ -213,7 +213,7 @@ if len(sys.argv) > 2:
                           
         try:
             subprocess.check_output(path_prefix+"/decode_to_bmp "
-                +outputFile+" "+path_prefix+"/128x128-ESP32S3-test.bmp", shell = True
+                +outputFile+" "+path_prefix+"/128x128-ESP32S3-test.bmp 2> LAST_DECODED_FILENAME.txt", shell = True
             )
         except:
             print("cannot decode automatically")

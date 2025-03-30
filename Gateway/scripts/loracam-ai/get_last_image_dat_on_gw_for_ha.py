@@ -213,7 +213,7 @@ if len(sys.argv) > 2:
                           
         try:
             subprocess.check_output(path_prefix+"/decode_to_bmp "
-                +outputFile+" "+path_prefix+"/128x128-ESP32S3-test.bmp", shell = True
+                +outputFile+" "+path_prefix+"/128x128-ESP32S3-test.bmp 2> LAST_DECODED_FILENAME.txt", shell = True
             )
         except:
             print("cannot decode automatically")
@@ -221,16 +221,17 @@ if len(sys.argv) > 2:
         
         print("copy to /opt/homeassistant/config/www/loracam-ai") 
         try:
-            subprocess.check_output("sudo cp decode-"
-                +outputFile+"* /opt/homeassistant/config/www/loracam-ai", shell = True
+            subprocess.check_output("sudo cp `LAST_DECODED_FILENAME.txt` /opt/homeassistant/config/www/loracam-ai",
+            shell = True
             )        
         except:
             print("copy decoded bmp to /opt/homeassistant/config/www/loracam-ai failed")
             
         print("copy as "+"last-"+dev_name+"-image.bmp")
         try:
-            subprocess.check_output("sudo cp decode-"
-                +outputFile+"* /opt/homeassistant/config/www/loracam-ai/"+"last-"+dev_name+"-image.bmp", shell = True
+            subprocess.check_output("sudo cp `LAST_DECODED_FILENAME.txt` /opt/homeassistant/config/www/loracam-ai/"
+            +"last-"+dev_name+"-image.bmp",
+            shell = True
             )        
         except:
             print("copy to /opt/homeassistant/config/www/loracam-ai/"+"last-"+dev_name+"-image.bmp failed")     

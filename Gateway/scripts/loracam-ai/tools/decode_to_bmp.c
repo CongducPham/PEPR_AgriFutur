@@ -341,7 +341,7 @@ void startDecodeImage(char* fileToDecode, FILE* theFile, int Q, int SN, char* pa
     int err = ReadBitmapFile(paletteFile, &OriginalImage);
 
     if (err) {
-        fprintf(stderr, "CANNOT read original BMP file %s\n", paletteFile);
+        printf("CANNOT read original BMP file %s\n", paletteFile);
     } else {
         // set size from the encoded image
         OriginalImage.imageHsize=hSize;
@@ -352,7 +352,7 @@ void startDecodeImage(char* fileToDecode, FILE* theFile, int Q, int SN, char* pa
         for (int i = 0; i < abs(OriginalImage.imageVsize); i++)
             for (int j = 0; j < OriginalImage.imageHsize; j++) OriginalImage.data[i][j] = 0.0;
 
-        fprintf(stderr, "Start JPEGdepacketization\n");
+        printf("Start JPEGdepacketization\n");
 
         // JPEG decoding
         while ((psize = JPEGdepacketization(&OriginalImage, theFile))) {
@@ -360,11 +360,11 @@ void startDecodeImage(char* fileToDecode, FILE* theFile, int Q, int SN, char* pa
             npkt++;
         }
 
-        fprintf(stderr, "Start JPEGdecoding\n");
+        printf("Start JPEGdecoding\n");
 
         JPEGdecoding(&OriginalImage, &OriginalImage);
 
-        fprintf(stderr, "Encoded file size is %d, npkt is %d\n", totalsize, npkt);
+        printf("Encoded file size is %d, npkt is %d\n", totalsize, npkt);
         
         snprintf(bmpFile, sizeof(bmpFile), "decode-%s", fileToDecode);
         
@@ -382,24 +382,23 @@ void startDecodeImage(char* fileToDecode, FILE* theFile, int Q, int SN, char* pa
         err = WriteBitmapFile(finalBmpFile, &OriginalImage, vflip);
 
         if (err) {
-            fprintf(stderr, "CANNOT write BMP file from encoded image.\n");
+            printf("CANNOT write BMP file from encoded image.\n");
             printf("error\n");
-        } else
+        } else {
+            fprintf(stderr, "%s\n", finalBmpFile);
             printf("%s\n", finalBmpFile);
+        }
     }
 }
 
 void* printERROR(char* argv[]) {
-    fprintf(stderr,
-            "USAGE:\t%s -vflip -SN sn -src src -camid camid file_to_decode palette_image_file\n",
-            argv[0]);
-    fprintf(stderr, "USAGE:\t-vflip, flip vertically the image\n");
-    fprintf(stderr, "USAGE:\t-SN sn, use sn as image sequence number\n");
-    fprintf(stderr, "USAGE:\t-src src, use src as source node address\n");
-    fprintf(stderr, "USAGE:\t-camid camid, use camid as camera id (index)\n");
-    fprintf(stderr, "USAGE:\t file_to_decode, give the .dat file produced by encoder\n");
-    fprintf(stderr,
-            "USAGE:\t palette_image_file, give the original bmp file or the palette bmp file\n");
+    printf("USAGE:\t%s -vflip -SN sn -src src -camid camid file_to_decode palette_image_file\n", argv[0]);
+    printf("USAGE:\t-vflip, flip vertically the image\n");
+    printf("USAGE:\t-SN sn, use sn as image sequence number\n");
+    printf("USAGE:\t-src src, use src as source node address\n");
+    printf("USAGE:\t-camid camid, use camid as camera id (index)\n");
+    printf("USAGE:\t file_to_decode, give the .dat file produced by encoder\n");
+    printf("USAGE:\t palette_image_file, give the original bmp file or the palette bmp file\n");
     return 0;
 }
 
@@ -444,7 +443,7 @@ int main(int argc, char* argv[]) {
     unsigned int tmp;
 
     if (!decode_received_dat) {
-        fprintf(stderr, "Decoding original image\n");
+        printf("Decoding original image\n");
 
         fscanf(pFile, "%04X", &npkt);
         fscanf(pFile, "%04X", &hSize);
@@ -453,7 +452,7 @@ int main(int argc, char* argv[]) {
 
         qualityFactor = tmp;
     } else
-        fprintf(stderr, "Decoding received image\n");
+        printf("Decoding received image\n");
 
 #ifdef DEBUG_CODING
     printf("0\n");
@@ -466,7 +465,7 @@ int main(int argc, char* argv[]) {
     printf("1\n");
 #endif
 
-    fprintf(stderr, "Decode image %s, palette_file is %s, original QualityFactor is %d\n",
+    printf("Decode image %s, palette_file is %s, original QualityFactor is %d\n",
             file_to_decode, palette_file, qualityFactor);
 
     startDecodeImage(file_to_decode, pFile, qualityFactor, SN, palette_file, srcAddr, camid);

@@ -14,12 +14,12 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-panel_iframe:
-  configurator:
-    title: Configurator
-    icon: mdi:wrench
-    url: http://wazigate.local:3218
-    require_admin: true
+#panel_iframe:
+#  configurator:
+#    title: Configurator
+#    icon: mdi:wrench
+#    url: http://wazigate.local:3218
+#    require_admin: true
     
 sensor capacitive:
   - platform: rest
@@ -123,6 +123,6 @@ sensor loracam:
 #from https://community.home-assistant.io/t/refresh-cached-images-in-lovelace-picture-elements-maybe-other-places-too/98351/18    
 camera:
   - platform: local_file
-    name: loracam_ai_dev_2daa
+    name: LoRaCAM-AI-DEV-2DAA
     file_path: /config/www/loracam-ai/last-LoRaCAM-AI-DEV-2DAA-image.bmp
           
