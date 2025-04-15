@@ -23,11 +23,13 @@ CO2_SCD30::CO2_SCD30(char* nomenclature, bool is_analog, bool is_connected, bool
       }
 
 			if (get_is_low_power())
-#if defined IRD_PCB && defined SOLAR_BAT
+       	digitalWrite(get_pin_power(), PWR_LOW);
+    	else
+#if (defined IRD_PCB && defined SOLAR_BAT) || defined IRD_PCBA
         power_soft_start(get_pin_power());
 #else
-        digitalWrite(get_pin_power(), PWR_HIGH);
-#endif
+				digitalWrite(get_pin_power(), PWR_HIGH);
+#endif 
 		}
 		  
     Wire.begin();
@@ -38,48 +40,62 @@ CO2_SCD30::CO2_SCD30(char* nomenclature, bool is_analog, bool is_connected, bool
 
 // 
 void CO2_SCD30::update_data()
-{		
+{	
+  // will get CO2 in ppm	
   float co2_value = 0.0;
   
-  if (get_is_connected()) 
-  {
+  if (get_is_connected()) {
     // if we use a digital pin to power the sensor...
-    if (get_is_low_power())
-#if defined IRD_PCB && defined SOLAR_BAT
-      power_soft_start(get_pin_power());
+    if (get_is_low_power() && get_is_power_on_when_active())
+#if (defined IRD_PCB && defined SOLAR_BAT) || defined IRD_PCBA
+        power_soft_start(get_pin_power());
 #else
-      digitalWrite(get_pin_power(),HIGH);   
+        digitalWrite(get_pin_power(),HIGH);  	
 #endif
 
     // wait
     delay(get_warmup_time());
 
     // Start up the library 
-    airSensor.begin();
-    // 2s, the minium. By default the SCD30 has data ready every two seconds 
-    airSensor.setMeasurementInterval(2); 
-    delay(6000);
+    if (airSensor.begin() == false) {
+      set_data((double)-99.0);
+    }
+    else {
+      // Set the various available options
+      ////////////////////////////////////
+      // Set altitude of the sensor in m, stored in non-volatile memory of SCD30
+      //airSensor.setAltitudeCompensation(1600); 
+      // Set current ambient pressure in mBar: 700 to 1200, will overwrite altitude compensation
+      //airSensor.setAmbientPressure(835); 
+      // Optionally we can set temperature offset to 5°C, stored in non-volatile memory of SCD30
+      //airSensor.setTemperatureOffset(5); 
+      // 2s, the minium. By default the SCD30 has data ready every two seconds 
+      // we are not using the periodic measure
+      //airSensor.setMeasurementInterval(2); 
 
-  if (airSensor.dataAvailable())
-  {
-    co2_value = airSensor.getCO2();
-//    co2_temperature_value = airSensor.getTemperature() - SCD30_TEMP_OFFSET;
-//    co2_humidity_value = airSensor.getHumidity();
-  }    
-    // call sensors.requestTemperatures() to issue a global temperature 
- 	  // request to all devices on the bus 
- //   sensors->requestTemperatures(); // Send the command to get temperature readings  
- //   temp = sensors->getTempCByIndex(0); // Why "byIndex"?  
-    // You can have more than one DS18B20 on the same bus.  
-    // 0 refers to the first IC on the wire 
-    //delay(1000);  
-	
-    airSensor.StopMeasurement();
+      delay(500);
 
-    if (get_is_low_power())
-        digitalWrite(get_pin_power(), PWR_LOW);
-        
-	  set_data(co2_value);
+      if (airSensor.dataAvailable()) {
+        co2_value = airSensor.getCO2();
+        //co2_temperature_value = airSensor.getTemperature() - SCD30_TEMP_OFFSET;
+        //co2_humidity_value = airSensor.getHumidity();
+      }    
+      // call sensors.requestTemperatures() to issue a global temperature 
+      // request to all devices on the bus 
+      //sensors->requestTemperatures(); // Send the command to get temperature readings  
+      //temp = sensors->getTempCByIndex(0); // Why "byIndex"?  
+      // You can have more than one DS18B20 on the same bus.  
+      // 0 refers to the first IC on the wire 
+      //delay(1000);  
+    
+      // we are not using the periodic measure
+      //airSensor.StopMeasurement();
+
+      if (get_is_low_power() && get_is_power_off_when_inactive())
+          digitalWrite(get_pin_power(), PWR_LOW);
+          
+      set_data(co2_value);
+    }
   }
   else 
   { 

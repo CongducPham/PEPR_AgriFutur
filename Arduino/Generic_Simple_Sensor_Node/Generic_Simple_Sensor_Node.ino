@@ -19,9 +19,10 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Feb. 18th, 2025
+ * last update: Apr. 15th, 2025
  *
  * Feb. 7th, 2025 --> remove unused options in the code, focus on INTEL-IRRIS PCB/PCBA v4.1 & v5 and WaziSense v2 platforms
+* NEW: Support for both SCD30 and SCD40 CO2 sensors
  * NEW: Support for up to 3 DSB1820 temperature sensors
  * NEW: Support for ambiant air temperature/humidity sensors (DHT22/AM2305/SHT1x/SHT2x/SHT3x)
  * Based on INTEL_IRRIS soil humidity sensor platform – July 19th, 2024
@@ -69,55 +70,62 @@ TXOnlySerial debug_serial(2);
 // #define MY_FREQUENCY 916800000
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG "\nGeneric Simple Sensor Node – Dec. 23rd, 2024\n"
+#define BOOT_START_MSG "\nGeneric Simple Sensor Node – Apr. 15th, 2025\n"
 
 ////////////////////////////////////////////////////////////////////
-// comment to have an ambiant air temperature/humidity sensor node
-#define WITH_CAPACITIVE
+// SENSOR CONFIGURATION PART                                      //
+////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////
+// uncomment to have a soil humidity capacitive sensor (SEN0308 or other type of capacitive)
+// must be commented for other types of sensor
+#define WITH_CAPACITIVE
+// uncomment to use SEN0308 capacitive calibration for low voltage
+#define SEN0308_CALIBRATION_LOW_VOLTAGE
+// uncomment to send millivolt with SEN0308 capacitive
+// #define SEN0308_TRANSMIT_MILLIVOLT
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
-// #define WITH_WATERMARK
+//#define WITH_WATERMARK
 // only for watermark sensors, not relevant for capacitive sensors
+// if a soil temperature sensor is wired, the real soil temperature can be used
 #define WM_REF_TEMPERATURE 28.0
-
-////////////////////////////////////////////////////////////////////
 // uncomment to force the watermark to have default device address for WaziGate
 // #define WM_AS_PRIMARY_SENSOR
-
-////////////////////////////////////////////////////////////////////
 // uncomment to have 2 tensiometer watermark sensor on the same device
-// #define TWO_WATERMARK
-
+//#define TWO_WATERMARK
 ////////////////////////////////////////////////////////////////////
-// uncomment to have 1 soil temperature sensor ST
-// using a one-wire DS18B20 sensor
+// uncomment to have 1 soil temperature sensor ST using a one-wire DS18B20 sensor
 // also needed for TWO_SOIL_TEMP_SENSOR and THREE_SOIL_TEMP_SENSOR
 //#define SOIL_TEMP_SENSOR
 // only for watermark sensors, not relevant for capacitive sensors
 #define LINK_SOIL_TEMP_TO_CENTIBAR
-// use SEN0308 capacitive calibration for low voltage
-#define SEN0308_CALIBRATION_LOW_VOLTAGE
-// send millivolt with SEN0308 capacitive
-// #define SEN0308_TRANSMIT_MILLIVOLT
-
 ////////////////////////////////////////////////////////////////////
 // uncomment to have an additional decagon EC-5 sensor, ONLY ON IRD_PCB
 // #define SOIL_EC5_SENSOR
-// uncomment to have an additional CO2 sensor, ONLY ON IRD_PCB
-// #define CO2_SCD30_SENSOR
+////////////////////////////////////////////////////////////////////
+// uncomment to have an SCD30 CO2 sensor, ONLY ON IRD_PCB
+//#define CO2_SCD30_SENSOR
+// uncomment to have an SCD40 CO2 sensor, ONLY ON IRD_PCB
+// SCD40 is more compact and has lower cost but is a little bit less accurate than SCD30
+//#define CO2_SCD40_SENSOR
+////////////////////////////////////////////////////////////////////
 // uncomment to have an ambiant air temp/hum sensor, then select which sensor model below
-// #define AIR_TEMP_HUM_SENSOR
+//#define AIR_TEMP_HUM_SENSOR
+////////////////////////////////////////////////////////////////////
 // uncomment to have an ambiant air temperature DHT22/AM2305 sensor, ONLY ON IRD_PCB
+// DHT22 has lower cost but is less reliable than SHT30
 // #define DHT22_AM2305_TEMP_SENSOR
 // uncomment to have an ambiant air humidity DHT22/AM2305 sensor, ONLY ON IRD_PCB
 // #define DHT22_AM2305_HUM_SENSOR
+////////////////////////////////////////////////////////////////////
 // uncomment to have an ambiant air temperature SHT sensor, ONLY ON IRD_PCB
-// #define SHT_TEMP_SENSOR
+//#define SHT_TEMP_SENSOR
 // uncomment to have an ambiant air humidity SHT sensor, ONLY ON IRD_PCB
-// #define SHT_HUM_SENSOR
+//#define SHT_HUM_SENSOR
+////////////////////////////////////////////////////////////////////
 // uncomment to have a customized 2 soil temperature device, ONLY ON IRD_PCB
-// #define TWO_SOIL_TEMP_SENSOR
+//#define TWO_SOIL_TEMP_SENSOR
 // uncomment to have a customized 3 soil temperature device, ONLY ON IRD_PCB
 // #define THREE_SOIL_TEMP_SENSOR
 
@@ -216,6 +224,10 @@ unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xC1};
 // The default address in ABP mode for dedicated soil temperature sensor devices is 26011DD1
 // if you need a different address for another dedicated soil temperature sensor device, use D2, D3,..., DF instead
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xD1};
+#elif defined CO2_SCD30_SENSOR
+// The default address in ABP mode for dedicated CO2 sensor devices is 26011DE1
+// if you need a different address for another dedicated CO2 sensor device, use E2, E3,..., EF instead
+unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xE1};
 #else
 // The default address in ABP mode for capacitive soil sensor devices is 26011DAA
 // if you need a different address for another capacitive sensor device, use AB, AC,..., AF instead
@@ -382,6 +394,10 @@ unsigned char DevAddr[4] = {0x00, 0x00, 0x00, node_addr};
 
 #ifdef CO2_SCD30_SENSOR
 #include "CO2_SCD30.h"
+#endif
+
+#ifdef CO2_SCD40_SENSOR
+#include "CO2_SCD40.h"
 #endif
 
 #ifdef DHT22_AM2305_TEMP_SENSOR
@@ -925,6 +941,13 @@ void setup() {
     // CO2  // IRD_PCB
     sensor_ptrs[sensor_index] =
         new CO2_SCD30((char*)"CO2", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, -1, (uint8_t)TEMP_PWR_PIN /*no pin trigger*/);
+    sensor_ptrs[sensor_index]->set_n_sample(1);
+    sensor_index++;
+#endif
+#ifdef CO2_SCD40_SENSOR
+    // CO2  // IRD_PCB
+    sensor_ptrs[sensor_index] =
+        new CO2_SCD40((char*)"CO2", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, -1, (uint8_t)TEMP_PWR_PIN /*no pin trigger*/);
     sensor_ptrs[sensor_index]->set_n_sample(1);
     sensor_index++;
 #endif

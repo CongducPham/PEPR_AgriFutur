@@ -10,9 +10,9 @@
 
 #define WATERMARKANALOG_SCALE 10.0
 //put here the resistor value, in Ohms
-#define WM_RESISTOR 10000
 //#define WM_RESISTOR 6800
 //#define WM_RESISTOR 18000
+#define WM_RESISTOR 10000
 //we defined WM_MAX_RESISTOR=32760 because the transmitted value would be 32760/10=3276
 //and currently a bug in WaziGate XLPP decoding code will limit the maximum value to 3276
 #define WM_MAX_RESISTOR 32760
