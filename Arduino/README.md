@@ -21,7 +21,7 @@ Default configuration of the code
 ===
 
 - Capacitive sensor connected to A0 (signal) and A1 (power)
-- Single-channel LoRaWAN uplink transmission to gateway
+- Single-channel LoRaWAN uplink transmission to gateway, SF12BW125
 - Cayenne LPP data format
 - EU868 band 868.1MHz (can be changed to 433MHz band)
 - Device address is 26011DAA

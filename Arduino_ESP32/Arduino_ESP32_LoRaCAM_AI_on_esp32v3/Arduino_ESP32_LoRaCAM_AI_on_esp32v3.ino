@@ -26,6 +26,9 @@
  *  Implementation:         C. Pham
  *  Last update:            Fev. 18th, 2025
  *
+ *  IMPORTANT:  the default SF is set to SF12 to work with the default configuration of the single-channel gateway
+ *              it may be necessary to decrease to SF10 to be within the 1% duty-cycle
+ *
  *  With #define WAIT_FOR_SERIAL_INPUT, for testing purposes, no deep sleep, a command starts with /@ and ends with #: /@Z40#Q40#
  *    "Z64#" -> sets the MSS size to 64, default is 90 for LoRa
  *    "Q15#" -> sets the quality factor to 15, default is 20 for LoRa

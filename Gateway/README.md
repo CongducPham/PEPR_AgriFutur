@@ -26,7 +26,7 @@ Default configuration for the customized gateway
 
 This configuration works out-of-the box with the `Generic_Simple_Sensor_Node` Arduino code used to build a default capacitive device and a default tensionmeter device.
 
-- LoRaWAN mode (single channel)
+- LoRaWAN mode (single channel), SF12BW125
 - Cayenne LPP data format
 - EU868 band 868.1MHz
 - 2 pre-configured devices with address 26011DAA and 26011DB1

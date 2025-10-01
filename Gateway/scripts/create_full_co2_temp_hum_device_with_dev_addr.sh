@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# Ex: create_full_air_temp_hum_device_with_dev_addr.sh 1 C1
-# this script creates a soil temperature sensor with AIR-AREA-x and dev addr 26011Dyy
-# for ambiant air/hum, it is recommended to use C1, C2, C3,... for yy
+# Ex: create_full_co2_temp_hum_device_with_dev_addr.sh 1 E1
+# this script creates a CO2 sensor with CO2-AREA-x and dev addr 26011Dyy
+# for CO2+temp/hum, it is recommended to use E1, E2, E3,... for yy
 
 # you can add a third parameter to indicate a specific device id to be assigned to the created device
-# Ex: create_full_air_temp_hum_device_with_dev_addr.sh 1 C1 64425c0068f31909357de7c8
+# Ex: create_full_co2_temp_hum_device_with_dev_addr.sh 1 E1 64425c0068f31909357de7c8
 
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
     echo "Need the device name index and the last byte of the device address"
-    echo "e.g. create_full_air_temp_hum_device_with_dev_addr.sh 1 C1"
+    echo "e.g. create_full_co2_temp_hum_device_with_dev_addr.sh 1 E1"
     exit
 fi
 
@@ -27,14 +27,31 @@ if [ $# -eq 3 ]
 then
 
 # a specific device id has been given
-echo "--> Create new ambiant air/hum device with specific device id $3"
+echo "--> Create new CO2 temp/hum device with specific device id $3"
 
 DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{
   \"actuators\":[],
   \"id\":\"${3}\",  
-  \"name\":\"AIR-AREA-${1}\",
+  \"name\":\"CO2-AREA-${1}\",
   \"sensors\":[
   {
+    \"id\":\"temperatureSensor_9\",
+    \"kind\":\"\",
+    \"meta\":
+    {
+      \"xlppChan\":9,
+      \"createdBy\":\"wazigate-lora\",
+      \"kind\":\"CO2 ppm\",
+      \"model\":\"SCD\",
+      \"type\":\"co2\",
+      \"value_index\":0
+    },
+    \"name\":\"CO2 Sensor\",
+    \"quantity\":\"\",
+    \"time\":\"$DATE\",
+    \"unit\":\"\",
+    \"value\":-99
+  },{
     \"id\":\"temperatureSensor_7\",
     \"kind\":\"\",
     \"meta\":
@@ -42,11 +59,11 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
       \"xlppChan\":7,
       \"createdBy\":\"wazigate-lora\",
       \"kind\":\"degree Celsius\",
-      \"model\":\"DHT/SHT\",
-      \"type\":\"air\",
+      \"model\":\"SCD\",
+      \"type\":\"co2\",
       \"value_index\":0
     },
-    \"name\":\"Ambiant Air Sensor\",
+    \"name\":\"CO2 Sensor\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
     \"unit\":\"\",
@@ -59,11 +76,11 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
       \"xlppChan\":8,
       \"createdBy\":\"wazigate-lora\",
       \"kind\":\"relative humidity\",
-      \"model\":\"DHT/SHT\",
-      \"type\":\"air\",
+      \"model\":\"SCD\",
+      \"type\":\"co2\",
       \"value_index\":0
     },
-    \"name\":\"Ambiant Air Sensor\",
+    \"name\":\"CO2 Sensor\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
     \"unit\":\"\",
@@ -72,13 +89,30 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
   
 else
 
-echo "--> Create new device ambiant air/hum device"
+echo "--> Create new device CO2 temp/hum device"
 
 DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{
   \"actuators\":[],
-  \"name\":\"AIR-AREA-${1}\",
+  \"name\":\"CO2-AREA-${1}\",
   \"sensors\":[
   {
+    \"id\":\"temperatureSensor_9\",
+    \"kind\":\"\",
+    \"meta\":
+    {
+      \"xlppChan\":9,
+      \"createdBy\":\"wazigate-lora\",
+      \"kind\":\"CO2 ppm\",
+      \"model\":\"SCD\",
+      \"type\":\"co2\",
+      \"value_index\":0
+    },
+    \"name\":\"CO2 Sensor\",
+    \"quantity\":\"\",
+    \"time\":\"$DATE\",
+    \"unit\":\"\",
+    \"value\":-99
+  },{
     \"id\":\"temperatureSensor_7\",
     \"kind\":\"\",
     \"meta\":
@@ -86,11 +120,11 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
       \"xlppChan\":7,
       \"createdBy\":\"wazigate-lora\",
       \"kind\":\"degree Celsius\",
-      \"model\":\"DHT/SHT\",
-      \"type\":\"air\",
+      \"model\":\"SCD\",
+      \"type\":\"co2\",
       \"value_index\":0
     },
-    \"name\":\"Ambiant Air Sensor\",
+    \"name\":\"CO2 Sensor\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
     \"unit\":\"\",
@@ -103,11 +137,11 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
       \"xlppChan\":8,
       \"createdBy\":\"wazigate-lora\",
       \"kind\":\"relative humidity\",
-      \"model\":\"DHT/SHT\",
-      \"type\":\"air\",
+      \"model\":\"SCD\",
+      \"type\":\"co2\",
       \"value_index\":0
     },
-    \"name\":\"Ambiant Air Sensor\",
+    \"name\":\"CO2 Sensor\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
     \"unit\":\"\",
@@ -118,8 +152,8 @@ fi
 
 echo $DEVICE > /home/pi/scripts/LAST_CREATED_DEVICE.txt
 echo "device $DEVICE"
-echo "		name: AIR-AREA-${1}"
-echo "		with Ambiant Air Sensor displaying T/H from DHT/SHT"
+echo "		name: CO2-AREA-${1}"
+echo "		with CO2 Sensor displaying CO2 and T/H from SCD"
 echo "		and initialized with -99 value"
 
 echo "--> Make it LoRaWAN"
@@ -132,3 +166,5 @@ curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_7/val
 echo "--> Add value -99"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_8/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-99, \"time\":\"$DATE\"}"
 
+echo "--> Add value -99"
+curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_9/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-99, \"time\":\"$DATE\"}"

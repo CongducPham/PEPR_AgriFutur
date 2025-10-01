@@ -41,7 +41,7 @@ The default configuration on the gateway SD card image
 
 The default configuration is to have the `Gateway/boot/create-starter-kit-demo-capacitive-watermark-st-iiwa-ha/gw-auto-config.sh` configuration in the `/boot` partition of the SD card. When you insert the SD card in a Raspberry Pi, it will automatically configure the gateway with the a starter-kit configuration (see [https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino)).
 
-- LoRaWAN mode (single channel)
+- LoRaWAN mode (single channel), SF12BW125
 - Cayenne LPP data format
 - EU868 band (suitable for Algeria. For Morocco, need to use 433MHz, see Example 1)
 - 2 pre-configured devices with address 26011DAA and 26011DB1

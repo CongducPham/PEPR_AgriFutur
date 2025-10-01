@@ -22,7 +22,7 @@
  * last update: Apr. 15th, 2025
  *
  * Feb. 7th, 2025 --> remove unused options in the code, focus on INTEL-IRRIS PCB/PCBA v4.1 & v5 and WaziSense v2 platforms
-* NEW: Support for both SCD30 and SCD40 CO2 sensors
+ * NEW: Support for both SCD30 and SCD40 CO2 sensors
  * NEW: Support for up to 3 DSB1820 temperature sensors
  * NEW: Support for ambiant air temperature/humidity sensors (DHT22/AM2305/SHT1x/SHT2x/SHT3x)
  * Based on INTEL_IRRIS soil humidity sensor platform – July 19th, 2024
@@ -83,7 +83,7 @@ TXOnlySerial debug_serial(2);
 // uncomment to use SEN0308 capacitive calibration for low voltage
 #define SEN0308_CALIBRATION_LOW_VOLTAGE
 // uncomment to send millivolt with SEN0308 capacitive
-// #define SEN0308_TRANSMIT_MILLIVOLT
+//#define SEN0308_TRANSMIT_MILLIVOLT
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
 //#define WITH_WATERMARK
@@ -91,7 +91,7 @@ TXOnlySerial debug_serial(2);
 // if a soil temperature sensor is wired, the real soil temperature can be used
 #define WM_REF_TEMPERATURE 28.0
 // uncomment to force the watermark to have default device address for WaziGate
-// #define WM_AS_PRIMARY_SENSOR
+//#define WM_AS_PRIMARY_SENSOR
 // uncomment to have 2 tensiometer watermark sensor on the same device
 //#define TWO_WATERMARK
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ TXOnlySerial debug_serial(2);
 #define LINK_SOIL_TEMP_TO_CENTIBAR
 ////////////////////////////////////////////////////////////////////
 // uncomment to have an additional decagon EC-5 sensor, ONLY ON IRD_PCB
-// #define SOIL_EC5_SENSOR
+//#define SOIL_EC5_SENSOR
 ////////////////////////////////////////////////////////////////////
 // uncomment to have an SCD30 CO2 sensor, ONLY ON IRD_PCB
 //#define CO2_SCD30_SENSOR
@@ -115,9 +115,9 @@ TXOnlySerial debug_serial(2);
 ////////////////////////////////////////////////////////////////////
 // uncomment to have an ambiant air temperature DHT22/AM2305 sensor, ONLY ON IRD_PCB
 // DHT22 has lower cost but is less reliable than SHT30
-// #define DHT22_AM2305_TEMP_SENSOR
+//#define DHT22_AM2305_TEMP_SENSOR
 // uncomment to have an ambiant air humidity DHT22/AM2305 sensor, ONLY ON IRD_PCB
-// #define DHT22_AM2305_HUM_SENSOR
+//#define DHT22_AM2305_HUM_SENSOR
 ////////////////////////////////////////////////////////////////////
 // uncomment to have an ambiant air temperature SHT sensor, ONLY ON IRD_PCB
 //#define SHT_TEMP_SENSOR
@@ -127,7 +127,7 @@ TXOnlySerial debug_serial(2);
 // uncomment to have a customized 2 soil temperature device, ONLY ON IRD_PCB
 //#define TWO_SOIL_TEMP_SENSOR
 // uncomment to have a customized 3 soil temperature device, ONLY ON IRD_PCB
-// #define THREE_SOIL_TEMP_SENSOR
+//#define THREE_SOIL_TEMP_SENSOR
 
 // uncomment to use LPP format to send to WAZIGATE for instance
 // so uncomment LPP only with LORAWAN to WAZIGATE
@@ -1665,7 +1665,7 @@ void measure_and_send(void) {
             }
 #endif
 
-#ifdef TWO_SOIL_TEMP_SENSOR
+#if defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
             // the soil temperature sensor
             if (strncmp(sensor_ptrs[i]->get_nomenclature(), "ST2", 3) == 0) {
                 // we always use channel ch=10 for second soil temperature
