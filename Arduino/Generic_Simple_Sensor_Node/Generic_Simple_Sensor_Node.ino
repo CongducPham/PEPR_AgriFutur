@@ -19,7 +19,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Apr. 15th, 2025
+ * last update: Feb. 17th, 2026
  *
  * Feb. 7th, 2025 --> remove unused options in the code, focus on INTEL-IRRIS PCB/PCBA v4.1 & v5 and WaziSense v2 platforms
  * NEW: Support for both SCD30 and SCD40 CO2 sensors
@@ -198,6 +198,28 @@ unsigned int idlePeriodInSec = 0;
 #define NSAMPLE 2
 ///////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////
+// SUMMARY OF LPP CHANNELS USED BY THE DEVICE
+    // ch0:  soil humidity for capacitive
+    // ch0:  for centibar from first watermark
+    // ch1:  for raw resistance value from first watermark
+    // ch2:  for centibar from second watermark
+    // ch3:  for raw resistance value from second watermark
+    // ch4:  RFU
+    // ch5:  first soil temperature (e.g. DS18B20)
+    // ch6:  battery voltage
+    // ch7:  ambiant air temperature (e.g. DHT/SHT or from SCD30)
+    // ch8:  ambiant air humidity (e.g. DHT/SHT or from SCD30)
+    // ch9:  CO2 (SCD30)
+    // ch10: soil temperature, 2nd DS18B20
+    // ch11: soil temperature, 3rd DS18B20
+    // ch12: not used
+    //...
+    // ch20: v_bat outside tx (only for TEST_LOW_BAT)
+    // ch21: current_vcc (only for TEST_LOW_BAT)
+    // ch22: low voltage indication (only for TEST_LOW_BAT)
+///////////////////////////////////////////////////////////////////
+
 /********************************************************************
   _        ___    __      ___   _  _
  | |   ___| _ \__ \ \    / /_\ | \| |
@@ -224,7 +246,7 @@ unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xC1};
 // The default address in ABP mode for dedicated soil temperature sensor devices is 26011DD1
 // if you need a different address for another dedicated soil temperature sensor device, use D2, D3,..., DF instead
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xD1};
-#elif defined CO2_SCD30_SENSOR
+#elif defined CO2_SCD30_SENSOR || defined CO2_SCD40_SENSOR
 // The default address in ABP mode for dedicated CO2 sensor devices is 26011DE1
 // if you need a different address for another dedicated CO2 sensor device, use E2, E3,..., EF instead
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xE1};
@@ -315,32 +337,32 @@ unsigned char DevAddr[4] = {0x00, 0x00, 0x00, node_addr};
 
 #ifdef WITH_WATERMARK
 #ifdef WAZISENSE
-// first Watermark
-#define WM1_PWR_PIN1 A4  // SDA
-#define WM1_PWR_PIN2 3
-#define WM1_ANALOG_PIN A1
-// second Watermark
-#define WM2_PWR_PIN1 A5  // SCL
-#define WM2_PWR_PIN2 4
-#define WM2_ANALOG_PIN A2
+  // first Watermark
+  #define WM1_PWR_PIN1 A4  // SDA
+  #define WM1_PWR_PIN2 3
+  #define WM1_ANALOG_PIN A1
+  // second Watermark
+  #define WM2_PWR_PIN1 A5  // SCL
+  #define WM2_PWR_PIN2 4
+  #define WM2_ANALOG_PIN A2
 #elif defined IRD_PCB
-// first Watermark
-#define WM1_PWR_PIN1 8
-#define WM1_PWR_PIN2 9
-#define WM1_ANALOG_PIN A2
-// second Watermark
-#define WM2_PWR_PIN1 7
-#define WM2_PWR_PIN2 9
-#define WM2_ANALOG_PIN A2
+  // first Watermark
+  #define WM1_PWR_PIN1 8
+  #define WM1_PWR_PIN2 9
+  #define WM1_ANALOG_PIN A2
+  // second Watermark
+  #define WM2_PWR_PIN1 7
+  #define WM2_PWR_PIN2 9
+  #define WM2_ANALOG_PIN A2
 #else
-// first Watermark
-#define WM1_PWR_PIN1 8
-#define WM1_PWR_PIN2 9
-#define WM1_ANALOG_PIN A2
-// second Watermark
-#define WM2_PWR_PIN1 5
-#define WM2_PWR_PIN2 6
-#define WM2_ANALOG_PIN A3
+  // first Watermark
+  #define WM1_PWR_PIN1 8
+  #define WM1_PWR_PIN2 9
+  #define WM1_ANALOG_PIN A2
+  // second Watermark
+  #define WM2_PWR_PIN1 5
+  #define WM2_PWR_PIN2 6
+  #define WM2_ANALOG_PIN A3
 #endif
 #endif
 
@@ -915,6 +937,7 @@ void setup() {
     // it is because the soil temp is attached to a mosfet sensor pin
     sensor_ptrs[sensor_index]->set_warmup_time(1500);
 #endif
+    // we keep the index of the first soil temp sensor to be able to access it to correct values for Watermark sensors
     soil_temp_sensor_index = sensor_index;
     sensor_index++;
 
@@ -941,14 +964,14 @@ void setup() {
     // CO2  // IRD_PCB
     sensor_ptrs[sensor_index] =
         new CO2_SCD30((char*)"CO2", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, -1, (uint8_t)TEMP_PWR_PIN /*no pin trigger*/);
-    sensor_ptrs[sensor_index]->set_n_sample(1);
+    sensor_ptrs[sensor_index]->set_n_sample(5);
     sensor_index++;
 #endif
 #ifdef CO2_SCD40_SENSOR
     // CO2  // IRD_PCB
     sensor_ptrs[sensor_index] =
         new CO2_SCD40((char*)"CO2", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, -1, (uint8_t)TEMP_PWR_PIN /*no pin trigger*/);
-    sensor_ptrs[sensor_index]->set_n_sample(1);
+    sensor_ptrs[sensor_index]->set_n_sample(5);
     sensor_index++;
 #endif
 #ifdef DHT22_AM2305_TEMP_SENSOR
@@ -1477,10 +1500,10 @@ void measure_and_send(void) {
     // ch2:  for centibar from second watermark
     // ch3:  for raw resistance value from second watermark
     // ch4:  RFU
-    // ch5:  soil temperature (e.g. DS18B20)
+    // ch5:  first soil temperature (e.g. DS18B20)
     // ch6:  battery voltage
-    // ch7:  ambiant air temperature (e.g. DHT/SHT)
-    // ch8:  ambiant air humidity (e.g. DHT/SHT)
+    // ch7:  ambiant air temperature (e.g. DHT/SHT or from SCD30)
+    // ch8:  ambiant air humidity (e.g. DHT/SHT or from SCD30)
     // ch9:  CO2 (SCD30)
     // ch10: soil temperature, 2nd DS18B20
     // ch11: soil temperature, 3rd DS18B20
@@ -1695,10 +1718,22 @@ void measure_and_send(void) {
             }
 #endif
 
-#ifdef CO2_SCD30_SENSOR
+#if defined CO2_SCD30_SENSOR || defined CO2_SCD40_SENSOR 
             if (strncmp(sensor_ptrs[i]->get_nomenclature(), "CO2", 3) == 0) {
                 // we always use channel ch=9 for co2
                 lpp.addTemperature(9, tmp_value);
+                // the SCD30/40 has also temperature and humidity readings
+#ifdef CO2_SCD30_SENSOR                
+                // we always use channel ch=7 for ambiant air temperature
+                lpp.addTemperature(7, ((CO2_SCD30*)sensor_ptrs[i])->get_temperature());
+                // we always use channel ch=8 for ambiant air humidity
+                lpp.addTemperature(8, ((CO2_SCD30*)sensor_ptrs[i])->get_humidity());
+#else
+                // we always use channel ch=7 for ambiant air temperature
+                lpp.addTemperature(7, ((CO2_SCD40*)sensor_ptrs[i])->get_temperature());
+                // we always use channel ch=8 for ambiant air humidity
+                lpp.addTemperature(8, ((CO2_SCD40*)sensor_ptrs[i])->get_humidity());
+#endif                
             }
 #endif
 #endif  // USE_XLPP || defined USE_LPP

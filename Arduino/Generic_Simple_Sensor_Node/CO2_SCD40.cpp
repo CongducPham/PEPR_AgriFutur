@@ -8,6 +8,7 @@
 #include "CO2_SCD40.h"
 
 #define SCD40_TEMP_OFFSET     0
+//#define SCD40_DEBUG_PRINT 
 
 CO2_SCD40::CO2_SCD40(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power)
 {
@@ -43,7 +44,10 @@ CO2_SCD40::CO2_SCD40(char* nomenclature, bool is_analog, bool is_connected, bool
 void CO2_SCD40::update_data()
 {	
   // will get CO2 in ppm	
-  float co2_value = 0.0;
+  uint16_t co2_value = 0;
+  uint16_t tmp_value = 0;
+  float scd40_temperature = 0.0;
+  float scd40_humidity = 0.0;
   
   if (get_is_connected()) {
     // if we use a digital pin to power the sensor...
@@ -78,16 +82,40 @@ void CO2_SCD40::update_data()
 
       delay(500);
 
-      if (airSensor.readMeasurement()) {
-        co2_value = airSensor.getCO2();
-        //co2_temperature_value = airSensor.getTemperature() - SCD30_TEMP_OFFSET;
-        //co2_humidity_value = airSensor.getHumidity();
+      while (!airSensor.readMeasurement()) {
+#ifdef SCD40_DEBUG_PRINT        
+          Serial.println("SCD40: waiting for data");
+#endif          
+          delay(500);
       }    
-  
+
+      // for some reason the first value is 0, so skip it
+      co2_value = airSensor.getCO2();
+
+      for (int i=0; i<get_n_sample(); i++) {
+          while (!airSensor.readMeasurement()) {
+#ifdef SCD40_DEBUG_PRINT        
+              Serial.println("SCD40: waiting for data");
+#endif          
+              delay(500);
+          }
+
+          tmp_value = airSensor.getCO2();
+#ifdef SCD40_DEBUG_PRINT              
+          Serial.println(tmp_value);
+#endif              
+          co2_value += tmp_value;   
+
+          scd40_temperature += airSensor.getTemperature()- SCD40_TEMP_OFFSET;
+          scd40_humidity += airSensor.getHumidity();
+      }
+
       if (get_is_low_power() && get_is_power_off_when_inactive())
           digitalWrite(get_pin_power(), PWR_LOW);
           
-      set_data(co2_value);
+      set_data((double)co2_value/(double)get_n_sample());
+      SCD40_temperature = scd40_temperature / (double)get_n_sample();
+      SCD40_humidity = scd40_humidity / (double)get_n_sample();        
     }
   }
   else 
@@ -102,4 +130,12 @@ double CO2_SCD40::get_value()
 {
   update_data();
   return get_data();
+}
+
+double CO2_SCD40::get_temperature() {
+  return((double)SCD40_temperature);
+}
+
+double CO2_SCD40::get_humidity() {
+  return((double)SCD40_humidity);
 }

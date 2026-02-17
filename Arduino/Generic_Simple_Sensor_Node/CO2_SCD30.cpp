@@ -6,7 +6,12 @@
 #include "BoardSettings.h"
 #include "CO2_SCD30.h"
 
+// TODO
+// Temp offset is only positive. See: https://github.com/sparkfun/SparkFun_SCD30_Arduino_Library/issues/27#issuecomment-971986826
+// "The SCD30 offset temperature is obtained by subtracting the reference temperature from the SCD30 output temperature"
+// https://www.sensirion.com/fileadmin/user_upload/customers/sensirion/Dokumente/9.5_CO2/Sensirion_CO2_Sensors_SCD30_Low_Power_Mode.pdf
 #define SCD30_TEMP_OFFSET     0
+//#define SCD30_DEBUG_PRINT 
 
 CO2_SCD30::CO2_SCD30(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power)
 {
@@ -42,7 +47,10 @@ CO2_SCD30::CO2_SCD30(char* nomenclature, bool is_analog, bool is_connected, bool
 void CO2_SCD30::update_data()
 {	
   // will get CO2 in ppm	
-  float co2_value = 0.0;
+  uint16_t co2_value = 0;
+  uint16_t tmp_value = 0;
+  float scd30_temperature = 0.0;
+  float scd30_humidity = 0.0;
   
   if (get_is_connected()) {
     // if we use a digital pin to power the sensor...
@@ -57,7 +65,7 @@ void CO2_SCD30::update_data()
     delay(get_warmup_time());
 
     // Start up the library 
-    if (airSensor.begin() == false) {
+    if (airSensor.begin(Wire, false) == false) {
       set_data((double)-99.0);
     }
     else {
@@ -75,11 +83,17 @@ void CO2_SCD30::update_data()
 
       delay(500);
 
-      if (airSensor.dataAvailable()) {
-        co2_value = airSensor.getCO2();
-        //co2_temperature_value = airSensor.getTemperature() - SCD30_TEMP_OFFSET;
-        //co2_humidity_value = airSensor.getHumidity();
-      }    
+      while (!airSensor.dataAvailable()) {
+#ifdef SCD30_DEBUG_PRINT        
+          Serial.println("SCD30: waiting for data");
+#endif          
+          delay(500);
+      }
+      // for some reason the first value is 0, so skip it
+      co2_value = airSensor.getCO2();
+      //co2_temperature_value = airSensor.getTemperature() - SCD30_TEMP_OFFSET;
+      //co2_humidity_value = airSensor.getHumidity();
+    
       // call sensors.requestTemperatures() to issue a global temperature 
       // request to all devices on the bus 
       //sensors->requestTemperatures(); // Send the command to get temperature readings  
@@ -91,10 +105,30 @@ void CO2_SCD30::update_data()
       // we are not using the periodic measure
       //airSensor.StopMeasurement();
 
+      for (int i=0; i<get_n_sample(); i++) {
+          while (!airSensor.dataAvailable()) {
+#ifdef SCD30_DEBUG_PRINT        
+              Serial.println("SCD30: waiting for data");
+#endif          
+              delay(500);
+          }
+
+          tmp_value = airSensor.getCO2();
+#ifdef SCD30_DEBUG_PRINT              
+          Serial.println(tmp_value);
+#endif              
+          co2_value += tmp_value;   
+
+          scd30_temperature += airSensor.getTemperature()- SCD30_TEMP_OFFSET;
+          scd30_humidity += airSensor.getHumidity();
+      }
+
       if (get_is_low_power() && get_is_power_off_when_inactive())
           digitalWrite(get_pin_power(), PWR_LOW);
           
-      set_data(co2_value);
+      set_data((double)co2_value/(double)get_n_sample());
+      SCD30_temperature = scd30_temperature / (double)get_n_sample();
+      SCD30_humidity = scd30_humidity / (double)get_n_sample();
     }
   }
   else 
@@ -109,4 +143,12 @@ double CO2_SCD30::get_value()
 {
   update_data();
   return get_data();
+}
+
+double CO2_SCD30::get_temperature() {
+  return((double)SCD30_temperature);
+}
+
+double CO2_SCD30::get_humidity() {
+  return((double)SCD30_humidity);
 }

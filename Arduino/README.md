@@ -7,13 +7,13 @@ This is the source code of the Generic Simple Sensor Node device. It can current
 - 1 Irrometer Watermark WM200 tensiometer sensor device
 - 2 Irrometer Watermark WM200 tensiometer sensor device
 - 1 Ambiant Air Temperature/Humididy (Sensirion SHT2x) sensor device
-- 1 CO2 sensor (SCD30) sensor device
+- 1 CO2 sensor (SCD30/SCD40) sensor device
 - for all these variants above mentioned, an additional soil temperature sensor (Dallas DS18B20) can be added.
 - a 2-soil-temperature sensor device
 - a 3-soil-temperature sensor device
 - more to come
 
-The target PCBs are PCBA v4.1 (RFM95W LoRa) and PCBA v4.1v5 (RAK3172 LoRaWAN). It is **configured by default for PCBA v4.1**, as single-channel limited LoRaWAN 1.0 device for both uplink and downlink transmissions (only ABP, no OTAA). Comment `#define IRD_PCBA` in `BoardSettings.h` if you are using the raw IRD PCB v4.1 (just the raw PCB).  If you are using solar panel with the IRD PCBA v4.1/v5 then you also need to uncomment `#define SOLAR_BAT` in `BoardSettings.h`. For IRD PCBA v5 which is based in the RAK3172 LoRaWAN radio module, you need to also uncomment `SOFT_SERIAL_DEBUG` in `BoardSettings.h` and select `RAK3172` in `RadioSettings.h`. 
+The target PCBs are PCBA v4.1 (RFM95W LoRa) and PCBA v5 (RAK3172 LoRaWAN). It is **configured by default for PCBA v4.1**, as single-channel limited LoRaWAN 1.0 device for both uplink and downlink transmissions (only ABP, no OTAA). Comment `#define IRD_PCBA` in `BoardSettings.h` if you are using the raw IRD PCB v4.1 (just the raw PCB).  If you are using solar panel with the IRD PCBA v4.1/v5 then you also need to uncomment `#define SOLAR_BAT` in `BoardSettings.h`. For IRD PCBA v5 which is based in the RAK3172 LoRaWAN radio module, you need to also uncomment `SOFT_SERIAL_DEBUG` in `BoardSettings.h` and select `RAK3172` in `RadioSettings.h`. 
 
 Related tutorial slides and videos will come soon!
 
@@ -42,13 +42,13 @@ Summary of LPP channels used by the device:
 - ch2:  for centibar from second watermark
 - ch3:  for raw resistance value from second watermark  
 - ch4:  RFU (Reserved for Future Use)
-- ch5:  soil temperature, 1st DS18B20
+- ch5:  first soil temperature, 1st DS18B20
 - ch6:  battery voltage
-- ch7:  ambiant air temperature (e.g. DHT/SHT)
-- ch8:  ambiant air humidity (e.g. DHT/SHT)
+- ch7:  ambiant air temperature (e.g. DHT/SHT or SCD30/SCD40)
+- ch8:  ambiant air humidity (e.g. DHT/SHT or SCD30/SCD40)
 - ch9:  CO2 (SCD30)
-- ch10: soil temperature, 2nd DS18B20
-- ch11: soil temperature, 3rd DS18B20
+- ch10: 2nd soil temperature, 2nd DS18B20
+- ch11: 3rd soil temperature, 3rd DS18B20
 - ch12: not used
 - ...
 - ch19: not used
