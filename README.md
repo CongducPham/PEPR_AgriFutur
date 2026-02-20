@@ -10,12 +10,12 @@ History
 -------
 - **Jan-25** Preliminary codes have been uploaded: the code for a Generic Simple Sensor Node and the code for a PoC LoRa image sensor node (LoRaCAM-AI).
 
-- **Nov-24** We created the GitHub repository for the PEPR AgriFutur project. Check contributions & activities of UPPA team project on the [IoT-Sensing-System web site](https://iotsensingsystem.live-website.com/news-on-pepr-agrifutur). AgriFutur will officially start in Feb. 1st, 2025. Stay tuned!
+- **Nov-24** We created the GitHub repository for the AgriFutur flagship project of the PEPR program. Check contributions & activities of UPPA team project on the [IoT-Sensing-System web site](https://iotsensingsystem.live-website.com/news-on-pepr-agrifutur). AgriFutur officially started in Feb. 1st, 2025. Stay tuned!
 
 Quick start
 -----------
 
-The [Arduino sketch](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino/Generic_Simple_Sensor_Node) for the Generic Simple Sensor Node is in the [Arduino folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino). It is based on the code developed for the [PRIMA INTEL-IRRIS project](https://intel-irris.eu/) that is now extended and maintained in the context of AgriFutur.
+The [Arduino sketch](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino/Generic_Simple_Sensor_Node) for the Generic Simple Sensor Node is in the [Arduino folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino). It is based on the code developed for the [PRIMA INTEL-IRRIS project](https://intel-irris.eu/) that is now extended and maintained in the context of AgriFutur. All the tutorials to build sensor devices with the developed PCB v4.1 (RFM95) and PCB v5 (RAK3172) are in the [Tutorials](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Tutorials) folder. Fully assembled PCBs can be ordered directly from the PCB manufacturer. See the [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/PCBs/README.md) for guidelines to do so. 
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/generic-sensors.png" width="600">
 
@@ -23,7 +23,7 @@ The [PoC of a LoRa image sensor (LoRaCAM-AI)](https://github.com/CongducPham/PEP
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ESP32-camera-board.png" width="600">
 
-For the LoRaCAM image sensor, the [Tools folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Tools) contains the various software tool to test the customized image encoding approach in order to have a robust encoding scheme for efficient LoRa transmission of images.
+For the LoRaCAM image sensor, the [Tools folder](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Tools) contains the various software tools to test the customized image encoding approach in order to have a robust encoding scheme for efficient LoRa transmission of images.
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_1.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_2.jpg" width="200"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/lora_cam_3.jpg" width="200">
 

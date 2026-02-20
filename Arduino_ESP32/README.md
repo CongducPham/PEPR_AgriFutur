@@ -6,7 +6,7 @@ The work presented here is an update of our previous works on image transmission
 
 The proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in this previous [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses. We provide in the next sections an updated and synthetic description of these tools.
 
-There have been several LoRa+camera projects in the last years. Many of them use the SSDV (Slow Scan Digital Video) image encoding format that was initially introduced in High Altitude Balloning applications. They were quite inspiring and provided many useful information. We can for instance mention the [LoRa_SSDV project](https://github.com/TomasTT7/LoRa_SSDV) where the very resource constrained Arduino Pro Mini was used. Based on ESP32 microcontrollers, the [ESPCAM project](https://github.com/mkshrps/espcam/tree/master) from Mike Sharps is also a seminal work that has been inspiring for many other similar projects. For our LoRaCAM-AI, we are using the encoding format that was developed by V. Lecuire from CRAN laboratory and that was used in the [2014 project](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html). It provides even higher robustness to packet losses when compared to SSDV. We also put a particular focus on easy deployment for the camera system and on power efficiency as we want to target several months of autonomy in battery-operated mode.
+There have been several LoRa+camera projects in the last years. Many of them use the SSDV (Slow Scan Digital Video) image encoding format that was initially introduced in High Altitude Balloning applications. They were quite inspiring and provided many useful information. We can for instance mention the [LoRa_SSDV project](https://github.com/TomasTT7/LoRa_SSDV) where the very resource constrained Arduino Pro Mini was used. Based on ESP32 microcontrollers, the [ESPCAM project](https://github.com/mkshrps/espcam/tree/master) from Mike Sharps is also a seminal work that has been inspiring for many other similar projects. For our LoRaCAM-AI, we are using the encoding format that was developed by V. Lecuire from CRAN laboratory and that was used in the [2014 project](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html). It provides even higher robustness to packet losses when compared to SSDV but is limited to greyscale images. We also put a particular focus on easy deployment for the camera system and on power efficiency as we want to target several months of autonomy in battery-operated mode.
 
 ## Which ESP32 Cam board?
 
@@ -150,7 +150,7 @@ From here it differs a little bit from the original `CameraWebServer` example be
 
 ## Receiving image data on WaziGate LoRa gateway
 
-This will be discussed and presented in the this [README](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Gateway/scripts/loracam-ai/README.md) in the `Gateway` part.
+This is discussed and presented in the this [README](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Gateway/scripts/loracam-ai/README.md) in the `Gateway` part.
  
 # Tools
 
@@ -217,7 +217,7 @@ XXXX: quality factor
 then XXXX XX XX .. .. XXXX XX XX ... 
 ```
 
-where the XXXX indicates the number of samples (XX) that are in the packet. The size of the packet is therefore XXXX. This pattern is repeated until the end of the file.
+where the XXXX indicates the number of samples (XX) that are in the packet. The size of the packet is therefore XXXX. This pattern is repeated until the end of the file. The generated `.dat` file is in clear text format.
 
 The program produce a `.dat` file which name is composed of the MSS, the quality factor, the number packets and the real size in bytes, e.g.: `desert-128x128-gray.bmp.M240-Q10-P8-S1759.dat`.
 
@@ -258,7 +258,7 @@ The PoC can output the following encoded data in the Serial Monitor for an 128x1
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/Screenshot-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.png" width="700">
 
-These data have been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. Of course when LoRa transmission of the packets will be integrated, the image `.dat` file will created automatically by the gateway. After reception of the image file, it is decoded with `decode_to_bmp`:
+These data have been manually copied into the `ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat` file. With real LoRa transmission of the packets, the image `.dat` file will be created automatically by the gateway. After reception of the image file, it is decoded with `decode_to_bmp`:
 
 	> ./decode_to_bmp ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat 128x128-ESP32S3-test.bmp 
 	
@@ -272,7 +272,7 @@ It is displayed below as PNG file for GitHub with the original size of both 128x
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.png" width="400">
 
-**Of course, we will develop software at the gateway side to be able to receive, reconstruct the encoded image, decode the image and display the image in the next months.**
+**There are tools at the gateway side to be able to receive, reconstruct the encoded image, decode the image and display the image in the gateway Home Assistant dashboard. This is discussed and presented in the this [README](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Gateway/scripts/loracam-ai/README.md) in the `Gateway` part.**
 	
 ## Emulate sending and add packet drop
 
@@ -306,7 +306,7 @@ You can then display the image and see what is the impact of packet losses on th
 
 Note that you can also edit the initially encoded `.dat` and manually delete some packets.
 
-As previously mentioned, the proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in the [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses.
+As previously mentioned, the proposed image encoding format is adapted to low bandwidth and lossy networks. It is explained in detail in this (quite old) [tools page](https://cpham.perso.univ-pau.fr/WSN-MODEL/tool-html/tools.html) where you could see the impact of the quality factor on image size and quality, and the robustness of the proposed image format in case of packet losses.
 
 Here, we provide an updated example. `ESP32S3-realcapture.bmp.M95-Q20-P13-S1077.dat` is the encoded image file with MSS set to 95 to reduce the impact of losing a packet. `ESP32S3-realcapture.bmp.M95-Q20-P13-S1077.dat-DP10-15-P11.dat` is the file that has been obtained with:
 

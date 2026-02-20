@@ -4,7 +4,7 @@ Auto-configuration on boot for the customized WaziGate gateway
 What is it?
 -----------
 
-The gateway for the Generic Sensor Platform provides a simple auto-configuration mechanism to automatically update and/or configure the gateway on boot for specific deployment settings using the default gateway SD card image: set frequency band, create pre-configured devices with pre-configured sensors,... For instance, the 433MHz version SD card image with a default pre-configured capacitive-based sensor device is now the only SD card image for download. If you need to have the gateway in 868MHz version or have pre-configuration for Watermark-based sensor devices, then you can use this simple auto-configuration mechanism.
+The gateway for the Generic Sensor Platform provides a simple auto-configuration mechanism to automatically update and/or configure the gateway on boot for specific deployment settings using the default gateway SD card image: set frequency band, create pre-configured devices with pre-configured sensors,... For instance, the 868MHz version SD card image with a default pre-configuration is now the only SD card image for download. If you need to have the gateway in 433MHz version or have different pre-configurations, then you can use this simple auto-configuration mechanism.
 
 How it works?
 -----------
@@ -41,7 +41,7 @@ The default configuration on the gateway SD card image
 
 The default configuration is to have the `Gateway/boot/create-starter-kit-demo-capacitive-watermark-st-iiwa-ha/gw-auto-config.sh` configuration in the `/boot` partition of the SD card. When you insert the SD card in a Raspberry Pi, it will automatically configure the gateway with the a starter-kit configuration (see [https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino)).
 
-- LoRaWAN mode (single channel), SF12BW125
+- LoRaWAN mode (single channel, 868.1MHz to receive uplink), SF12BW125
 - Cayenne LPP data format
 - EU868 band (suitable for Algeria. For Morocco, need to use 433MHz, see Example 1)
 - 2 pre-configured devices with address 26011DAA and 26011DB1
