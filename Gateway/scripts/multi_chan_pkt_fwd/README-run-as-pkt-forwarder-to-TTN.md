@@ -4,9 +4,9 @@ IMPORTANT
 `config_band.sh` now takes care of configuring for TTN (TheThingNetwork) or using the full gateway edge mode. Run as follows to configure for TTN:
 
 	> cd scripts
-	> ./config_band.sh eu868 B827EBFFFE36AAAA eu1.cloud.thethings.network
+	> ./config_band.sh EU868 B827EBFFFE36AAAA eu1.cloud.thethings.network
 
-`eu868` can be replaced by one of the frequency band configuration name listed in the folder.
+`EU868` can be replaced by one of the frequency band configuration name listed in the folder.
 
 To get your default gateway ID which is based on its `eth0` MAC address you can run the `get_gw_ttn_eui.sh` script:
 
@@ -23,7 +23,7 @@ Then, you can also replace `eu1.cloud.thethings.network` by the server associate
 To get back to edge mode (local Chirpstack is the network server to the WaziGate dashboard), run as follows:
 
 	> cd scripts
-	> ./config_band.sh eu868
+	> ./config_band.sh EU868
 
 The information below is for your information only, to understand what `config_band.sh` is actually doing. You can look at step 11 to see what you should do on your TTN console to get your gateway registered.
 

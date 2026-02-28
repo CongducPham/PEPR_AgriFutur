@@ -4,11 +4,9 @@ Installing Home Assistant in the customized gateway framework
 Our customized gateway is based on the [WaziGate framework](https://www.waziup.io/documentation/wazigate/) for Raspberry Pi from WAZIUP e.V.
 We are providing a customized WaziGate distribution for out-of-the-box deployment of sensing systems. **It is referred to as Customized Gateway** as opposed to the general WaziGate framework provided by WAZIUP e.V. 
 
-The additional installation of procedure for Home Assistant on top of the customized gateway framework is provided in this folder, **although the SD card image for our customized gateway has already everything installed**. 
+If you installed with the SD card image **Home Assistant is already installed**. Just connect to HA dashboard using `:8123` port (e.g. `http://192.168.0.22:8123`). You can use `intelirris` user with `intelirris` password. If data from the default devices does not appear, you need to reload the REST entities configuration. See sub-section `Log in the HA web page` below.
 
-Only the additional procedures are described here. You can read this [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/README.md) to install the customized gateway on top of the general WaziGate distribution.
-
-We will then assume that you have executed all the steps to get have the customized gateway framework.
+The additional installation of procedure for Home Assistant on top of the customized gateway framework is provided below. Only the additional procedures are described here. You can read this [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/README.md) to install the customized gateway on top of the general WaziGate distribution.
 
 Installing Home Assistant as Docker container
 ----
@@ -77,11 +75,9 @@ Copy/Paste the content of `/home/pi/homeassistant/default_view.yaml` into the co
 
 You should now have a more fancy dashboard that looks like this one below.
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ha_default_view.png" width="700">
-
-When you will integrate a [LoRaCAM-AI device](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_ESP32_LoRaCAM_AI_on_esp32v3), you will be able to have the image from the LoRaCAM-AI that will be integrated into the HA dashboard as illustrated below.
-
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/ha_default_view.png" width="700">
+
+If you have a [LoRaCAM-AI device](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Arduino_ESP32/Arduino_ESP32_LoRaCAM_AI_on_esp32v3), you will be able to have the image from the LoRaCAM-AI that will be integrated into the HA dashboard as illustrated below.
 
 You may need to restart Home Assistant: go to `Developer Tools` and click on `RESTART`.
 

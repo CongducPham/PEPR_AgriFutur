@@ -1,7 +1,7 @@
 Gateway framework for Generic Sensor Platform project
 ====================================================
 
-Our customized gateway is based on the [WaziGate framework](https://www.waziup.io/documentation/wazigate/) for Raspberry Pi from WAZIUP e.V.
+Our customized gateway is now based on the [WaziGate framework](https://www.waziup.io/documentation/wazigate/) for Raspberry Pi from WAZIUP e.V.
 
 We are providing a customized WaziGate distribution for out-of-the-box deployment of sensing systems. **It is referred to as Customized Gateway** as opposed to the general WaziGate framework provided by WAZIUP e.V. 
 
@@ -47,6 +47,16 @@ Insert the SD card in the Raspberry Pi and then power the Raspberry Pi. The cust
 **Note: The 2 default devices are created on first boot with the auto-configuration mechanism. Consider about 5mins as normal for boot time. If you change the frequency band, the gateway will take more time to start as it needs to boot twice. In this case, 10mins would be needed for first start to have the main gateway screen on the OLED.**
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/default-dashboard.png" width="700">
+
+Multi-channel gateway
+=====================
+
+LoRa communication can either be provided by a simple single channel radio module (first target for the cost-effective Raspberry Pi gateway) or by a multi-channel concentrator hat. Supported hats are the RAK2245 and the new RAK5146. If you have a RAK2245, it will be automatically detected (be sure to have a reliable, stable and robust 5V 2.5A power source). If you don't have a GPS antenna connected, you should edit `scripts/multi_chan_pkt_fwd/EU868/global_conf.json` file to remove the GPS section. Then run `config_conf.sh EU868` again. Replace `EU868` by your frequency plan. Additional vailable plans are `AS923-2`, `AU915` and `EU433`. If you have a RAK5146, then read this [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/rak5146/README.md)
+
+Pushing to TTN
+==============
+
+In the default configuration, the gateway uses a local Chirpstack instance as the LoRaWAN Network Server and then packets are forwarded to the WaziGate system to be stored in the local database and pushed into the system to appear on the WaziGate default dashboard. It is possible to bypass the whole WaziGate system, including the local Chirpstack Network to push data to the TheThingNetwork (TTN) Network Server. To do so, run the `scripts/config_band.sh` script by indicating the gateway id and the TTN end-point. See this dedicated [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/single_chan_pkt_fwd/README-run-as-pkt-forwarder-to-TTN.md). 
 
 Manual installation on top of general WaziGate distribution
 ===========================================================
