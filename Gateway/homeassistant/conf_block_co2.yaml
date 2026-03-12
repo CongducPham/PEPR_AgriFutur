@@ -1,0 +1,23 @@
+## start co2 block
+sensor co2:  
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_9/value
+    name: XXNAME/CO2 ppm
+    unit_of_measurement: "ppm"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_7/value
+    name: XXNAME/degree Celsius
+    unit_of_measurement: "°C"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_8/value
+    name: XXNAME/relative humidity
+    unit_of_measurement: "%RH"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_5/value
+    name: XXNAME/Soil Temperature Sensor
+    unit_of_measurement: "°C"  
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/analogInput_6/value
+    name: XXNAME/Battery voltage  
+    unit_of_measurement: "Volts"
+## end co2 block

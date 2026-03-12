@@ -76,7 +76,7 @@ else
 	then
 		echo "/boot/gw-auto-config.sh found"	>> /boot/gw-auto-config.log		
 		echo "running /boot auto-configuration script" >> /boot/gw-auto-config.log
-		/boot/gw-auto-config.sh
+		/boot/gw-auto-config.sh >> /boot/gw-auto-config.log
 		
 		echo "auto-configuration for device/sensor done" >> /boot/gw-auto-config.done
 		#finally we do not need to reboot when we create the new devices

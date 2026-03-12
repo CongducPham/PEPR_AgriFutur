@@ -1,0 +1,20 @@
+##start loracam block
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: LoRaCAM_AI_STATS
+            entities:
+              - entity: sensor.xxname_number_of_packets
+                secondary_info: last-updated
+              - entity: sensor.xxname_size_in_bytes
+                secondary_info: last-updated
+              - entity: sensor.xxname_time_on_air
+                secondary_info: last-updated
+              - entity: sensor.xxname_luminosity
+                secondary_info: last-updated
+          - type: picture-entity
+            entity: camera.yyname
+            name: Last image
+            show_name: true
+            show_state: false
+##end loracam block - leave CR at end of this line

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Bash scripting cheatsheet https://devhints.io/bash
+
 cd /home/pi/scripts
 
 #############################

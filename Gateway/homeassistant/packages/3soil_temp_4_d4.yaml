@@ -1,0 +1,20 @@
+## start 3_soil_temp
+sensor 3_soil_temp:
+  - platform: rest
+    resource: http://localhost/devices/69aaa4d468f3190aa42a1214/sensors/temperatureSensor_5/value
+    name: 3SOIL_TEMP_4/Soil Temperature Sensor 1
+    unit_of_measurement: "°C"
+  - platform: rest
+    resource: http://localhost/devices/69aaa4d468f3190aa42a1214/sensors/temperatureSensor_10/value
+    name: 3SOIL_TEMP_4/Soil Temperature Sensor 2    
+    unit_of_measurement: "°C"    
+  - platform: rest
+    resource: http://localhost/devices/69aaa4d468f3190aa42a1214/sensors/temperatureSensor_11/value
+    name: 3SOIL_TEMP_4/Soil Temperature Sensor 3     
+    unit_of_measurement: "°C" 
+  - platform: rest
+    resource: http://localhost/devices/69aaa4d468f3190aa42a1214/sensors/analogInput_6/value
+    name: 3SOIL_TEMP_4/Battery voltage
+    unit_of_measurement: "Volts"
+
+## end 3_soil_temp - leave CR at end of this line

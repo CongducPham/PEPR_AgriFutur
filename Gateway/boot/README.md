@@ -46,12 +46,12 @@ The default configuration is to have the `Gateway/boot/create-starter-kit-demo-c
 - EU868 band (suitable for Algeria. For Morocco, need to use 433MHz, see Example 1)
 - 2 pre-configured devices with address 26011DAA and 26011DB1
 - 26011DAA is a soil humidity device with the capacitive SEN0308 sensor
-	- Device name is `SOIL-AREA-1`
+	- Device name is `CAPACITIVE_1`
 	- `temperatureSensor_0` as the internal default logical sensor on the gateway for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
 	- `temperatureSensor_5` as the internal default logical sensor on the gateway for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
 	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
 - 26011DB1 is a soil humidity device with the Watermark WM200 tensiometer sensor
-	- Device name is `SOIL-AREA-2`
+	- Device name is `TENSIOMETER_1`
 	- `temperatureSensor_0` as the internal default logical sensor on the gateway for soil humidity data. It provides the converted resistance value in centibar, Taking into account the soil temperature data. Display will show `Soil Humidity Sensor/centibars from WM200`
 	- `temperatureSensor_1` as the internal default logical sensor on the gateway for soil humidity data. It provides the raw resistance value measured from the Watermark sensor. The value is scaled down by 10, so to get the real resistance value one must multiply by 10. Display will show `Soil Humidity Sensor/scaled value from WM200 real=x10`	
 	- `temperatureSensor_5` as the internal default logical sensor on the gateway for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
@@ -109,7 +109,7 @@ Example 4: have the gateway working with a customized setting
 - flash the gateway SD card image
 - insert the SD card in any computer (Windows, Linux, MacOS)
 - open the `boot` drive that should appear on your computer
-- download from GitHub (`Gateway/boot`) `create-custom-example/gw-auto-config.sh` and see how the script creates one tensiometer device (SOIL-AREA-1/26011DB1) and a 2-soil-temperature device (STEMP-AREA-1/26011DD1)
+- download from GitHub (`Gateway/boot`) `create-custom-example/gw-auto-config.sh` and see how the script creates one tensiometer device (TENSIOMETER_1/26011DB1) and a 2-soil-temperature device (2SOIL-TEMP-1/26011DD1)
 - based on this example (or the others scripts), you can see how to create on your computer an `gw-auto-config.sh` script that actually creates and configures devices according to your setting
 - copy the file into the `boot` drive (keep same file name)
 - be sure that there is no `gw-auto-config.done` file in the `boot` drive, otherwise delete the file

@@ -34,11 +34,9 @@ curl -X POST "http://localhost/devices/${1}/sensors" -H "accept: application/jso
   \"name\":\"Battery voltage\",
   \"quantity\":\"\",
   \"time\":\"$DATE\",
-  \"unit\":\"\",
-  \"value\":-1
+  \"unit\":\"\"
 }"
 
+echo
 echo "device $1"
 echo "		with voltage monitor displaying volt"
-echo "		and initialized with -1 value"
-

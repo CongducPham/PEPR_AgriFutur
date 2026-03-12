@@ -10,7 +10,6 @@ NDEVICE=`curl -X GET "http://localhost/devices" -H  "accept: application/json" |
 
 echo $NDEVICE
 
-
 #we leave device[0] which is usually the initial gateway declaration
 while [ $NDEVICE -gt 0 ]
 do
@@ -37,3 +36,13 @@ done
 
 echo "Checking delete operation"
 curl -X GET "http://localhost/devices" -H  "accept: application/json"
+
+### HA begin ###
+echo
+echo "Delete /home/pi/homeassistant/my_default_view.yaml"
+sudo rm -f /home/pi/homeassistant/my_default_view.yaml
+echo "Delete all devices in /home/pi/homeassistant/packages"
+sudo rm -f /home/pi/homeassistant/packages/*
+echo "Delete all devices in homeassistant:/config/packages"
+sudo rm -f /opt/homeassistant/config/packages/*
+### HA end ###

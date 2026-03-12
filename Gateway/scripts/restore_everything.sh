@@ -2,16 +2,51 @@
 
 # Ex: restore_everything.sh
 # This script restores all from the sensor-backup folder, including their IIWA configuration
-# if an argument is provided, the scripts will try to restore from backup files stored on USB drive
+# new devices are created on the gateway with the same device id than those from the backup files
+#
+# if --from-usbdrive is provided, the scripts will try to restore from backup files stored on USB drive
 # normally USB drive is /dev/sda1, but the script looks for any unmounted mount point
-# Ex: restore_everything.sh fromusbdrive
+# Ex: restore_everything.sh --from-usbdrive
+#
+# you can test with --dry-run
+# Ex: restore_everything.sh --dry-run
+
+FROM_USBDRIVE=false
+DRY_RUN=false
+OPT_DRY_RUN=""
+
+POSITIONAL=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --from-usbdrive)
+      FROM_USBDRIVE=true
+      shift
+      ;;       
+    --dry-run)
+      DRY_RUN=true
+      OPT_DRY_RUN="--dry-run"
+      shift
+      ;;             
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL[@]}"
 
 cd /home/pi/sensor-backup
 
-#only if one argument is provided
-#Ex: restore_everything.sh fromusbdrive
-if [ $# -eq 1 ]
-then
+echo "------------------------------- " >> sensor-backup.log
+echo `date` >> sensor-backup.log
+echo "------------------------------- " >> sensor-backup.log
+
+echo "preparing to restore" >> sensor-backup.log
+
+#Ex: restore_everything.sh --from-usbdrive
+if $FROM_USBDRIVE; then
     MOUNTPOINT=`sudo blkid -o list | grep "not mounted" | awk -F'[ ]' '{print $1}'`
     echo "mounting USB drive to /media for pi user" >> sensor-backup.log
     sudo mount -o uid=1000,gid=1000 $MOUNTPOINT /media
@@ -29,40 +64,81 @@ then
     fi
 fi
 
-/home/pi/scripts/delete_all_devices.sh
+echo "Deleting all devices"
 
-capas=$(ls | grep split | grep capa | awk -F'[_.]' '{print $1}' | uniq)
-# echo $capas
-for k in $capas
+if $DRY_RUN; then     
+  echo "DRY_RUN: /home/pi/scripts/delete_all_devices.sh"
+else
+  /home/pi/scripts/delete_all_devices.sh
+  #to be safe
+  sleep 5
+fi
+
+#echo "ENTER to continue"
+#read keyboard
+
+DEVICE_TYPES="capacitive tensiometer 2tensiometer air_temp_hum 2soil_temp 3soil_temp co2"
+
+echo "Will loop for device type in $DEVICE_TYPES"
+
+for DEVTYPE in $DEVICE_TYPES
 do
-    # echo $k
-    devname=$(cat sensor-backup.log | grep $k | grep backup | grep named | awk -F'[ ]' '{print $6}' | awk -F'[-]' '{print $3}')
-    devaddr=$(cat sensor-backup.log | grep $k | grep backup | grep named | awk -F'[ ]' '{print $8}')
+  #we get the device id list from the *split* file for a given device type
+  #Ex: 69ac879468f319094e004fbf.capacitive.temperatureSensor_0.data_split_000.json
+  DEVID=$(ls | grep split | grep $DEVTYPE | awk -F'[_.]' '{print $1}' | uniq)
+  echo "$DEVTYPE $DEVID"
+  echo "===================="
+  for DEVICE in $DEVID
+  do
+    echo "$DEVICE"
+    echo "--------------------"
+    #we get information from last sensor-backup.log file:
+    #   backup capacitive device 69ac879468f319094e004fbf named CAPACITIVE_1 address AA
+    #   backup tensiometer device 69ac879668f319094e004fc4 named TENSIOMETER_1 address B1
+    #   backup co2 device 69ac8dd168f319094e004fdb named CO2_1 address E1
+    #   ...
+    DEVNAME=$(cat sensor-backup.log | grep $DEVICE | grep backup | grep named | awk -F'[ ]' '{print $6}')
+    DEVIDX=$(cat sensor-backup.log | grep $DEVICE | grep backup | grep named | awk -F'[ ]' '{print $6}' | awk -F'[_]' '{print $2}')
+    DEVADDRSHORT=$(cat sensor-backup.log | grep $DEVICE | grep backup | grep named | awk -F'[ ]' '{print $8}')
 
-    /home/pi/scripts/restore_capacitive_device_sensor_values.sh $devname $devaddr $k $k
-    /home/pi/scripts/iiwa_rest.sh add $k SOIL-AREA-$devname 1_capacitive temperatureSensor_0
+    SENSORS=""
+    
+    if [ $DEVTYPE == 'capacitive' ]; then
+      SENSORS="temperatureSensor_0 temperatureSensor_5 analogInput_6"
 
-done
+    elif [ $DEVTYPE == 'tensiometer' ]; then
+      SENSORS="temperatureSensor_0 temperatureSensor_1 temperatureSensor_5 analogInput_6"
 
-tensios=$(ls | grep split | grep tensio | awk -F'[_.]' '{print $1}' | uniq)
-for k in $tensios
-do
-    # echo $k
-    devname=$(cat sensor-backup.log | grep $k | grep backup | grep named | awk -F'[ ]' '{print $6}' | awk -F'[-]' '{print $3}')
-    devaddr=$(cat sensor-backup.log | grep $k | grep backup | grep named | awk -F'[ ]' '{print $8}')
+    elif [ $DEVTYPE == '2tensiometer' ]; then
+      SENSORS="temperatureSensor_0 temperatureSensor_1 temperatureSensor_2 temperatureSensor_3 temperatureSensor_5 analogInput_6"
+            
+    elif [ $DEVTYPE == 'air_temp_hum' ]; then
+      SENSORS="temperatureSensor_7 temperatureSensor_8 temperatureSensor_5 analogInput_6"
 
-    is2WT=$(ls | grep $k | grep "ensor\_2" | wc -l)
-    if [ $is2WT -eq 0 ]
-    then
-        # echo "single"
-        /home/pi/scripts/restore_tensiometer_device_sensor_values.sh $devname $devaddr $k $k
-        /home/pi/scripts/iiwa_rest.sh add $k SOIL-AREA-$devname 1_watermark temperatureSensor_0
-    else
-        # echo "2WT"
-        /home/pi/scripts/restore_2-tensiometer_device_sensor_values.sh $devname $devaddr $k $k
-        /home/pi/scripts/iiwa_rest.sh add $k SOIL-AREA-$devname 2_watermark temperatureSensor_0
-        /home/pi/scripts/iiwa_rest.sh add $k SOIL-AREA-$devname 2_watermark temperatureSensor_2
+    elif [ $DEVTYPE == '2soil_temp' ]; then
+      SENSORS="temperatureSensor_5 temperatureSensor_10 analogInput_6"
+      
+    elif [ $DEVTYPE == '3soil_temp' ]; then
+      SENSORS="temperatureSensor_5 temperatureSensor_10 temperatureSensor_11 analogInput_6"      
+            
+    elif [ $DEVTYPE == 'co2' ]; then
+      SENSORS="temperatureSensor_9 temperatureSensor_7 temperatureSensor_8 temperatureSensor_5 analogInput_6"            
     fi
+    
+    if [[ -n "$SENSORS" ]]; then
+      echo "restore $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
+      echo "--> $SENSORS" >> sensor-backup.log
+      if $DRY_RUN; then     
+        echo "DRY_RUN: /home/pi/scripts/restore_device_sensor_values.sh $DEVIDX $DEVADDRSHORT $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS"
+      else
+        /home/pi/scripts/restore_device_sensor_values.sh $DEVIDX $DEVADDRSHORT $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS
+      fi  
+    else
+      echo "no current scheme for $DEVTYPE $DEVICE $DEVNAME $DEVADDRSHORT" >> sensor-backup.log
+    fi
+    echo "--------------------"     
+    #/home/pi/scripts/iiwa_rest.sh add $k CAPACITIVE_$devname 1_capacitive temperatureSensor_0
+  done
 done
 
 # restore IIWA configs
@@ -82,16 +158,16 @@ do
 
     update_data=`echo $NEWCONF | jq`
     # echo "$update_data"
-    /home/pi/scripts/iiwa_rest.sh update $DEVICE $SENSOR "$update_data"
-
+    if $DRY_RUN; then     
+      echo "DRY_RUN: /home/pi/scripts/iiwa_rest.sh update $DEVICE $SENSOR \""$update_data"\""
+    else
+      /home/pi/scripts/iiwa_rest.sh update $DEVICE $SENSOR "$update_data"
+    fi
 done
 
-
-if [ $# -eq 1 ]
-then
+if $FROM_USBDRIVE; then
     sleep 1
     cd
     echo "trying to umount" >> sensor-backup.log
     sudo umount /media
 fi
-

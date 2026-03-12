@@ -2,14 +2,14 @@
 
 #you can add a second argument with the json tree
 #Ex:
-# - show_device_by_name.sh SOIL-AREA-1 id
-# - show_device_by_name.sh SOIL-AREA-1 sensors[0].meta.kind
+# - show_device_by_name.sh CAPACITIVE_1 id
+# - show_device_by_name.sh CAPACITIVE_1 sensors[0].meta.kind
 
 if [ $# -eq 0 ]
 	then
 		echo "No arguments supplied"
 		echo "Need the device name"
-		echo 'e.g. show_device_by_name.sh SOIL-AREA-1'		
+		echo 'e.g. show_device_by_name.sh CAPACITIVE_1'		
 		exit
 fi  
 

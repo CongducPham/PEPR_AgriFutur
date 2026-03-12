@@ -1,0 +1,19 @@
+## start air_temp_hum block
+sensor air_temp_hum:  
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_7/value
+    name: XXNAME/degree Celsius
+    unit_of_measurement: "°C"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_8/value
+    name: XXNAME/relative humidity
+    unit_of_measurement: "%RH"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_5/value
+    name: XXNAME/Soil Temperature Sensor
+    unit_of_measurement: "°C"  
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/analogInput_6/value
+    name: XXNAME/Battery voltage  
+    unit_of_measurement: "Volts"
+## end air_temp_hum block

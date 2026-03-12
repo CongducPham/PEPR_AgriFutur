@@ -1,0 +1,114 @@
+## start 2_tensiometer block
+sensor:  
+  - platform: rest
+    resource: http://localhost/devices/69a751de68f3190aa42a11cc/sensors/temperatureSensor_0/value
+    name: 2TENSIOMETER_2/centibars from WM200 1
+    unit_of_measurement: "cbar"   
+  - platform: rest
+    resource: http://localhost/devices/69a751de68f3190aa42a11cc/sensors/temperatureSensor_1/value
+    name: 2TENSIOMETER_2/resistance value from WM200 1
+    value_template: "{{ value_json | multiply(10) | round(0)}}"      
+    unit_of_measurement: "Ohms"  
+  - platform: rest
+    resource: http://localhost/devices/69a751de68f3190aa42a11cc/sensors/temperatureSensor_2/value
+    name: 2TENSIOMETER_2/centibars from WM200 2
+    unit_of_measurement: "cbar"   
+  - platform: rest
+    resource: http://localhost/devices/69a751de68f3190aa42a11cc/sensors/temperatureSensor_3/value
+    name: 2TENSIOMETER_2/resistance value from WM200 2
+    value_template: "{{ value_json | multiply(10) | round(0)}}"      
+    unit_of_measurement: "Ohms"  
+  - platform: rest
+    resource: http://localhost/devices/69a751de68f3190aa42a11cc/sensors/temperatureSensor_5/value
+    name: 2TENSIOMETER_2/Soil Temperature Sensor
+    unit_of_measurement: "°C"  
+  - platform: rest
+    resource: http://localhost/devices/69a751de68f3190aa42a11cc/sensors/analogInput_6/value
+    name: 2TENSIOMETER_2/Battery voltage  
+    unit_of_measurement: "Volts"      
+
+template:
+  - sensor:
+    - name: 2TENSIOMETER_2/soil value index 1
+      state: >
+        {% set cbar = states('sensor.2tensiometer_2_centibars_from_wm200_1') | float(0) %}
+        {% if cbar == 255 %}
+          -1
+        {% elif cbar == 240 %}
+          -2         
+        {% elif cbar > 100 %}
+          0
+        {% elif cbar > 60 %}
+          1     
+        {% elif cbar > 30 %}
+          2   
+        {% elif cbar > 10 %}
+          4   
+        {% else %}
+          5
+        {% endif %}
+          
+  - sensor:
+    - name: 2TENSIOMETER_2/soil condition 1
+      state: >
+        {% set idx = states('sensor.2tensiometer_2_soil_value_index_1') | int %}
+        {% if idx == -2 %}
+          sensor error          
+        {% elif idx == -1 %}
+          no sensor         
+        {% elif idx == 0 %}
+          very dry
+        {% elif idx == 1 %}
+          dry     
+        {% elif idx == 2 %}
+          dry-wet   
+        {% elif idx == 3 %}
+          wet-dry   
+        {% elif idx == 4 %}
+          wet 
+        {% else %}
+          saturated
+        {% endif %}
+  
+  - sensor:
+    - name: 2TENSIOMETER_2/soil value index 2
+      state: >
+        {% set cbar = states('sensor.2tensiometer_2_centibars_from_wm200_2') | float(0) %}
+        {% if cbar == 255 %}
+          -1
+        {% elif cbar == 240 %}
+          -2         
+        {% elif cbar > 100 %}
+          0
+        {% elif cbar > 60 %}
+          1     
+        {% elif cbar > 30 %}
+          2   
+        {% elif cbar > 10 %}
+          4   
+        {% else %}
+          5
+        {% endif %}
+          
+  - sensor:
+    - name: 2TENSIOMETER_2/soil condition 2
+      state: >
+        {% set idx = states('sensor.2tensiometer_2_soil_value_index_2') | int %}
+        {% if idx == -2 %}
+          sensor error          
+        {% elif idx == -1 %}
+          no sensor         
+        {% elif idx == 0 %}
+          very dry
+        {% elif idx == 1 %}
+          dry     
+        {% elif idx == 2 %}
+          dry-wet   
+        {% elif idx == 3 %}
+          wet-dry   
+        {% elif idx == 4 %}
+          wet 
+        {% else %}
+          saturated
+        {% endif %}
+## end 2_tensiometer block

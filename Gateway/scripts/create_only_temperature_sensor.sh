@@ -50,17 +50,14 @@ curl -X POST "http://localhost/devices/${1}/sensors" -H "accept: application/jso
     \"createdBy\":\"wazigate-lora\",
     \"kind\":\"degree Celsius\",
     \"model\":\"DS18B20\",
-    \"type\":\"temperature\",
-    \"value_index\":0
+    \"type\":\"temperature\"
   },
   \"name\":\"Soil Temperature Sensor ${temp_index}\",
   \"quantity\":\"\",
   \"time\":\"$DATE\",
-  \"unit\":\"\",
-  \"value\":-99
+  \"unit\":\"\"
 }"
 
+echo
 echo "device $1"
 echo "		with soil temperature displaying degree Celsius"
-echo "		and initialized with -99 value"
-

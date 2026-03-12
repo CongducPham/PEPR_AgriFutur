@@ -1,5 +1,9 @@
 Main version history
 
+Mar 8, 2026
+-----------
+- major updates in scripts to better integrate with Home Assistant which will be used for dashboards
+
 Feb 24, 2025
 ------------
 - rebrand gateway to generic gateway that will be improved independently from INTEL-IRRIS project

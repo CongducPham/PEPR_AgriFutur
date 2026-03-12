@@ -1,0 +1,15 @@
+## start 2soil_temp block
+sensor 2_soil_temp:
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_5/value
+    name: XXNAME/Soil Temperature Sensor 1
+    unit_of_measurement: "°C"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/temperatureSensor_10/value
+    name: XXNAME/Soil Temperature Sensor 2
+    unit_of_measurement: "°C"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/analogInput_6/value
+    name: XXNAME/Battery voltage
+    unit_of_measurement: "Volts"
+## end 2soil_temp block

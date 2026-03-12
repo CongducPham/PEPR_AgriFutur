@@ -168,6 +168,7 @@ if len(sys.argv)>2:
                         device=extracted_values[device_id]
                         # aggr_timestamps+=[timeval["time"] for timeval in device["temperatureSensor_0"][2:]]
                         f.write(device["devName"])
+                        # TODO: update for air & co2 devices
                         for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                             found=False
                             for existing_sensor in device["sensors"]:
@@ -188,6 +189,7 @@ if len(sys.argv)>2:
                         # device=extracted_values[len(extracted_values)-device_id-1]
                         device=extracted_values[device_id]
                         f.write(device["devID"])
+                        # TODO: update for air & co2 devices
                         for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                             found=False
                             for existing_sensor in device["sensors"]:
@@ -202,6 +204,7 @@ if len(sys.argv)>2:
                     for device_id in extracted_values:
                         # device=extracted_values[len(extracted_values)-device_id-1]
                         device=extracted_values[device_id]
+                        # TODO: update for air & co2 devices
                         for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                             found=False
                             for existing_sensor in device["sensors"]:
@@ -224,7 +227,7 @@ if len(sys.argv)>2:
                             # device=extracted_values[len(extracted_values)-device_id-1]
                             device=extracted_values[device_id]
 
-
+                            # TODO: update for air & co2 devices
                             for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                                 found=False
                                 for existing_sensor in device["sensors"]:

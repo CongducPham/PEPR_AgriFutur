@@ -1,0 +1,49 @@
+##start co2 block
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: CO2 Sensor
+            entities:
+              - entity: sensor.xxname_co2_ppm
+                secondary_info: last-changed
+                icon: mdi:molecule-co2                  
+              - entity: sensor.xxname_degree_celsius
+                secondary_info: last-updated
+                icon: mdi:thermometer                
+              - entity: sensor.xxname_relative_humidity
+                secondary_info: last-updated
+                icon: mdi:water-percent
+              - entity: sensor.xxname_soil_temperature_sensor
+                secondary_info: last-updated
+                icon: mdi:thermometer                
+              - entity: sensor.xxname_battery_voltage
+                secondary_info: last-updated
+                icon: mdi:battery
+          - type: grid
+            columns: 2
+            cards:
+              - type: picture
+                image: /local/sensors/co2_temp.png
+              - type: gauge
+                entity: sensor.xxname_co2_ppm
+                needle: true
+                min: 0
+                max: 7000
+                segments:
+                  - from: 0
+                    color: '#108cd9'
+                  - from: 600
+                    color: '#128c91'
+                  - from: 800
+                    color: '#409d2c'                    
+                  - from: 1000
+                    color: '#f8bc09'
+                  - from: 1200
+                    color: '#ee9630'                    
+                  - from: 2000
+                    color: '#e15a1a'
+                  - from: 5000
+                    color: '#d41921'
+                  - from: 6000
+                    color: '#000000'
+##end co2 block - leave CR at end of this line

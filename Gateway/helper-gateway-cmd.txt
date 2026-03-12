@@ -45,7 +45,11 @@ Show all docker containers
   waziup.intel-irris-waziapp
   homeassistant
   hassconf
-  
+
+Stop|restart a docker container:
+
+  > docker stop|restart waziup.wazigate-lora.forwarders
+    
 Show logs for waziup.wazigate-lora (replace container name for others)
 
   > docker logs -f --tail 500 --timestamps waziup.wazigate-lora

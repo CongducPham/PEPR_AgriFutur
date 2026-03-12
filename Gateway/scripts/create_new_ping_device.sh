@@ -22,3 +22,6 @@ echo "		and initialized with 0 value"
 echo "--> Make it LoRaWAN"
 echo "		device id: 26011DA0"
 curl -X POST "http://localhost/devices/${DEVICE}/meta" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d  "{\"codec\":\"application/x-xlpp\",\"lorawan\":{\"appSKey\":\"23158D3BBC31E6AF670D195B5AED5525\",\"devAddr\":\"26011DA0\",\"devEUI\":\"AA555A0026011DA0\",\"nwkSEncKey\":\"23158D3BBC31E6AF670D195B5AED5525\",\"profile\":\"WaziDev\"}}"
+
+#remove LAST_CREATED_DEVICE.txt
+rm /home/pi/scripts/LAST_CREATED_DEVICE.txt

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Bash scripting cheatsheet https://devhints.io/bash
+
 # Ex: set_sensor_values.sh 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data.json 62de65dd127dbd00013fd78b temperatureSensor_0
 # this script push data from a file as device sensor's values
 # it is recommended to push to an empty device

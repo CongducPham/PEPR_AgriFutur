@@ -1,0 +1,143 @@
+title: Farm
+views:
+  - path: default_view
+    title: Home
+    cards:
+##start capacitive block
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: Capacitive Sensor
+            entities:
+              - entity: sensor.capacitive_1_raw_value_from_sen0308
+                secondary_info: last-updated
+              - entity: sensor.capacitive_1_soil_temperature_sensor
+                secondary_info: last-updated
+                icon: mdi:thermometer                 
+              - entity: sensor.capacitive_1_battery_voltage
+                secondary_info: last-updated
+                icon: mdi:battery
+          - type: grid
+            columns: 2
+            cards:
+              - type: picture
+                image: /local/sensors/capacitive_temp.png
+              - type: gauge
+                entity: sensor.capacitive_1_raw_value_from_sen0308
+                needle: true
+                min: -1
+                max: 550
+                segments:
+                  - from: -1
+                    color: '#000000'
+                  - from: 0
+                    color: '#139feb'
+                  - from: 84
+                    color: '#15a43e'
+                  - from: 167
+                    color: '#9ac97b'
+                  - from: 250
+                    color: '#fdc009'
+                  - from: 334
+                    color: '#fb2041'
+                  - from: 416
+                    color: '#d1000f'
+              - type: sensor
+                entity: sensor.capacitive_1_soil_condition
+                secondary_info: last-updated
+              - type: picture-entity
+                entity: sensor.capacitive_1_soil_value_index
+                secondary_info: last-updated
+                image: /local/sensors/no_sensor.svg
+                style:
+                  width: 10%
+                show_name: false
+                show_state: false
+                state_image:
+                  '0': /local/sensors/level0.svg
+                  '1': /local/sensors/level1.svg
+                  '2': /local/sensors/level2.svg
+                  '3': /local/sensors/level3.svg
+                  '4': /local/sensors/level4.svg
+                  '5': /local/sensors/level5.svg
+                  '-2': /local/sensors/no_sensor.svg
+                  '-1': /local/sensors/no_sensor.svg
+##end capacitive block - leave CR at end of this line
+##start tensiometer block
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: Tensiometer Sensor
+            entities:
+              - entity: sensor.tensiometer_1_centibars_from_wm200
+                secondary_info: last-changed
+              - entity: sensor.tensiometer_1_resistance_value_from_wm200
+                secondary_info: last-updated
+              - entity: sensor.tensiometer_1_soil_temperature_sensor
+                secondary_info: last-updated
+                icon: mdi:thermometer
+              - entity: sensor.tensiometer_1_battery_voltage
+                secondary_info: last-updated
+                icon: mdi:battery
+          - type: grid
+            columns: 2
+            cards:
+              - type: picture
+                image: /local/sensors/tensiometer_temp.png
+              - type: gauge
+                entity: sensor.tensiometer_1_centibars_from_wm200
+                needle: true
+                min: 0
+                max: 255
+                segments:
+                  - from: 0
+                    color: '#139feb'
+                  - from: 10
+                    color: '#15a43e'
+                  - from: 30
+                    color: '#fdc009'
+                  - from: 60
+                    color: '#fb2041'
+                  - from: 100
+                    color: '#d1000f'
+                  - from: 240
+                    color: '#000000'
+              - type: sensor
+                entity: sensor.tensiometer_1_soil_condition
+                secondary_info: last-updated
+              - type: picture-entity
+                entity: sensor.tensiometer_1_soil_value_index
+                secondary_info: last-updated
+                image: /local/sensors/no_sensor.svg
+                show_name: false
+                show_state: false
+                state_image:
+                  '0': /local/sensors/level0.svg
+                  '1': /local/sensors/level1.svg
+                  '2': /local/sensors/level2.svg
+                  '3': /local/sensors/level3.svg
+                  '4': /local/sensors/level4.svg
+                  '5': /local/sensors/level5.svg
+                  '-2': /local/sensors/no_sensor.svg
+                  '-1': /local/sensors/no_sensor.svg
+##end tensiometer block  - leave CR at end of this line
+##start loracam block
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: LoRaCAM_AI_STATS
+            entities:
+              - entity: sensor.loracam_ai_stats_2eaa_number_of_packets
+                secondary_info: last-updated
+              - entity: sensor.loracam_ai_stats_2eaa_size_in_bytes
+                secondary_info: last-updated
+              - entity: sensor.loracam_ai_stats_2eaa_time_on_air
+                secondary_info: last-updated
+              - entity: sensor.loracam_ai_stats_2eaa_luminosity
+                secondary_info: last-updated
+          - type: picture-entity
+            entity: camera.loracam_ai_dev_2daa
+            name: Last image
+            show_name: true
+            show_state: false
+##end loracam block - leave CR at end of this line

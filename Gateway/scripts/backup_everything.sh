@@ -1,17 +1,42 @@
 #!/bin/bash
 
+# Bash scripting cheatsheet https://devhints.io/bash
+
 # Ex: backup_everything.sh
 # this script backups all devices to sensor-backup folder, including their IIWA configuration
-# if an argument is provided, the scripts will try to copy backup files to USB drive
+#
+# if --to-usbdrive is provided, the scripts will try to copy backup files to USB drive
 # normally USB drive is /dev/sda1, but the script looks for any unmounted mount point
-# Ex: backup_everything.sh tousbdrive
+# Ex: backup_everything.sh --to-usbdrive
+#
+
+TO_USBDRIVE=false
+
+POSITIONAL=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --to-usbdrive)
+      TO_USBDRIVE=true
+      shift
+      ;;                  
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL[@]}"
 
 cd /home/pi/sensor-backup
 
 echo "removing sensor-backup.log file"
 rm -rf sensor-backup.log
 
+echo "------------------------------- " >> sensor-backup.log
 echo `date` >> sensor-backup.log
+echo "------------------------------- " >> sensor-backup.log
 
 echo "removing all split files" >> sensor-backup.log
 rm -rf *split*
@@ -22,39 +47,58 @@ TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -
 
 DEVICES=`curl -X GET "http://localhost/devices" -H  "accept: application/json"`
 NDEVICE=`echo $DEVICES | jq '. | length'`
+
 (( NDEVICE-- ))
+
 while [ $NDEVICE -gt 0 ]
 do
   DEVICE=`echo $DEVICES | jq ".[${NDEVICE}].id"  | tr -d '\"'`
   # DEVICE=`curl -X GET "http://localhost/devices" -H  "accept: application/json" | jq ".[$NDEVICE].id" | tr -d '\"'`
   sizeDEVICE=${#DEVICE} 
   #we do not want to backup a gateway as it is also considered as a device
-  if [ $sizeDEVICE -gt 16 ]
-  then
-	# - show_device_by_name.sh SOIL-AREA-1 sensors[0].meta.kind
-	DEVTYPE=`echo $DEVICES | jq ".[${NDEVICE}].sensors[0].meta.type"  | tr -d '\"'`
-	DEVNAME=`echo $DEVICES | jq ".[${NDEVICE}].name"  | tr -d '\"'`
-	DEVADDR=`curl -X GET "http://localhost/devices/$DEVICE/meta" | jq ".lorawan.devAddr"  | tr -d '\"'`
+  if [ $sizeDEVICE -gt 16 ]; then
+    DEVTYPE=`echo $DEVICES | jq ".[${NDEVICE}].sensors[0].meta.type"  | tr -d '\"'`
+    DEVNAME=`echo $DEVICES | jq ".[${NDEVICE}].name"  | tr -d '\"'`
+    DEVADDR=`curl -X GET "http://localhost/devices/$DEVICE/meta" | jq ".lorawan.devAddr"  | tr -d '\"'`
+    DEVADDRSHORT=${DEVADDR: -2}  
+    
+    SENSORS=""
+    
+    if [ $DEVTYPE == 'capacitive' ]; then
+      SENSORS="temperatureSensor_0 temperatureSensor_5 analogInput_6"
 
-    if [ $DEVTYPE == 'capacitive' ]
-    then
-		DEVADDRSHORT=A${DEVADDR: -1}
-		/home/pi/scripts/backup_capacitive_device_sensor_values.sh $DEVICE
-    elif [ $DEVTYPE == 'tensiometer' ]
-    then
-		DEVADDRSHORT=B${DEVADDR: -1}
-		/home/pi/scripts/backup_tensiometer_device_sensor_values.sh $DEVICE
-	fi
-	echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
+    elif [ $DEVTYPE == 'tensiometer' ]; then
+      SENSORS="temperatureSensor_0 temperatureSensor_1 temperatureSensor_5 analogInput_6"
 
+    elif [ $DEVTYPE == '2tensiometer' ]; then
+      SENSORS="temperatureSensor_0 temperatureSensor_1 temperatureSensor_2 temperatureSensor_3 temperatureSensor_5 analogInput_6"
+            
+    elif [ $DEVTYPE == 'air_temp_hum' ]; then
+      SENSORS="temperatureSensor_7 temperatureSensor_8 temperatureSensor_5 analogInput_6"
+
+    elif [ $DEVTYPE == '2soil_temp' ]; then
+      SENSORS="temperatureSensor_5 temperatureSensor_10 analogInput_6"
+      
+    elif [ $DEVTYPE == '3soil_temp' ]; then
+      SENSORS="temperatureSensor_5 temperatureSensor_10 temperatureSensor_11 analogInput_6"      
+            
+    elif [ $DEVTYPE == 'co2' ]; then
+      SENSORS="temperatureSensor_9 temperatureSensor_7 temperatureSensor_8 temperatureSensor_5 analogInput_6"
+    fi
+    
+    if [[ -n "$SENSORS" ]]; then
+      echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
+      echo "--> $SENSORS" >> sensor-backup.log     
+      /home/pi/scripts/backup_device_sensor_values.sh $DEVICE $DEVTYPE $SENSORS
+    else
+      echo "no current scheme for $DEVTYPE $DEVICE $DEVNAME $DEVADDRSHORT" >> sensor-backup.log
+    fi
   fi      
   (( NDEVICE-- ))
 done
 
-#only if one argument is provided
-#Ex: backup_everything.sh tousbdrive
-if [ $# -eq 1 ]
-then
+#Ex: backup_everything.sh --to-usbdrive
+if $TO_USBDRIVE; then
 	MOUNTPOINT=`sudo blkid -o list | grep "not mounted" | awk -F'[ ]' '{print $1}'`
 	echo "mounting USB drive to /media for pi user" >> sensor-backup.log
 	sudo mount -o uid=1000,gid=1000 $MOUNTPOINT /media

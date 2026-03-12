@@ -1,0 +1,18 @@
+sensor:
+  - platform: rest
+    resource: http://localhost/devices/69a75f5a68f3190aa42a11dd/sensors/temperatureSensor_5/value
+    name: 3SOIL_TEMP_2/Soil Temperature Sensor 1
+    unit_of_measurement: "°C"
+  - platform: rest
+    resource: http://localhost/devices/69a75f5a68f3190aa42a11dd/sensors/temperatureSensor_10/value
+    name: 3SOIL_TEMP_2/Soil Temperature Sensor 2    
+    unit_of_measurement: "°C"    
+  - platform: rest
+    resource: http://localhost/devices/69a75f5a68f3190aa42a11dd/sensors/temperatureSensor_11/value
+    name: 3SOIL_TEMP_2/Soil Temperature Sensor 3     
+    unit_of_measurement: "°C" 
+  - platform: rest
+    resource: http://localhost/devices/69a75f5a68f3190aa42a11dd/sensors/analogInput_6/value
+    name: 3SOIL_TEMP_2/Battery voltage
+    unit_of_measurement: "Volts"
+## end 3_soil_temp

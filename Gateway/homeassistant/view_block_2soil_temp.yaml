@@ -1,0 +1,25 @@
+##start 2soil_temp block
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: 2 Soil Temp Sensor
+            entities:
+              - entity: sensor.xxname_soil_temperature_sensor_1
+                secondary_info: last-updated
+                icon: mdi:thermometer
+              - entity: sensor.xxname_soil_temperature_sensor_2
+                secondary_info: last-updated
+                icon: mdi:thermometer                           
+              - entity: sensor.xxname_battery_voltage
+                secondary_info: last-updated
+                icon: mdi:battery
+          - type: grid
+            columns: 2
+            cards:
+              - type: picture
+                image: /local/sensors/soil_temp.png
+              - type: history-graph
+                entities:
+                  - entity: sensor.xxname_soil_temperature_sensor_1
+                  - entity: sensor.xxname_soil_temperature_sensor_2               
+##end 2soil_temp block - leave CR at end of this line

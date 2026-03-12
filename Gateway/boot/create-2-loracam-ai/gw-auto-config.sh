@@ -1,32 +1,33 @@
 #!/bin/bash
 
+#normally executed as root
+
 logger -t gw-auto-config "create-2-loracam-ai"
 
-echo "create-2-loracam-ai" >> /boot/gw-auto-config.log
+echo "create-2-loracam-ai"
 
 cd /home/pi/scripts
 
 if [ $# -eq 0 ]
 then
 #delete all devices, except gateway devices
-echo "--> delete all devices" >> /boot/gw-auto-config.log
+echo "--> delete all devices"
 ./delete_all_devices.sh
 fi
 
 #create LoRaCAM-AI-DEV-2DAA device with address 26012DAA
-echo "--> calling create_loracam-ai-device.sh 2DAA" >> /boot/gw-auto-config.log
-./loracam-ai/create_loracam-ai-device.sh 2DAA
-
 #create LoRaCAM-AI-STATS-2EAA device with address 26012EAA, linked to LoRaCAM-AI-DEV-2DAA
-echo "--> calling create_loracam-ai-stats.sh 2DAA 2EAA" >> /boot/gw-auto-config.log
-./loracam-ai/create_loracam-ai-stats.sh 2DAA 2EAA
+#including integration into HA dashboard
+echo "--> calling create_new_loracam.sh 2DAA 2EAA"
+./create_new_loracam.sh 2DAA 2EAA
 
 #create LoRaCAM-AI-DEV-2DAB device with address 26012DAB
-echo "--> calling create_loracam-ai-device.sh 2DAB" >> /boot/gw-auto-config.log
-./loracam-ai/create_loracam-ai-device.sh 2DAB
+#create LoRaCAM-AI-STATS-2EAB device with address 26012EAB, linked to LoRaCAM-AI-DEV-2DAB
+#including integration into HA dashboard
+echo "--> calling create_new_loracam.sh 2DAB 2EAB"
+./create_new_loracam.sh 2DAB 2EAB
 
-#create LoRaCAM-AI-STATS-2EAA device with address 26012EAB, linked to LoRaCAM-AI-DEV-2DAB
-echo "--> calling create_loracam-ai-stats.sh 2DAB 2EAB" >> /boot/gw-auto-config.log
-./loracam-ai/create_loracam-ai-stats.sh 2DAB 2EAB
+echo "Done"
+
 
 

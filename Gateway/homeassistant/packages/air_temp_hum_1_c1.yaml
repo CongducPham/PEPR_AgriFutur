@@ -1,0 +1,19 @@
+## start air_temp_hum block
+sensor:  
+  - platform: rest
+    resource: http://localhost/devices/69a8038468f3190aa42a11f0/sensors/temperatureSensor_7/value
+    name: AIR_TEMP_HUM_1/degree Celsius
+    unit_of_measurement: "°C"
+  - platform: rest
+    resource: http://localhost/devices/69a8038468f3190aa42a11f0/sensors/temperatureSensor_8/value
+    name: AIR_TEMP_HUM_1/relative humidity
+    unit_of_measurement: "%RH"
+  - platform: rest
+    resource: http://localhost/devices/69a8038468f3190aa42a11f0/sensors/temperatureSensor_5/value
+    name: AIR_TEMP_HUM_1/Soil Temperature Sensor
+    unit_of_measurement: "°C"  
+  - platform: rest
+    resource: http://localhost/devices/69a8038468f3190aa42a11f0/sensors/analogInput_6/value
+    name: AIR_TEMP_HUM_1/Battery voltage  
+    unit_of_measurement: "Volts"
+## end air_temp_hum block - leave CR at end of this line

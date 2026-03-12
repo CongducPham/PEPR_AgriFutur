@@ -1,20 +1,20 @@
 README for extract_values.py
 This python script can be run **on the WaziGate** or **remotely**.
 It extracts a dataset for a selection of sensors in a specified format.
-The first argument composes the access url to the Wazigate. `localhost` will only work if the script is run on the Wazigate. 
+The first argument is the access url to the Wazigate. `localhost` will only work if the script is run on the Wazigate. 
 
 #############################
 # Usage
 #############################
-One need to first build a selection of sensors, and then to do the extraction
+You need to first build a selection of sensors, and then do the data extraction.
 
 #############################
 # Syntaxes
 #############################
-## 1 - Preparation of json file *devices_to_export.json* listing devices and sensors in a human readable format.
+## 1 - Preparation of json file *devices_to_export.json* listing devices and sensors in a human-readable format.
 `python extract_values.py localhost devices`
 
-## 2 - Same as **1**, additional display in terminal.
+## 2 - Same as **1**, additionally display in terminal.
 `python extract_values.py wazigate.local devices print`
 
 ## 3 - Export to JSON, can be read by *Datasets/plot_scripts/plot_json_generic.py*.
