@@ -150,7 +150,7 @@ From here it differs a little bit from the original `CameraWebServer` example be
 
 ## Receiving image data on WaziGate LoRa gateway
 
-This is discussed and presented in the this [README](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Gateway/scripts/loracam-ai/README.md) in the `Gateway` part.
+This is discussed and presented in the this [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/loracam-ai/README.md) in the `Gateway` part.
  
 # Tools
 
@@ -272,7 +272,7 @@ It is displayed below as PNG file for GitHub with the original size of both 128x
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/decode-ESP32S3-realcapture.bmp.M235-Q20-P5-S1113.dat-P5-S1113.png" width="400">
 
-**There are tools at the gateway side to be able to receive, reconstruct the encoded image, decode the image and display the image in the gateway Home Assistant dashboard. This is discussed and presented in the this [README](https://github.com/CongducPham/PEPR_AgriFutur/tree/main/Gateway/scripts/loracam-ai/README.md) in the `Gateway` part.**
+**There are tools at the gateway side to be able to receive, reconstruct the encoded image, decode the image and display the image in the gateway Home Assistant dashboard. This is discussed and presented in the this [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/loracam-ai/README.md) in the `Gateway` part.**
 	
 ## Emulate sending and add packet drop
 
