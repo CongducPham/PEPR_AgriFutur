@@ -190,6 +190,8 @@ uint8_t node_addr = 8;
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE TIME IN MINUTES BETWEEN 2 READING & TRANSMISSION
 unsigned int idlePeriodInMin = 60;
+// WARNING: if you set idlePeriodInSec != 0 then idlePeriodInMin is not taken into account!
+// it is mainly for testing when you want a wake up time smaller than 1 minute 
 unsigned int idlePeriodInSec = 0;
 ///////////////////////////////////////////////////////////////////
 
@@ -2304,179 +2306,163 @@ pl = local_aes_lorawan_create_pkt(message, pl, 0);
 *****************************/
 
 void loop(void) {
-#ifndef LOW_POWER
-    // 600000+random(15,60)*1000
-    if (millis() > nextTransmissionTime)
-#else
-    {
-        // time for next wake up
-        nextTransmissionTime = millis() + ((idlePeriodInSec == 0) ? (unsigned long)idlePeriodInMin * 60 * 1000
-                                                                  : (unsigned long)idlePeriodInSec * 1000);
-        // PRINTLN_VALUE("%ld",nextTransmissionTime);
-        // PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
+    // time for next wake up
+    nextTransmissionTime = millis() + ((idlePeriodInSec == 0) ? (unsigned long)idlePeriodInMin * 60 * 1000
+                                                                : (unsigned long)idlePeriodInSec * 1000);
 
-        // we assume that when running on solar panel, we do not need to have the same behavior
-        // than running on alkalines (i.e. dynamically extend the measure interval)
+    // we assume that when running on solar panel, we do not need to have the same behavior
+    // than running on alkalines (i.e. dynamically extend the measure interval)
 #if defined IRD_PCB && defined SOLAR_BAT
-        if (recovery_charging && v_bat > BAT_OK) {
-            recovery_charging = 0;
-        }
+    if (recovery_charging && v_bat > BAT_OK) {
+        recovery_charging = 0;
+    }
 
-        if (!recovery_charging && v_bat > BAT_LOW && (last_v_bat > BAT_MINIMUM || last_v_bat == 0)) {
-            measure_and_send();
-        } else {
-            PRINT_CSTSTR("!LOW BATTERY ");
-            PRINTLN_VALUE("%d", recovery_charging);
-        }
+    if (!recovery_charging && v_bat > BAT_LOW && (last_v_bat > BAT_MINIMUM || last_v_bat == 0)) {
+        measure_and_send();
+    } else {
+        PRINT_CSTSTR("!LOW BATTERY ");
+        PRINTLN_VALUE("%d", recovery_charging);
+    }
 #elif defined MONITOR_BAT_VOLTAGE
 
-        current_vcc = (double)((uint16_t)(vcc.Read_Volts() * 100)) / 100.0;
-        if (tx_vcc_read != 8000) {  // voltage has been measured during tx
-            tx_vcc = (double)(tx_vcc_read) / 1000.0;
-        }
+    current_vcc = (double)((uint16_t)(vcc.Read_Volts() * 100)) / 100.0;
+    if (tx_vcc_read != 8000) {  // voltage has been measured during tx
+        tx_vcc = (double)(tx_vcc_read) / 1000.0;
+    }
 
-        PRINT_CSTSTR("BATTERY-->");
-        PRINT_VALUE("%f", current_vcc);  // now, right after sleep
-        PRINT_CSTSTR(" | ");
-        PRINTLN_VALUE("%f", last_vcc);  // right after last transmit
+    PRINT_CSTSTR("BATTERY-->");
+    PRINT_VALUE("%f", current_vcc);  // now, right after sleep
+    PRINT_CSTSTR(" | ");
+    PRINTLN_VALUE("%f", last_vcc);  // right after last transmit
 
-        PRINT_CSTSTR("BATT_TX-->");
-        PRINTLN_VALUE("%f", tx_vcc);  // updated during last transmit
+    PRINT_CSTSTR("BATT_TX-->");
+    PRINTLN_VALUE("%f", tx_vcc);  // updated during last transmit
 
 #ifdef BYPASS_LOW_BAT
-        measure_and_send();
+    measure_and_send();
 #else
 
-        bool battery_low = (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW);
-        if (battery_low) {
-            PRINT_CSTSTR("!LOW BATTERY-->");
-            PRINT_VALUE("%f", current_vcc);
-            PRINT_CSTSTR(" | ");
-            PRINT_VALUE("%f", last_vcc);
-            PRINT_CSTSTR(" | ");
-            PRINTLN_VALUE("%f", tx_vcc);
+    bool battery_low = (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW);
 
-            PRINT_CSTSTR("low_voltage_indication=");
-            PRINTLN_VALUE("%d", low_voltage_indication);
+    if (battery_low) {
+        PRINT_CSTSTR("!LOW BATTERY-->");
+        PRINT_VALUE("%f", current_vcc);
+        PRINT_CSTSTR(" | ");
+        PRINT_VALUE("%f", last_vcc);
+        PRINT_CSTSTR(" | ");
+        PRINTLN_VALUE("%f", tx_vcc);
 
-            if (low_voltage_indication < MAX_LOW_VOLTAGE_INDICATION) {
-                // we will still measure and transmit a given number of times (MAX_LOW_VOLTAGE_INDICATION) at normal time interval
-                // to warn end-user as soon as possible and overcome possible packet transmission losses
-                low_voltage_indication++;
+        PRINT_CSTSTR("low_voltage_indication=");
+        PRINTLN_VALUE("%d", low_voltage_indication);
+
+        if (low_voltage_indication < MAX_LOW_VOLTAGE_INDICATION) {
+            // we will still measure and transmit a given number of times (MAX_LOW_VOLTAGE_INDICATION) at normal time interval
+            // to warn end-user as soon as possible and overcome possible packet transmission losses
+            low_voltage_indication++;
 #ifdef WITH_EEPROM
-                // save new low_voltage_indication
-                my_nodeConfig.low_voltage_indication = low_voltage_indication;
-                EEPROM.put(0, my_nodeConfig);
-#endif
-            }
-            // we already got enough transmissions at normal time interval, so now we increase transmission interval
-            // time given number of times (LOW_VOLTAGE_IDLE_PERIOD_FACTOR), no more and unless it was already chosen greater than
-            // 4 hours
-            if (low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {
-                if (idlePeriodInMin < 240) {
-                    nextTransmissionTime =
-                        millis() + min((unsigned long)240, (LOW_VOLTAGE_IDLE_PERIOD_FACTOR * (unsigned long)idlePeriodInMin)) * 60 * 1000;
-
-                    PRINTLN_CSTSTR("Set/keep nextTransmissionTime to 4 times normal (max 4h)");
-                }
-            }
-        }  // end low voltage detected
-
-        // if battery is OK (e.g. after a while) => reset
-        if (low_voltage_indication && !battery_low) {
-            low_voltage_indication = 0;
-#ifdef WITH_EEPROM
-            // reset low_voltage_indication
+            // save new low_voltage_indication
             my_nodeConfig.low_voltage_indication = low_voltage_indication;
             EEPROM.put(0, my_nodeConfig);
 #endif
         }
-#ifdef WITH_EEPROM
-        if (my_nodeConfig.hasRebooted < MAX_SUCCESSIVE_REBOOTS) {
-            // set hasRebooted before transmission because if the board reboots right after transmission we could detect it
-            my_nodeConfig.hasRebooted++;
-            EEPROM.put(0, my_nodeConfig);
-            measure_and_send();
+        // we already got enough transmissions at normal time interval, so now we increase transmission interval
+        // time given number of times (LOW_VOLTAGE_IDLE_PERIOD_FACTOR), no more and unless it was already chosen greater than
+        // 4 hours
+        if (low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {
+            if (idlePeriodInMin < 240) {
+                nextTransmissionTime =
+                    millis() + min((unsigned long)240, (LOW_VOLTAGE_IDLE_PERIOD_FACTOR * (unsigned long)idlePeriodInMin)) * 60 * 1000;
 
-            // enforce fake (soft) reboots to test
-            // if (TXPacketCount>2 || my_nodeConfig.hasRebooted>0) asm("jmp 0");
-            // if (TXPacketCount>2 && TXPacketCount<6) asm("jmp 0");
-
-        } else {
-            PRINT_CSTSTR("Prevented from measure_and_send() due to experiencing ");
-            PRINT_VALUE("%d", MAX_SUCCESSIVE_REBOOTS);
-            PRINTLN_CSTSTR(" consecutive reboots");
+                PRINTLN_CSTSTR("Set/keep nextTransmissionTime to 4 times normal (max 4h)");
+            }
         }
-        // if we arrive here then the board has not rebooted, so we clear hasRebooted
-        my_nodeConfig.hasRebooted = 0;
+    }  // end low voltage detected
+
+    // if battery is OK (e.g. after a while) => reset
+    if (low_voltage_indication && !battery_low) {
+        low_voltage_indication = 0;
+#ifdef WITH_EEPROM
+        // reset low_voltage_indication
+        my_nodeConfig.low_voltage_indication = low_voltage_indication;
         EEPROM.put(0, my_nodeConfig);
-#else
+#endif
+    }
+#ifdef WITH_EEPROM
+    if (my_nodeConfig.hasRebooted < MAX_SUCCESSIVE_REBOOTS) {
+        // set hasRebooted before transmission because if the board reboots right after transmission we could detect it
+        my_nodeConfig.hasRebooted++;
+        EEPROM.put(0, my_nodeConfig);
         measure_and_send();
+
+        // enforce fake (soft) reboots to test
+        // if (TXPacketCount>2 || my_nodeConfig.hasRebooted>0) asm("jmp 0");
+        // if (TXPacketCount>2 && TXPacketCount<6) asm("jmp 0");
+
+    } else {
+        PRINT_CSTSTR("Prevented from measure_and_send() due to experiencing ");
+        PRINT_VALUE("%d", MAX_SUCCESSIVE_REBOOTS);
+        PRINTLN_CSTSTR(" consecutive reboots");
+    }
+    // if we arrive here then the board has not rebooted, so we clear hasRebooted
+    my_nodeConfig.hasRebooted = 0;
+    EEPROM.put(0, my_nodeConfig);
+#else
+    measure_and_send();
 #endif
 #endif  // without BYPASS_LOW_BAT
 #else   // no MONITOR_BAT_VOLTAGE
-        measure_and_send();
+    measure_and_send();
 #endif  // MONITOR_BAT_VOLTAGE
-    }
-#endif  // LOW_POWER
 
     ///////////////////////////////////////////////////////////////////
     // LOW-POWER BLOCK - DO NOT EDIT
-    //
     ///////////////////////////////////////////////////////////////////
 
-#if defined LOW_POWER
-    {
-        PRINT_CSTSTR("Switch to power saving mode\n");
-
-        // how much do we still have to wait, in millisec?
-        unsigned long now_millis = millis();
-
-        // PRINTLN_VALUE("%ld",now_millis);
-        // PRINTLN_VALUE("%ld",nextTransmissionTime);
-
-        if (millis() > nextTransmissionTime) {
-            // nextTransmissionTime=millis()+1000;
-            PRINT_CSTSTR("Something wrong with sleep time, back to default\n");
-            nextTransmissionTime = millis() + ((idlePeriodInSec == 0) ? (unsigned long)idlePeriodInMin * 60 * 1000
-                                                                      : (unsigned long)idlePeriodInSec * 1000);
-        }
-
-        unsigned long waiting_t = nextTransmissionTime - now_millis;
-
-        // PRINTLN_VALUE("%ld",waiting_t);
-        FLUSHOUTPUT;
-
-        // first power down the radio module
-#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
-        // sleep until we wake the module with an AT command on the serial line
-        lorawan_sleep(0 /*waiting_t*/);
+    PRINT_CSTSTR("Switch to power saving mode\n");
+#ifdef LOW_POWER        
+    PRINT_CSTSTR("Using LowPower mode\n");
 #else
-        // CONFIGURATION_RETENTION=RETAIN_DATA_RAM on SX128X
-        // parameter is ignored on SX127X
-        LT.setSleep(CONFIGURATION_RETENTION);
-#endif
+    PRINT_CSTSTR("Using delay()\n");
+#endif        
 
-        // then power down the microcontroller
-        lowPower(waiting_t);
+    // how much do we still have to wait, in millisec?
+    unsigned long now_millis = millis();
+    // PRINTLN_VALUE("%ld",now_millis);
 
-        PRINT_CSTSTR("Wake from power saving mode\n");
-#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
-        lorawan_wake();
-#else
-        LT.wake();
-#endif
-    }
-#else // LOW_POWER
-    {
-        PRINTLN;
-        PRINT_CSTSTR("Will send next value at\n");
-        // can use a random part also to avoid collision
+    if (now_millis > nextTransmissionTime) {
+        // nextTransmissionTime=millis()+1000;
+        PRINT_CSTSTR("Something wrong with sleep time, back to default\n");
         nextTransmissionTime = millis() + ((idlePeriodInSec == 0) ? (unsigned long)idlePeriodInMin * 60 * 1000
-                                                                  : (unsigned long)idlePeriodInSec * 1000);
-        // +(unsigned long)random(15,60)*1000;
-        PRINT_VALUE("%ld", nextTransmissionTime);
-        PRINTLN;
+                                                                    : (unsigned long)idlePeriodInSec * 1000);
     }
-#endif // LOW_POWER
+
+    PRINT_CSTSTR("Will send next value at ");
+    PRINT_VALUE("%ld", nextTransmissionTime);
+    PRINTLN;
+    
+    unsigned long waiting_t = nextTransmissionTime - now_millis;
+
+    // PRINTLN_VALUE("%ld",waiting_t);
+    FLUSHOUTPUT;
+
+    // first power down the radio module
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+    // sleep until we wake the module with an AT command on the serial line
+    lorawan_sleep(0 /*waiting_t*/);
+#else
+    // CONFIGURATION_RETENTION=RETAIN_DATA_RAM on SX128X
+    // parameter is ignored on SX127X
+    LT.setSleep(CONFIGURATION_RETENTION);
+#endif
+
+    // then power down the microcontroller
+    // or use delay()
+    lowPower(waiting_t);
+
+    PRINT_CSTSTR("Wake from power saving mode\n");
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+    lorawan_wake();
+#else
+    LT.wake();
+#endif
 }
