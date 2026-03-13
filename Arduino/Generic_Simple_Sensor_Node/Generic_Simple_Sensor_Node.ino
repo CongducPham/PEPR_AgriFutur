@@ -803,12 +803,12 @@ void lowPower(unsigned long time_ms) {
         FLUSHOUTPUT;
         delay(1);
 #endif
+    }
 #else   // LOW_POWER
     // use the delay function
     delay(waiting_t);
     waiting_t = 0;
 #endif  // LOW_POWER
-    }
 }
 
 /*****************************
