@@ -3,10 +3,10 @@
 while true
 do
 
-DEVICES=`/home/pi/scripts/show_device_by_name.sh CAM-AI-DEV id | tr -d '\"'`
+DEVICES=`/home/pi/scripts/show_device_by_name.sh CAM_AI_DEV id | tr -d '\"'`
 
 if [ "$DEVICES" == "" ]; then
-  echo "no LoRaCAM-AI-DEV found"
+  echo "no LoRaCAM_AI_DEV found"
 else  
   # Split into array
   read -ra loracams <<< "$DEVICES"
@@ -17,8 +17,8 @@ else
 
   # Loop through loracams
   for loracam in "${loracams[@]}"; do
-    echo "LoRaCAM-AI id: $loracam"
-    echo "get last image for first LoRaCAM-AI ${loracam}"
+    echo "LoRaCAM_AI_DEV id: $loracam"
+    echo "get last image for first LoRaCAM_AI_DEV ${loracam}"
     cd /home/pi/scripts/loracam-ai/tools/gw-images/
     python ../../get_last_image_dat.py localhost ${loracam} ..
     #echo "copy to /opt/homeassistant/config/www/loracam-ai"

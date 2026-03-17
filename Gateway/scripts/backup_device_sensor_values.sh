@@ -24,11 +24,11 @@ do
 	if [[ "$STR" == *"$SUB"* ]]; then
 		echo "no ${k}"
 	else
-		echo "--> Get ${k} sensor's values from device $1 of type $2"
+		# Get ${k} sensor's values from device $1 of type $2"
 		/home/pi/scripts/get_sensor_values.sh $1 $2 ${k}	
 	fi
 done
 
 /home/pi/scripts/split_device_sensor_values.sh $1 $2 $SENSORS
 
-echo "Done"
+echo "Backup device Done"

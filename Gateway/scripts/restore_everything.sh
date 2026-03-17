@@ -2,7 +2,7 @@
 
 # Ex: restore_everything.sh
 # This script restores all from the sensor-backup folder, including their IIWA configuration
-# new devices are created on the gateway with the same device id than those from the backup files
+# new devices are created on the gateway with the SAME device id than those from the backup files
 #
 # if --from-usbdrive is provided, the scripts will try to restore from backup files stored on USB drive
 # normally USB drive is /dev/sda1, but the script looks for any unmounted mount point
@@ -67,7 +67,7 @@ fi
 echo "Deleting all devices"
 
 if $DRY_RUN; then     
-  echo "DRY_RUN: /home/pi/scripts/delete_all_devices.sh"
+  echo "DRY_RUN: delete_all_devices.sh"
 else
   /home/pi/scripts/delete_all_devices.sh
   #to be safe
@@ -77,7 +77,8 @@ fi
 #echo "ENTER to continue"
 #read keyboard
 
-DEVICE_TYPES="capacitive tensiometer 2tensiometer air_temp_hum 2soil_temp 3soil_temp co2"
+# we do not include loracam device type because it will be handled when loracam_stats is processed
+DEVICE_TYPES="capacitive tensiometer 2tensiometer air_temp_hum 2soil_temp 3soil_temp co2 loracam_stats"
 
 echo "Will loop for device type in $DEVICE_TYPES"
 
@@ -96,6 +97,8 @@ do
     #   backup capacitive device 69ac879468f319094e004fbf named CAPACITIVE_1 address AA
     #   backup tensiometer device 69ac879668f319094e004fc4 named TENSIOMETER_1 address B1
     #   backup co2 device 69ac8dd168f319094e004fdb named CO2_1 address E1
+    #   backup loracam_stats device 69b58d5b68f31909640c2616 named LoRaCAM_AI_STATS_2EAA address 2EAA linked 2DAA
+    #   backup loracam device 69b58d5b68f31909640c2614 named LoRaCAM_AI_DEV_2DAA address 2DAA    
     #   ...
     DEVNAME=$(cat sensor-backup.log | grep $DEVICE | grep backup | grep named | awk -F'[ ]' '{print $6}')
     DEVIDX=$(cat sensor-backup.log | grep $DEVICE | grep backup | grep named | awk -F'[ ]' '{print $6}' | awk -F'[_]' '{print $2}')
@@ -122,14 +125,34 @@ do
       SENSORS="temperatureSensor_5 temperatureSensor_10 temperatureSensor_11 analogInput_6"      
             
     elif [ $DEVTYPE == 'co2' ]; then
-      SENSORS="temperatureSensor_9 temperatureSensor_7 temperatureSensor_8 temperatureSensor_5 analogInput_6"            
+      SENSORS="temperatureSensor_9 temperatureSensor_7 temperatureSensor_8 temperatureSensor_5 analogInput_6"                      
+    
+    elif [ $DEVTYPE == 'loracam_stats' ]; then
+      DEV_DEVADDRSHORT=$(cat sensor-backup.log | grep $DEVICE | grep backup | grep named | awk -F'[ ]' '{print $10}')
+      DEV_DEVID=$(cat sensor-backup.log | grep backup | grep "loracam device" | grep $DEV_DEVADDRSHORT | awk -F'[ ]' '{print $4}')
+      DEV_DEVNAME=$(cat sensor-backup.log | grep backup | grep "loracam device" | grep $DEV_DEVADDRSHORT | awk -F'[ ]' '{print $6}')
+      # remove address in device name, e.g. LoRaCAM_AI_DEV_2DAA --> LoRaCAM_AI_DEV 
+      DEV_DEVNAME=${DEV_DEVNAME:0:-5}
+      STATS_DEVADDRSHORT=$DEVADDRSHORT
+      STATS_DEVID=$DEVICE
+      # remove address in device name, e.g. LoRaCAM_AI_STATS_2EAA --> LoRaCAM_AI_STATS
+      STATS_DEVNAME=${DEVNAME:0:-5}
     fi
     
-    if [[ -n "$SENSORS" ]]; then
+    if [ $DEVTYPE == 'loracam_stats' ]; then
+      echo "restore $DEVTYPE device $STATS_DEVID named $STATS_DEVNAME address $STATS_DEVADDRSHORT" >> sensor-backup.log
+      echo "will also restore loracam device $DEV_DEVID named $DEV_DEVNAME address $DEV_DEVADDRSHORT" >> sensor-backup.log
+      if $DRY_RUN; then     
+        echo "DRY_RUN: restore_loracam_sensor_values.sh $DEV_DEVNAME $DEV_DEVADDRSHORT $DEV_DEVID $STATS_DEVNAME $STATS_DEVADDRSHORT $STATS_DEVID"
+      else
+        /home/pi/scripts/restore_loracam_sensor_values.sh $DEV_DEVNAME $DEV_DEVADDRSHORT $DEV_DEVID $STATS_DEVNAME $STATS_DEVADDRSHORT $STATS_DEVID
+      fi       
+    elif [[ -n "$SENSORS" ]]; then
+      
       echo "restore $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
       echo "--> $SENSORS" >> sensor-backup.log
       if $DRY_RUN; then     
-        echo "DRY_RUN: /home/pi/scripts/restore_device_sensor_values.sh $DEVIDX $DEVADDRSHORT $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS"
+        echo "DRY_RUN: restore_device_sensor_values.sh $DEVIDX $DEVADDRSHORT $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS"
       else
         /home/pi/scripts/restore_device_sensor_values.sh $DEVIDX $DEVADDRSHORT $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS
       fi  
@@ -159,7 +182,7 @@ do
     update_data=`echo $NEWCONF | jq`
     # echo "$update_data"
     if $DRY_RUN; then     
-      echo "DRY_RUN: /home/pi/scripts/iiwa_rest.sh update $DEVICE $SENSOR \""$update_data"\""
+      echo "DRY_RUN: iiwa_rest.sh update $DEVICE $SENSOR \""$update_data"\""
     else
       /home/pi/scripts/iiwa_rest.sh update $DEVICE $SENSOR "$update_data"
     fi

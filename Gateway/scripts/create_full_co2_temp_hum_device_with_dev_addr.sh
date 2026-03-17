@@ -129,13 +129,13 @@ curl -X POST "http://localhost/devices/${DEVICE}/meta" -H "accept: application/j
 
 if $INIT_VALUE; then
 
-echo "--> Add value -99"
+echo "--> Add value -1"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_7/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-99, \"time\":\"$DATE\"}"
 
 echo "--> Add value -99"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_8/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-99, \"time\":\"$DATE\"}"
 
-echo "--> Add value -99"
+echo "--> Add value -1"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_9/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-99, \"time\":\"$DATE\"}"
 
 fi

@@ -19,7 +19,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Feb. 17th, 2026
+ * last update: March 13th, 2026
  *
  * Feb. 7th, 2025 --> remove unused options in the code, focus on INTEL-IRRIS PCB/PCBA v4.1 & v5 and WaziSense v2 platforms
  * NEW: Support for both SCD30 and SCD40 CO2 sensors
@@ -79,7 +79,7 @@ TXOnlySerial debug_serial(2);
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil humidity capacitive sensor (SEN0308 or other type of capacitive)
 // must be commented for other types of sensor
-#define WITH_CAPACITIVE
+//#define WITH_CAPACITIVE
 // uncomment to use SEN0308 capacitive calibration for low voltage
 #define SEN0308_CALIBRATION_LOW_VOLTAGE
 // uncomment to send millivolt with SEN0308 capacitive
@@ -105,7 +105,7 @@ TXOnlySerial debug_serial(2);
 //#define SOIL_EC5_SENSOR
 ////////////////////////////////////////////////////////////////////
 // uncomment to have an SCD30 CO2 sensor, ONLY ON IRD_PCB
-//#define CO2_SCD30_SENSOR
+#define CO2_SCD30_SENSOR
 // uncomment to have an SCD40 CO2 sensor, ONLY ON IRD_PCB
 // SCD40 is more compact and has lower cost but is a little bit less accurate than SCD30
 //#define CO2_SCD40_SENSOR

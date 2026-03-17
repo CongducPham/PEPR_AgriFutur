@@ -60,7 +60,12 @@ do
     DEVTYPE=`echo $DEVICES | jq ".[${NDEVICE}].sensors[0].meta.type"  | tr -d '\"'`
     DEVNAME=`echo $DEVICES | jq ".[${NDEVICE}].name"  | tr -d '\"'`
     DEVADDR=`curl -X GET "http://localhost/devices/$DEVICE/meta" | jq ".lorawan.devAddr"  | tr -d '\"'`
-    DEVADDRSHORT=${DEVADDR: -2}  
+    
+    if [ $DEVTYPE == 'loracam' ] ||  [ $DEVTYPE == 'loracam_stats' ]; then
+      DEVADDRSHORT=${DEVADDR: -4}
+    else
+      DEVADDRSHORT=${DEVADDR: -2}
+    fi
     
     SENSORS=""
     
@@ -84,10 +89,29 @@ do
             
     elif [ $DEVTYPE == 'co2' ]; then
       SENSORS="temperatureSensor_9 temperatureSensor_7 temperatureSensor_8 temperatureSensor_5 analogInput_6"
-    fi
+
+    elif [ $DEVTYPE == 'loracam' ]; then
+      SENSORS="imagePkt"
     
+    elif [ $DEVTYPE == 'loracam_stats' ]; then
+      SENSORS="analogOutput_10 analogOutput_11 analogOutput_12 analogOutput_13"
+    fi
+        
     if [[ -n "$SENSORS" ]]; then
-      echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
+      if [ $DEVTYPE == 'loracam_stats' ]; then
+        LINKED_DEVADDR=`echo $DEVICES | jq ".[${NDEVICE}].sensors[0].meta.kind"  | tr -d '\"'`
+        LINKED_DEVADDRSHORT=${LINKED_DEVADDR: -4}
+        echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT linked $LINKED_DEVADDRSHORT" >> sensor-backup.log
+      elif [ $DEVTYPE == 'loracam' ]; then
+        if [ ! -d "loracam-ai" ]; then
+          echo "create loracam-ai folder"
+          mkdir loracam-ai
+        fi  
+        echo "copy image files for $DEVNAME from /opt/homeassistant/config/www/loracam-ai"
+        cp /opt/homeassistant/config/www/loracam-ai/*${DEVNAME}* loracam-ai
+      else
+        echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
+      fi  
       echo "--> $SENSORS" >> sensor-backup.log     
       /home/pi/scripts/backup_device_sensor_values.sh $DEVICE $DEVTYPE $SENSORS
     else

@@ -67,6 +67,8 @@ echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE"
 
 if $INIT_VALUE; then
 
+DATE=`date +"%Y-%m-%dT%H:%M:%S.%3N%:z"`
+
 echo "--> Add value -99"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_10/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-1, \"time\":\"$DATE\"}"
 

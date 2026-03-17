@@ -71,11 +71,13 @@ echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE"
 
 if $INIT_VALUE; then
 
-echo "--> Add value -99"
-curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_10/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-1, \"time\":\"$DATE\"}"
+DATE=`date +"%Y-%m-%dT%H:%M:%S.%3N%:z"`
 
 echo "--> Add value -99"
-curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_11/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-1, \"time\":\"$DATE\"}"
+curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_10/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-99, \"time\":\"$DATE\"}"
+
+echo "--> Add value -99"
+curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_11/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-99, \"time\":\"$DATE\"}"
 
 echo "--> Add value -1"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/analogInput_6/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-1, \"time\":\"$DATE\"}"

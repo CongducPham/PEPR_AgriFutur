@@ -178,6 +178,8 @@ It can be convenient to also backup these device data on a USB stick. To do so, 
 	
 The script will backup all devices as previously described but will also mount the USB stick, copy the backup files on it, and unmount it.
 
+**Note**: `backup_everything.sh` writes creates a `sensor-backup.log` file that MUST NOT be deleted as the file is used to retrieve information on existing devices when you need to restore a backup.
+
 Periodic and automatic backup of your configured devices
 -------
 
@@ -195,7 +197,6 @@ You can show the current crontab for user `pi` as follows:
 
   > crontab -u pi -l
 
-
 Full Manual Restore of some data and configurations
 -------
 
@@ -204,7 +205,9 @@ The restoration of the device from backup files (from USB stick or backup folder
 	> cd sensor-backup
 	> /home/pi/scripts/restore_everything.sh
 
-Note: this script will delete all current devices and all specific IIWA configurations before restoring the backup ones with their backup IIWA configurations.
+**Note 1**: this script will delete all current devices and all specific IIWA configurations before restoring the backup ones with their backup IIWA configurations.
+
+**Note 2**: `restore_everything.sh` uses information stored in `sensor-backup.log` to retrieve information on existing devices when you need to restore a backup. Therefore, `restore_everything.sh` will onyl restore devices that have been previously backup by `backup_everything.sh`.  
 
 Use case: switch current values to a new gateway
 -------

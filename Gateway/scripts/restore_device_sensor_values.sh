@@ -78,7 +78,7 @@ elif [ $DEVTYPE == '3soil_temp' ]; then
   CREATE_CMD="create_new_3soil_temp.sh"  
         
 elif [ $DEVTYPE == 'co2' ]; then
-  CREATE_CMD="create_new_co2_temp_hum.sh"          
+  CREATE_CMD="create_new_co2_temp_hum.sh"        
 fi
 
 if [[ -n "$CREATE_CMD" ]]; then
@@ -120,4 +120,4 @@ do
   fi
 done
 
-echo "Done"
+echo "Restore device Done"
