@@ -15,6 +15,12 @@ echo "--> Enabling LoRaCAM-AI service at boot"
 sudo cp loracam-ai-service.service.txt /etc/systemd/system/loracam-ai-service.service
 sudo systemctl enable loracam-ai-service.service
 
+# if you modify the service then
+# sudo systemctl disable loracam-ai-service
+# sudo cp loracam-ai-service.service.txt /etc/systemd/system/loracam-ai-service.service
+# sudo systemctl enable loracam-ai-service
+# it is safer to reboot
+
 echo "Reboot to have the service available"
 echo "Now you can simply test with ./loracam-ai-service.sh"
 echo "CTRL-C to exit"

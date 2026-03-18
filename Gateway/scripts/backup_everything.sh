@@ -98,17 +98,20 @@ do
     fi
         
     if [[ -n "$SENSORS" ]]; then
+    
+      if [ $DEVTYPE == 'loracam' ]; then
+        if [ ! -d "gw-images" ]; then
+          echo "create gw-images folder"
+          mkdir gw-images
+        fi  
+        echo "copy image files for $DEVNAME from /home/pi/scripts/loracam-ai/tools/gw-images"
+        cp /home/pi/scripts/loracam-ai/tools/gw-images/*${DEVNAME}* gw-images
+      fi
+      
       if [ $DEVTYPE == 'loracam_stats' ]; then
         LINKED_DEVADDR=`echo $DEVICES | jq ".[${NDEVICE}].sensors[0].meta.kind"  | tr -d '\"'`
         LINKED_DEVADDRSHORT=${LINKED_DEVADDR: -4}
         echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT linked $LINKED_DEVADDRSHORT" >> sensor-backup.log
-      elif [ $DEVTYPE == 'loracam' ]; then
-        if [ ! -d "loracam-ai" ]; then
-          echo "create loracam-ai folder"
-          mkdir loracam-ai
-        fi  
-        echo "copy image files for $DEVNAME from /opt/homeassistant/config/www/loracam-ai"
-        cp /opt/homeassistant/config/www/loracam-ai/*${DEVNAME}* loracam-ai
       else
         echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
       fi  

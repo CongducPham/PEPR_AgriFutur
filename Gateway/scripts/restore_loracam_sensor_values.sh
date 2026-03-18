@@ -119,9 +119,9 @@ do
   done
 done
 
-echo "Copy image files from loracam-ai/ to /opt/homeassistant/config/www/loracam-ai"
-ls -l loracam-ai/*${LORACAM_DEV_DEVNAME}_${LORACAM_DEV_DEVADDRSHORT}*
-sudo cp loracam-ai/*${LORACAM_DEV_DEVNAME}_${LORACAM_DEV_DEVADDRSHORT}* /opt/homeassistant/config/www/loracam-ai
+echo "Copy image files from gw-images/ to /home/pi/scripts/loracam-ai/tools/gw-images/"
+ls -l gw-images/*${LORACAM_DEV_DEVNAME}_${LORACAM_DEV_DEVADDRSHORT}*
+sudo cp gw-images/*${LORACAM_DEV_DEVNAME}_${LORACAM_DEV_DEVADDRSHORT}* /home/pi/scripts/loracam-ai/tools/gw-images
 
 echo "Restore loracam_stats and loracam Done"
 

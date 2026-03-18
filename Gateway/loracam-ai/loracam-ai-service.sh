@@ -21,11 +21,12 @@ else
     echo "get last image for first LoRaCAM_AI_DEV ${loracam}"
     cd /home/pi/scripts/loracam-ai/tools/gw-images/
     python ../../get_last_image_dat.py localhost ${loracam} ..
-    #echo "copy to /opt/homeassistant/config/www/loracam-ai"
-    #sudo cp `cat LAST_DECODED_FILENAME.txt` /opt/homeassistant/config/www/loracam-ai
     DEVICE_NAME=`/home/pi/scripts/show_device_by_id.sh $loracam name | tr -d '\"'`
-    echo "copy to /opt/homeassistant/config/www/loracam-ai as last-${DEVICE_NAME}-image.bmp"
-    sudo cp `cat LAST_DECODED_FILENAME.txt` /opt/homeassistant/config/www/loracam-ai/last-${DEVICE_NAME}-image.bmp
+    LAST_DECODED_FILENAME=`cat LAST_DECODED_FILENAME.txt`
+    echo "copy $LAST_DECODED_FILENAME"
+    echo "to /opt/homeassistant/config/www/loracam-ai and as last-${DEVICE_NAME}-image.bmp"
+    sudo cp $LAST_DECODED_FILENAME /opt/homeassistant/config/www/loracam-ai/
+    sudo cp $LAST_DECODED_FILENAME /opt/homeassistant/config/www/loracam-ai/last-${DEVICE_NAME}-image.bmp
   done
 fi
 
