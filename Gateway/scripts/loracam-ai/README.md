@@ -4,7 +4,7 @@
 
 Readers can refer to the [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Arduino_ESP32/README.md) in the `Arduino_ESP32` folder for an explanation of LoRaCAM-AI hardware architecture and components, including how an [image is encoded](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Arduino_ESP32/README.md#encoding-a-bmp-image) for transmission and the software tool to [decode](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Arduino_ESP32/README.md#decoding-into-bmp) an image `.dat` file into BMP format.
 
-This README describes how image packets transmitted from a LoRaCAM-AI device are processed and decoded on the gateway to get a BMP picture file that can then be displayed on the embedded Home Assistant dashboard.
+This README describes how image packets transmitted from a LoRaCAM-AI device are processed and decoded on the gateway to get a BMP picture file that can then be displayed on the embedded Home Assistant (HA) dashboard.
 
 ## Review of image packet format
 
@@ -129,12 +129,23 @@ You can have a look at the `get_last_image_dat.py` and the `loracam-ai-service.s
 - it will first search for the last received image packet. Here for instance it is `fc21140c00fdc12208dfa387d5ba2c82`
 - it will detect that the prefix 0xFC is used for all the packets of the last received image
 - it will then get all the data associated to the last received image, using 0xFC prefix as a filter
-- with the raw data of all the image packets it will build a `.dat` file
-- note that the `.dat` file contains the Quality Factor Q. Q can be obtained from any image packet, here 20 (0x14)
+- with the raw data of all the image packets it will build a `.txt` readable file with the format described in this [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Arduino_ESP32/README.md)
+- this `.txt` file contains the Quality Factor Q. Q can be obtained from any image packet, here 20 (0x14)
+- the `.txt` file is then decoded with the `decode_to_bmp` tool called by `get_last_image_dat.py`
 - this is where `get_last_image_dat.py` quits
-- the `.dat` file is then decoded with the `decode_to_bmp` tool by `loracam-ai-service.sh`
-- the resulting BMP picture is created, renamed accordingly to the LoRaCAM-AI device and copied to `/opt/homeassistant/config/www/loracam-ai` to make it available for Home Assistant dashboard
+- the resulting BMP picture is created, renamed accordingly to the LoRaCAM-AI device and copied to `/opt/homeassistant/config/www/loracam-ai` to make it available for HA dashboard
 
+For instance, for a LoRaCAM-AI device named `LoRaCAM_AI_DEV_2DAA`:
+
+- `loracam-ai-service.sh`, which wakes up every 5mins, will set the working directory to `/home/pi/scripts/loracam-ai/tools/gw-images/` and calls `get_last_image_dat.py`
+- `get_last_image_dat.py` will produce `2025-02-28-11-00-41_LoRaCAM_AI_DEV_2DAA.txt` where the date for the first received packet of the image in `"%Y-%m-%d-%H-%M-%S"` format is indicated in the file name
+- `get_last_image_dat.py` then calls `decode_to_bmp` to decode to `decode-2025-02-28-11-00-41_LoRaCAM_AI_DEV_2DAB.txt-P49-S1699.bmp`, where the number of packets `P49` and the real size in bytes `S1699` are additionally indicated in the file name
+- `loracam-ai-service.sh` will then copy `decode-2025-02-28-11-00-41_LoRaCAM_AI_DEV_2DAB.txt-P49-S1699.bmp` to `/opt/homeassistant/config/www/loracam-ai` served by HA as `/local/loracam-ai`
+- it will also copy `decode-2025-02-28-11-00-41_LoRaCAM_AI_DEV_2DAB.txt-P49-S1699.bmp` as `last-LoRaCAM_AI_DEV_2DAA-image.bmp` to make it available for the camera entity defined for HA's dashboard. This is the image file that will actually be displayed in the HA's dashboard
+
+Note that you can use a web browser to display any particular BMP file, for instance, `http://192.168.0.22:8123/local/loracam-ai/decode-2025-02-28-11-00-41_LoRaCAM_AI_DEV_2DAB.txt-P49-S1699.bmp` assuming your gateway has IP address `192.168.0.22`.
+
+Also, note that `/home/pi/scripts/loracam-ai/tools/gw-images/` will contain all the decode BMP images for all LoRaCAM-AI devices.
 
 That's all
 Enjoy – C. Pham
