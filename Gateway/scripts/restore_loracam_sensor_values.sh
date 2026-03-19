@@ -93,9 +93,11 @@ do
   if [ $DEVTYPE == 'loracam_stats' ]; then
     FROM_DEV_ID=$LORACAM_STATS_DEVID
     SENSORS="analogOutput_10 analogOutput_11 analogOutput_12 analogOutput_13"
+    DEVICE=$LORACAM_STATS_DEVID
   elif [ $DEVTYPE == 'loracam' ]; then  
     FROM_DEV_ID=$LORACAM_DEV_DEVID
     SENSORS="imagePkt"
+    DEVICE=$LORACAM_DEV_DEVID
   fi
 
   for k in $SENSORS
