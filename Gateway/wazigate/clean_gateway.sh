@@ -10,7 +10,4 @@ history -c
 echo "set Home Assistant in default configuration"
 cd /opt/homeassistant/config/www/loracam-ai
 sudo rm *
-sudo cp /home/pi/scripts/loracam-ai/tools/gw-images/* .
-
-
-
+sudo cp /home/pi/scripts/loracam-ai/tools/gw-images/example/* .

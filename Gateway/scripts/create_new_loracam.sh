@@ -45,6 +45,8 @@ echo "Adding into my_default_view.yaml"
 cat ${HA_HOME}/view_block_loracam.yaml >> ${HA_HOME}/my_default_view.yaml
 sed -i "s/xxname/${DEFAULT_LORACAM_STATS_NAME,,}_${2,,}/g" ${HA_HOME}/my_default_view.yaml 
 sed -i "s/yyname/${DEFAULT_LORACAM_DEV_NAME,,}_${1,,}/g" ${HA_HOME}/my_default_view.yaml
+#following line is for new HA version, for older version, YYNAME does not exist in view_block_loracam.yaml
+sed -i "s/YYNAME/${DEFAULT_LORACAM_DEV_NAME}_${1}/g" ${HA_HOME}/my_default_view.yaml
 
 echo "Copy packages/${DEFAULT_LORACAM_YAML_FILE} to homeassistant:/config/packages"
 docker cp ${HA_HOME}/packages/${DEFAULT_LORACAM_YAML_FILE} homeassistant:/config/packages

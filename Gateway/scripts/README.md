@@ -72,6 +72,10 @@ to create a LoRaCAM-AI device named `LoRaCAM_AI_DEV_2DAA` with address `0x26012D
 
 You can take example from all these scripts to create your own scripts, according to your needs.
 
+**Note**: if you dynamically call these scripts from command line to create new devices, you should use the `sudo` command:
+
+  > sudo ./create_new_capacitive.sh 1 AA
+
 Integration into Home Assistant dashboard
 --------------
 

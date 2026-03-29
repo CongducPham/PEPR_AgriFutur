@@ -38,6 +38,7 @@ fi
 if [ -f /boot/gateway.zip ]
 then
 	echo "detected /boot/gateway.zip: unzipping new files to /home/pi" >> /boot/gw-auto-config.log
+	#TODO: existing files will be overwritten. Deleted files in new archive will still exist in old distrib
 	unzip -o /boot/gateway.zip
 	echo "setting ownership to pi:pi" >> /boot/gw-auto-config.log
 	chown -R pi:pi .

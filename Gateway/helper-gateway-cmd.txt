@@ -70,6 +70,10 @@ Execute a command in a container (replace container name for others)
   
 Check the status of a service (there are 3 custom services gw-auto-config-service.service, default-oled-service.service and loracam-ai-service)
 
-  > systemctl status default-oled-service.service  
+  > systemctl status default-oled-service.service
+  
+Or restart one:
+
+  > systemctl restart loracam-ai-service  
   
     
