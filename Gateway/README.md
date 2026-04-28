@@ -5,9 +5,9 @@ Our customized gateway is now based on the [WaziGate framework](https://www.wazi
 
 We are providing a customized WaziGate distribution for out-of-the-box deployment of sensing systems. **It is referred to as Customized Gateway** as opposed to the general WaziGate framework provided by WAZIUP e.V. 
 
-The initial work on the customized gateway has been conducted in the [PRIMA INTEL-IRRIS project](http://intel-irris.eu). We provide [an SD card image](https://drive.google.com/file/d/1lKjcDOZHitAlJbjJMWUxTx2qgXJfLQfh/view?usp=sharing) that can be flashed and inserted in a Raspberry Pi. [Download the SD card image](https://drive.google.com/file/d/1lKjcDOZHitAlJbjJMWUxTx2qgXJfLQfh/view?usp=sharing), flash it on an 8GB SD card class 10 and plug it into a Raspberry Pi (3B/3B+/4B) equipped with a LoRa hat.
+The initial work on the customized gateway has been conducted in the [PRIMA INTEL-IRRIS project](http://intel-irris.eu). We provide [an SD card image](https://drive.google.com/file/d/1lKjcDOZHitAlJbjJMWUxTx2qgXJfLQfh/view?usp=sharing) that can be flashed and inserted in a Raspberry Pi. [Download the SD card image](https://drive.google.com/file/d/1lKjcDOZHitAlJbjJMWUxTx2qgXJfLQfh/view?usp=sharing), flash it on an 8GB SD card class 10 (or new A1 class) and plug it into a Raspberry Pi (3B/3B+/4B) equipped with a LoRa hat.
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/wazigate.jpg" width="300">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate.jpg" width="300">
 
 The additional code on top of the general WaziGate framework to build the customized gateway distribution is provided in this folder, **although the SD card image has already everything installed**.
 
@@ -31,22 +31,24 @@ This configuration works out-of-the box with the `Generic_Simple_Sensor_Node` Ar
 - EU868 band (868.1MHz for single channel to receive uplink)
 - 2 pre-configured devices with address 26011DAA and 26011DB1
 - 26011DAA is a soil humidity device with the capacitive SEN0308 sensor
-	- Device name is `SOIL-AREA-1`
+	- Device name is `CAPACITIVE_1` (was previously `SOIL-AREA-1`)
 	- `temperatureSensor_0` as the internal default logical sensor on the gateway for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
 	- `temperatureSensor_5` as the internal default logical sensor on the gateway for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
 	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
 - 26011DB1 is a soil humidity device with the Watermark WM200 tensiometer sensor
-	- Device name is `SOIL-AREA-2`
+	- Device name is `TENSIOMETER_1` (was previously `SOIL-AREA-2`)
 	- `temperatureSensor_0` as the internal default logical sensor on the gateway for soil humidity data. It provides the converted resistance value in centibar, Taking into account the soil temperature data. Display will show `Soil Humidity Sensor/centibars from WM200`
 	- `temperatureSensor_1` as the internal default logical sensor on the gateway for soil humidity data. It provides the raw resistance value measured from the Watermark sensor. The value is scaled down by 10, so to get the real resistance value one must multiply by 10. Display will show `Soil Humidity Sensor/scaled value from WM200 real=x10`	
 	- `temperatureSensor_5` as the internal default logical sensor on the gateway for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
 	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
 
-Insert the SD card in the Raspberry Pi and then power the Raspberry Pi. The customized gateway is ready when the main `GenericSensorPlatform` screen appears on the OLED indicating `SOIL-AREA-1` and `SOIL-AREA-2` devices. You may see a succession of `[ Internet NO ]` and/or `[ Internet OK ]` and black screen before the main main screen appears on the OLED.
+Insert the SD card in the Raspberry Pi and then power the Raspberry Pi. The customized gateway is ready when the main `GenericSensorPlatform` screen appears on the OLED indicating `CAPACITIVE_1` and `TENSIOMETER_1` devices. You may see a succession of `[ Internet NO ]` and/or `[ Internet OK ]` and black screen before the main main screen appears on the OLED.
 
 **Note: The 2 default devices are created on first boot with the auto-configuration mechanism. Consider about 5mins as normal for boot time. If you change the frequency band, the gateway will take more time to start as it needs to boot twice. In this case, 10mins would be needed for first start to have the main gateway screen on the OLED.**
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/default-dashboard.png" width="700">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate_default_view_selected.png" width="700">
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/oled-cycling.png" width="500">
 
 Multi-channel gateway
 =====================
@@ -68,7 +70,7 @@ Boot from an mSATA SSD disk
 
 It is possible to install the SD card image on an mSATA SSD disk and then boot from the SSD disk. To do so, you can buy an mSATA-USB adapter to connect an mSATA SSD disk (a 32GB or 64GB is enough). Normally the SD card image on a Raspberry 3B/3B+/4B already enables USB boot but you can check with:
 
-  > vcgencmd otp_dump | grep 17:
+	> vcgencmd otp_dump | grep 17:
 
 would give `17:3020000a` on a RPI3B and `17:000008b0` on a RPI 3B+/4B.
   
@@ -78,11 +80,11 @@ Be aware that an mSATA SSD via USB may require more power so it is important to 
 
 If your RPI does not boot from SSD or has random reboots or encounter disk disconnects. It may be a power problem. If you can ssh on it, you could check with: 
 
-  > vcgencmd get_throttled
+	> vcgencmd get_throttled
   
 if it returns 0x0 it is OK. Or you can also check for undervoltage logs:
 
-  > dmesg | grep -i voltage
+	> dmesg | grep -i voltage
   
 I successfully tested a 16GB mSATA SSD disk solution (Aliexpress, iRhasta mSATA SSD) on an RPI3B. Some mSATA-USB adapters have more low power chipset. It has been reported that ASMedia chipset works well.  
 
@@ -95,16 +97,16 @@ You can look at the procedure from [this excellent tutorial](https://www.jeffgee
 
 On my Mac, assuming the CM4 is seen as `/dev/disk6`, the SD card image can be installed with:
 
-  > diskutil unmountDisk /dev/disk6
-  > sudo dd bs=1m if=/Users/cpham/Downloads/raspberry-SD-image/gw-868-v232-oled-service-v19-iiwa-loracam-ha.iso of=/dev/disk6
+	> diskutil unmountDisk /dev/disk6
+	> sudo dd bs=1m if=/Users/cpham/Downloads/raspberry-SD-image/gw-868-v232-oled-service-v19-iiwa-loracam-ha.iso of=/dev/disk6
 
 You may have to use:
 
-  > diskutil unmountDisk force /dev/disk6
+	> diskutil unmountDisk force /dev/disk6
   
 because of Spotlight indexing the external disk. You may also want to disable Spotlight indexing permanently for external disks with:
 
-  > sudo defaults write /Library/Preferences/com.apple.SpotlightServer.plist ExternalVolumesIgnore -bool YES  
+	> sudo defaults write /Library/Preferences/com.apple.SpotlightServer.plist ExternalVolumesIgnore -bool YES  
 
 
 Manual installation on top of general WaziGate distribution
@@ -112,13 +114,7 @@ Manual installation on top of general WaziGate distribution
 
 **The SD card image has already everything installed. Manual installation procedure is provided for information only.**
 
-By default, the customized gateway distribution consists in a pre-configured Raspberry Pi gateway ready to receive data from 1 capacitive SEN0308 sensor device and 1 Watermark water tension sensor device. This configuration is referred to as the `starter-kit`configuration. This configuration and the `starter-kit` term comes from the initial [PRIMA INTEL-IRRIS project](http://intel-irris.eu) in which we developed the building blocks for the Generic Sensor Platform.
-
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-dashboard.png" width="700">
-
-It also adds an OLED screen which will quickly display sensor information to the user, without having to log in the gateway dashboard for the full and advanced user interface.
-
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/oled-cycling.png" width="500">
+By default, the customized gateway distribution consists in a pre-configured Raspberry Pi gateway ready to receive data from 1 capacitive SEN0308 sensor device and 1 Watermark water tension sensor device. This configuration is referred to as the `starter-kit`configuration. This configuration and the `starter-kit` term comes from the initial [PRIMA INTEL-IRRIS project](http://intel-irris.eu) in which we developed the building blocks for the Generic Sensor Platform. It also adds an OLED screen which will quickly display sensor information to the user, without having to log in the gateway dashboard for the full and advanced user interface.
 
 The distribution therefore provides various tools to install and configure the general WaziGate distribution to produce the customized gateway distribution that is used for starter-kits in various of our research projects. The default soil device (either capacitive SEN0308 or Watermark water tension sensor) will then work out-of-the-box with the customized gateway.
 
