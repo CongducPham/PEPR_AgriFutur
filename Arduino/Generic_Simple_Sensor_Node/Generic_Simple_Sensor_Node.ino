@@ -202,24 +202,24 @@ unsigned int idlePeriodInSec = 0;
 
 ///////////////////////////////////////////////////////////////////
 // SUMMARY OF LPP CHANNELS USED BY THE DEVICE
-    // ch0:  soil humidity for capacitive
-    // ch0:  for centibar from first watermark
-    // ch1:  for raw resistance value from first watermark
-    // ch2:  for centibar from second watermark
-    // ch3:  for raw resistance value from second watermark
+    // ch0:  soil humidity for capacitive (temperatureSensor_0)
+    // ch0:  for centibar from first watermark (temperatureSensor_0)
+    // ch1:  for raw resistance value from first watermark (temperatureSensor_1)
+    // ch2:  for centibar from second watermark (temperatureSensor_2)
+    // ch3:  for raw resistance value from second watermark (temperatureSensor_3)
     // ch4:  RFU
-    // ch5:  first soil temperature (e.g. DS18B20)
-    // ch6:  battery voltage
-    // ch7:  ambiant air temperature (e.g. DHT/SHT or from SCD30)
-    // ch8:  ambiant air humidity (e.g. DHT/SHT or from SCD30)
-    // ch9:  CO2 (SCD30)
-    // ch10: soil temperature, 2nd DS18B20
-    // ch11: soil temperature, 3rd DS18B20
+    // ch5:  first soil temperature (e.g. DS18B20) (temperatureSensor_5)
+    // ch6:  battery voltage (analogInput_6)
+    // ch7:  ambiant air temperature (e.g. DHT/SHT or from SCD30) (temperatureSensor_7)
+    // ch8:  ambiant air humidity (e.g. DHT/SHT or from SCD30) (temperatureSensor_8)
+    // ch9:  CO2 (SCD30) (temperatureSensor_9)
+    // ch10: soil temperature, 2nd DS18B20 (temperatureSensor_10)
+    // ch11: soil temperature, 3rd DS18B20 (temperatureSensor_11)
     // ch12: not used
     //...
-    // ch20: v_bat outside tx (only for TEST_LOW_BAT)
-    // ch21: current_vcc (only for TEST_LOW_BAT)
-    // ch22: low voltage indication (only for TEST_LOW_BAT)
+    // ch20: v_bat outside tx (only for TEST_LOW_BAT) (analogInput_20)
+    // ch21: current_vcc (only for TEST_LOW_BAT) (analogInput_21)
+    // ch22: low voltage indication (only for TEST_LOW_BAT) (analogInput_22)
 ///////////////////////////////////////////////////////////////////
 
 /********************************************************************
@@ -583,8 +583,9 @@ Vcc vcc(VccCorrection);
 // Uncomment to configure the device for test low bat
 // in this test mode, idlePeriodInMin is set to 1min, so transmission time interval in low voltage mode
 // will be increased to 4mins approx so that debugging will not take to long;
-// in this test mode, the voltage reported by the Arduino before, and during the radio transmission are transmitted in the radio
-// frame #define TEST_LOW_BAT
+// in this test mode, the voltage reported by the Arduino before, and during the radio transmission are transmitted in the radio frame
+
+// #define TEST_LOW_BAT
 
 // how many times we keep normal measure & transmission interval before switching in low voltage mode
 #define MAX_LOW_VOLTAGE_INDICATION 3

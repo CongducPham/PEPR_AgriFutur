@@ -431,6 +431,7 @@ void setup() {
     LT.setPacketType(PACKET_TYPE_LORA);
     // set the operating frequency
 #ifdef MY_FREQUENCY
+    //TODO: use variable so that it could be changed by configuration from a web server
     LT.setRfFrequency(MY_FREQUENCY, Offset);
 #else
     LT.setRfFrequency(DEFAULT_CHANNEL, Offset);
@@ -441,6 +442,7 @@ void setup() {
 #endif
     // set LoRa modem parameters
 #if defined SX126X || defined SX127X
+    //TODO: use variable so that it could be changed by configuration from a web server
     LT.setModulationParams(SpreadingFactor, Bandwidth, CodeRate, Optimisation);
 #endif
 #ifdef SX128X
