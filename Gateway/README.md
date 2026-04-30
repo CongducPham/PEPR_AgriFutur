@@ -46,9 +46,9 @@ Insert the SD card in the Raspberry Pi and then power the Raspberry Pi. The cust
 
 **Note: The 2 default devices are created on first boot with the auto-configuration mechanism. Consider about 5mins as normal for boot time. If you change the frequency band, the gateway will take more time to start as it needs to boot twice. In this case, 10mins would be needed for first start to have the main gateway screen on the OLED.**
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate_default_view_selected.png" width="700">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate_default_view_selected.png" width="850">
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/oled-cycling.png" width="500">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/oled-cycling.png" width="650">
 
 Multi-channel gateway
 =====================
