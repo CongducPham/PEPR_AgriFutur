@@ -4,7 +4,7 @@
 # we use this script manly to build a demo for taking pictures/screenshots
 # you can edit this script to add new device types
 #
-# Here are the logical sensor name (for the Wazigate gateway) that are used:
+# Here are the list of logical sensor name (for the Wazigate gateway) that are used:
 #
 # temperatureSensor_0: soil humidity for capacitive
 # temperatureSensor_0: for centibar from first watermark
@@ -19,8 +19,8 @@
 # temperatureSensor_10: 2nd soil temperature, 2nd DS18B20
 # temperatureSensor_11: 3rd soil temperature, 3rd DS18B20
 # imagePkt: image packet for LoRaCAM-AI device
-# analogInput_10: number of image packets for last image for LoRaCAM-AI stat device
-# analogInput_11: size in kbytes for last image for LoRaCAM-AI stat device
+# analogInput_10: #packets for last image for LoRaCAM-AI stat device
+# analogInput_11: #kbytes for last image for LoRaCAM-AI stat device
 # analogInput_12: time on air for last image for LoRaCAM-AI stat device
 # analogInput_13: measured luminosity for last image for LoRaCAM-AI stat device
 #
@@ -32,22 +32,38 @@ cd /home/pi/scripts
 
 DEV_ID=`./show_device_by_name.sh CAPACITIVE_1 id | tr -d '\"'`
 
+if [[ -n "DEV_ID" ]]; then
 ./push_sensor_test_value.sh $DEV_ID temperatureSensor_0 215
 ./push_sensor_test_value.sh $DEV_ID analogInput_6 2.88
+fi
 
 # TENSIOMETER_1
 
 DEV_ID=`./show_device_by_name.sh TENSIOMETER_1 id | tr -d '\"'`
 
+if [[ -n "DEV_ID" ]]; then
 ./push_sensor_test_value.sh $DEV_ID temperatureSensor_0 11.7
 ./push_sensor_test_value.sh $DEV_ID temperatureSensor_1 166.5
 ./push_sensor_test_value.sh $DEV_ID temperatureSensor_5 14.6
 ./push_sensor_test_value.sh $DEV_ID analogInput_6 2.98
+fi
+
+# CO2_1
+
+DEV_ID=`./show_device_by_name.sh CO2_1 id | tr -d '\"'`
+
+if [[ -n "DEV_ID" ]]; then
+./push_sensor_test_value.sh $DEV_ID temperatureSensor_7 21.4
+./push_sensor_test_value.sh $DEV_ID temperatureSensor_8 57.2
+./push_sensor_test_value.sh $DEV_ID temperatureSensor_9 656.8
+./push_sensor_test_value.sh $DEV_ID analogInput_6 4.38
+fi
 
 # LoRaCAM_AI_DEV_2DAA
 
 DEV_ID=`./show_device_by_name.sh LoRaCAM_AI_DEV_2DAA id | tr -d '\"'`
 
+if [[ -n "DEV_ID" ]]; then
 ./push_sensor_test_value.sh $DEV_ID imagePkt "\"FC0014270000D7DA81CEDED83ADFB2571DF54633D965523F356F2E1C50B2DDF09D69BA881170869996C41E\""
 ./push_sensor_test_value.sh $DEV_ID imagePkt "\"FC0114260007156BF81CB489693F3A6DD9AC06771590D837E34A2A53BE031D081B1B0B680918926BBB7F\""
 ./push_sensor_test_value.sh $DEV_ID imagePkt "\"FC0214240012156BF82978523145A24946E74A59E4B18A0DA7469BFDE48D194EE27A2DB37642AC0F\""
@@ -82,16 +98,18 @@ DEV_ID=`./show_device_by_name.sh LoRaCAM_AI_DEV_2DAA id | tr -d '\"'`
 ./push_sensor_test_value.sh $DEV_ID imagePkt "\"FC1F142600EE156C1FF4BB0504E51D9506A361206357D839D75012291D9EC1A0DF39D4728BAFA8267613\""
 ./push_sensor_test_value.sh $DEV_ID imagePkt "\"FC20142400F4156C01600714A003B44E33551CB1961AD12DFB5E3D0D046D414C604EA1145F540EB3\""
 ./push_sensor_test_value.sh $DEV_ID imagePkt "\"FC21140C00FDC12208DFA387D5BA2C82\""
+fi
 
 # LoRaCAM_AI_STATS_2EAA
 
 DEV_ID=`./show_device_by_name.sh LoRaCAM_AI_STATS_2EAA id | tr -d '\"'`
 
+if [[ -n "DEV_ID" ]]; then
 ./push_sensor_test_value.sh $DEV_ID analogOutput_10 34
 ./push_sensor_test_value.sh $DEV_ID analogOutput_11 1.161
 ./push_sensor_test_value.sh $DEV_ID analogOutput_12 0.21
 ./push_sensor_test_value.sh $DEV_ID analogOutput_13 86
-
+fi
 
 
 
