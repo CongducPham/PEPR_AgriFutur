@@ -40,7 +40,7 @@ popd
 
 echo "*****************************"
 echo "current frequency band is"
-./show_band.sh
+/home/pi/scripts/show_band.sh
 echo "*****************************"
 
 echo "copy single_chan_pkt_fwd/${1^^}/global_conf.json to waziup.wazigate-lora.forwarders:/root/conf/single_chan_pkt_fwd/"

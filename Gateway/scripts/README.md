@@ -18,9 +18,9 @@ Scripts to create devices
 
 To create logical devices, `create_full_xxxxx_device_with_dev_addr.sh` scripts take care of creating the basic logical device structure on the gateway. You can look at these script to better understand the json structure to store device and sensor information, as well as associated meta data that are used to manage devices and sensors.
 
-These scripts are usually called from higher level user scripts `create_new_xxxxx.sh`. For instance `create_full_capacitive_device_with_dev_addr.sh` creates a logical device to receive from a physical sensor device with a capacitive soil moisture sensor. It is called by `create_new_capacitive.sh` script which adds to the newly created logical device additional logical sensors (e.g. a sensor channel to receive from a soil temperature sensor, if any, and a logical channel to receive the battery voltage). All these scripts assign a default LoRa device address according to the main device type, e.g. soil capacitive, soil tensiometer, CO2, etc, that matches the default assigned address used in the `Generic_Simple_Sensor_Node` Arduino code.
+These scripts are usually called from higher level user scripts `create_new_xxxxx.sh`. For instance `create_full_capacitive_device_with_dev_addr.sh` creates a logical device to receive from a physical sensor device with a capacitive soil moisture sensor. It is called by `create_new_capacitive.sh` script which adds to the newly created logical device additional logical sensors (e.g. a sensor channel to receive from a soil temperature sensor, if any, and a logical channel to receive the battery voltage). The basic version of these scripts assign a default LoRaWAN device address according to the main device type, e.g. soil capacitive, soil tensiometer, CO2, etc, that matches the default assigned address used in the `Generic_Simple_Sensor_Node` Arduino code. The LoRaWAN NwkSKey and AppSKey are also set to their default values used in the Arduino code.
 
-Currently, there are:
+Currently, there are the following logical device creation scripts:
 
 #### `create_new_capacitive.sh`
 
@@ -72,9 +72,13 @@ to create a LoRaCAM-AI device named `LoRaCAM_AI_DEV_2DAA` with address `0x26012D
 
 You can take example from all these scripts to create your own scripts, according to your needs.
 
-**Note**: if you dynamically call these scripts from command line to create new devices, you should use the `sudo` command:
+**Note**: if you dynamically call these scripts from command line to create new devices, you should use the `sudo` command, e.g.:
 
   > sudo ./create_new_capacitive.sh 1 AA
+
+**OTAA mode**: There is the possibility to set the device LoRaWAN address, NwkSKey and AppSKey to arbitrary values, in order to, for instance, configure a device that is activated by Over-The-Air-Activation (OTAA) method. Devices built with the PCBv5 with a RAK3172 LoRaWAN radio module can for instance be added into the gateway. All the previously listed `create_new_xxxxx.sh` scripts can take 3 additional parameters to indicate the full LoRaWAN device address, the AppSKey and the NwkSKey that will be typically assigned on the join procedure by a Network Server (e.g. TTN). For instance:
+
+  > sudo ./create_new_capacitive.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
 
 Integration into Home Assistant dashboard
 --------------

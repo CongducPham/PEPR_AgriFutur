@@ -12,6 +12,9 @@ if [ $# -eq 0 ]
     exit
 fi
 
+echo "push_sensor_test_value.sh"
+echo "-------------------------"
+
 echo "--> Get token"
 TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
 
@@ -19,5 +22,7 @@ DATE=`date +"%Y-%m-%dT%H:%M:%S.%3N%:z"`
 
 echo "--> Use date of $DATE"
 
-echo "--> Set sensor's value $3 to device $1 sensor $2"
+echo "Set sensor's value $3 to device $1 sensor $2"
 curl -X POST "http://localhost/devices/${1}/sensors/${2}/value" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":${3}, \"time\":\"$DATE\"}"
+
+echo "-------------------------"
