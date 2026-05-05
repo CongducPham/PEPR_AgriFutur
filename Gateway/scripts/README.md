@@ -24,49 +24,49 @@ Currently, there are the following logical device creation scripts:
 
 #### `create_new_capacitive.sh`
 
-  > ./create_new_capacitive.sh 1 AA
+	> ./create_new_capacitive.sh 1 AA
 
 To create a device with a soil capacitive sensor named `CAPACITIVE_1` with address `0x26011DAA`. To work out-of-the-box with the `Generic_Simple_Sensor_Node` Arduino code, it is recommended to use AA, AB, AC, etc. for capacitive devices.
 
 #### `create_new_tensiometer.sh`
 
-  > ./create_new_tensiometer.sh 1 B1
+	> ./create_new_tensiometer.sh 1 B1
 
 to create a device with a soil tensiometer sensor named `TENSIOMETER_1` with address `0x26011DB1`. To work out-of-the-box with the `Generic_Simple_Sensor_Node` Arduino code, it is recommended to use B1, B2, B3, etc. for tensiometer devices. 
 
 #### `create_new_2tensiometer.sh`
 
-  > ./create_new_2tensiometer.sh 1 B1
+	> ./create_new_2tensiometer.sh 1 B1
 
 to create a device with 2 soil tensiometer sensors named `2TENSIOMETER_1` with address `0x26011DB1`. It is also advised for devices with 2 tensiometer sensors to use B1, B2, B3, etc. However, you can decide whether indexes for `2TENSIOMETER` devices are following those of `TENSIOMETER` devices or not, i.e. `TENSIOMETER_1` then `2TENSIOMETER_2` or `TENSIOMETER_1` then `2TENSIOMETER_1`.
 
 #### `create_new_air_temp_hum.sh`
 
-  > ./create_new_air_temp_hum.sh 1 C1
+	> ./create_new_air_temp_hum.sh 1 C1
 
 to create a device with an ambient air temperature/humidity sensor named `AIR_TEMP_HUM_1` with address `0x26011DC1`. To work out-of-the-box with the `Generic_Simple_Sensor_Node` Arduino code, it is recommended to use C1, C2, C3, etc. for ambient air temperature/humidity devices. 
 
 #### `create_new_2soil_temp.sh`
 
-  > ./create_new_2soil_temp.sh 1 D1
+	> ./create_new_2soil_temp.sh 1 D1
 
 to create a device with 2 soil temperature sensors named `2SOIL_TEMP_1` with address `0x26011DD1`. To work out-of-the-box with the `Generic_Simple_Sensor_Node` Arduino code, it is recommended to use D1, D2, D3, etc. for devices with 2 soil temperature sensors. 
 
 #### `create_new_3soil_temp.sh`
 
-  > ./create_new_3soil_temp.sh 1 D1
+	> ./create_new_3soil_temp.sh 1 D1
 
 to create a device with 3 soil temperature sensors named `3SOIL_TEMP_1` with address `0x26011DD1`. It is also advised for devices with 3 soil temperature sensors to use D1, D2, D3, etc. However, you can decide whether indexes for `3SOIL_TEMP` devices are following those of `2SOIL_TEMP` devices or not, i.e. `2SOIL_TEMP_1` then `3SOIL_TEMP_2` or `2SOIL_TEMP_1` then `3SOIL_TEMP_1`.
 
 #### `create_new_co2_temp_hum.sh`
 
-  > ./create_new_co2_temp_hum.sh 1 E1
+	> ./create_new_co2_temp_hum.sh 1 E1
 
 to create a device with a CO2 sensor (usually air temperature and humidity are also measured; this is the case for the Sensirion SCD30/40) named `CO2_1` with address `0x26011DE1`. To work out-of-the-box with the `Generic_Simple_Sensor_Node` Arduino code, it is recommended to use E1, E2, E3, etc. for devices with a CO2 sensor.
 
 #### `create_new_loracam_.sh`
 
-  > ./create_new_loracam.sh 2DAA 2EAA
+	> ./create_new_loracam.sh 2DAA 2EAA
 
 to create a LoRaCAM-AI device named `LoRaCAM_AI_DEV_2DAA` with address `0x26012DAA` that will receive the image packets and a virtual device named `LoRaCAM_AI_STATS_2EAA` with address `0x26012EAA` that will receive the statistics about the last image transmission. See this [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/loracam-ai/README.md) for more information about this very specific device. To work out-of-the-box with the `LoRaCAM-AI` ESP32S3 Arduino code, it is recommended to use 2DAA, 2DAB, 2DAC, ... for the LoRaCAM-AI device itself and 2EAA, 2DAB, 2DAC, ... for the virtual statistic device.
 
@@ -74,11 +74,11 @@ You can take example from all these scripts to create your own scripts, accordin
 
 **Note**: if you dynamically call these scripts from command line to create new devices, you should use the `sudo` command, e.g.:
 
-  > sudo ./create_new_capacitive.sh 1 AA
+	> sudo ./create_new_capacitive.sh 1 AA
 
 **OTAA mode**: There is the possibility to set the device LoRaWAN address, NwkSKey and AppSKey to arbitrary values, in order to, for instance, configure a device that is activated by Over-The-Air-Activation (OTAA) method. Devices built with the PCBv5 with a RAK3172 LoRaWAN radio module can for instance be added into the gateway. All the previously listed `create_new_xxxxx.sh` scripts can take 3 additional parameters to indicate the full LoRaWAN device address, the AppSKey and the NwkSKey that will be typically assigned on the join procedure by a Network Server (e.g. TTN). For instance:
 
-  > sudo ./create_new_capacitive.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
+	> sudo ./create_new_capacitive.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
 
 Integration into Home Assistant dashboard
 --------------
@@ -140,7 +140,7 @@ The dynamic addition of new devices can be illustrated by taking the following e
 
 ### Example: add a new capacitive soil moisture device
 
-  > ./create_new_capacitive.sh 1 AA
+	> ./create_new_capacitive.sh 1 AA
   
 This will create a device with a soil capacitive sensor named `CAPACITIVE_1` with address `0x26011DAA`. Assuming the newly created device id is `69a74e1468f3190aa42a11b7`, the script will then perform the following tasks:
 
