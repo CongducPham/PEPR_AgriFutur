@@ -34,11 +34,11 @@ cd /home/pi/sensor-backup
 echo "removing sensor-backup.log file"
 rm -rf sensor-backup.log
 
-echo "------------------------------- " >> sensor-backup.log
-echo `date` >> sensor-backup.log
-echo "------------------------------- " >> sensor-backup.log
+echo "------------------------------- " | tee -a sensor-backup.log
+echo `date` | tee -a sensor-backup.log
+echo "------------------------------- " | tee -a sensor-backup.log
 
-echo "removing all split files" >> sensor-backup.log
+echo "removing all split files" | tee -a sensor-backup.log
 rm -rf *split*
 
 TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
@@ -59,13 +59,28 @@ do
   if [ $sizeDEVICE -gt 16 ]; then
     DEVTYPE=`echo $DEVICES | jq ".[${NDEVICE}].sensors[0].meta.type"  | tr -d '\"'`
     DEVNAME=`echo $DEVICES | jq ".[${NDEVICE}].name"  | tr -d '\"'`
-    DEVADDR=`curl -X GET "http://localhost/devices/$DEVICE/meta" | jq ".lorawan.devAddr"  | tr -d '\"'`
     
-    if [ $DEVTYPE == 'loracam' ] ||  [ $DEVTYPE == 'loracam_stats' ]; then
-      DEVADDRSHORT=${DEVADDR: -4}
-    else
-      DEVADDRSHORT=${DEVADDR: -2}
-    fi
+    DEVPROFILE=`curl -X GET "http://localhost/devices/$DEVICE/meta" | jq ".lorawan.profile"  | tr -d '\"'`
+    
+    if [ $DEVPROFILE == 'Other' ]; then
+      DEVADDR=`curl -X GET "http://localhost/devices/$DEVICE/meta" | jq ".lorawan.devEUI"  | tr -d '\"'`
+      #it is the device EUI used for OTAA device
+      DISPLAYED_ADDR=${DEVADDR}
+    else  
+      DEVADDR=`curl -X GET "http://localhost/devices/$DEVICE/meta" | jq ".lorawan.devAddr"  | tr -d '\"'`
+      
+      if [ $DEVTYPE == 'loracam' ] ||  [ $DEVTYPE == 'loracam_stats' ]; then
+        DISPLAYED_ADDR=${DEVADDR: -4}
+      else
+        if [ ${DEVADDR:0:6} == '26011D' ]; then
+          #it is the default 3-byte prefix for ABP devices
+          DISPLAYED_ADDR=${DEVADDR: -2}
+        else
+          #it is full custom 4-byte device address
+          DISPLAYED_ADDR=${DEVADDR}
+        fi  
+      fi      
+    fi  
     
     SENSORS=""
     
@@ -111,14 +126,18 @@ do
       if [ $DEVTYPE == 'loracam_stats' ]; then
         LINKED_DEVADDR=`echo $DEVICES | jq ".[${NDEVICE}].sensors[0].meta.kind"  | tr -d '\"'`
         LINKED_DEVADDRSHORT=${LINKED_DEVADDR: -4}
-        echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT linked $LINKED_DEVADDRSHORT" >> sensor-backup.log
+        echo "backup $DEVTYPE device $DEVICE named $DEVNAME address ${DISPLAYED_ADDR^^} linked ${LINKED_DEVADDRSHORT^^}" | tee -a sensor-backup.log
       else
-        echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
+        if [ $DEVPROFILE == 'Other' ]; then
+          echo "backup $DEVTYPE device $DEVICE named $DEVNAME devEUI ${DISPLAYED_ADDR^^}" | tee -a sensor-backup.log
+        else  
+          echo "backup $DEVTYPE device $DEVICE named $DEVNAME address ${DISPLAYED_ADDR^^}" | tee -a sensor-backup.log    
+        fi 
       fi  
       echo "--> $SENSORS" >> sensor-backup.log     
       /home/pi/scripts/backup_device_sensor_values.sh $DEVICE $DEVTYPE $SENSORS
     else
-      echo "no current scheme for $DEVTYPE $DEVICE $DEVNAME $DEVADDRSHORT" >> sensor-backup.log
+      echo "no current scheme for $DEVTYPE $DEVICE $DEVNAME ${DISPLAYED_ADDR^^}" | tee -a sensor-backup.log 
     fi
   fi      
   (( NDEVICE-- ))
@@ -127,10 +146,10 @@ done
 #Ex: backup_everything.sh --to-usbdrive
 if $TO_USBDRIVE; then
 	MOUNTPOINT=`sudo blkid -o list | grep "not mounted" | awk -F'[ ]' '{print $1}'`
-	echo "mounting USB drive to /media for pi user" >> sensor-backup.log
+	echo "mounting USB drive to /media for pi user" | tee -a sensor-backup.log
 	sudo mount -o uid=1000,gid=1000 $MOUNTPOINT /media
 	MOUNT_RET_CODE=$?
-	echo "mount return code is $MOUNT_RET_CODE" >> sensor-backup.log
+	echo "mount return code is $MOUNT_RET_CODE" | tee -a sensor-backup.log
 	if [ $MOUNT_RET_CODE -eq 0 ]
 	then
 		sleep 1
@@ -144,15 +163,15 @@ if $TO_USBDRIVE; then
 		  #we do not want to backup a gateway as it is also considered as a device
 		  if [ $sizeDEVICE -gt 16 ]
 		  then
-			echo "copy device $DEVICE backup file to USB drive" >> sensor-backup.log
+			echo "copy device $DEVICE backup file to USB drive" | tee -a sensor-backup.log
 			cp $DEVICE* /media
 		  fi      
 		  (( NDEVICE-- ))
 		done
-		echo "unmounting USB drive at /media" >> sensor-backup.log
+		echo "unmounting USB drive at /media" | tee -a sensor-backup.log
 	else
-		echo "could not mount $MOUNTPOINT to /media" >> sensor-backup.log
-		echo "trying to umount" >> sensor-backup.log
+		echo "could not mount $MOUNTPOINT to /media" | tee -a sensor-backup.log
+		echo "trying to umount" | tee -a sensor-backup.log
 	fi
 	cp sensor-backup.log /media/
 	cp backup_iiwa.json /media/

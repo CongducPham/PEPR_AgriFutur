@@ -8,11 +8,14 @@
 # you can add a parameter to not delete the LAST_CREATED_DEVICE.txt file
 # Ex: create_new_co2_temp_hum.sh 1 E1 --no-delete
 
-# you can add 3 parameters to indicate full dev addr, appSKey and nwkSKey, typically for OTAA devices
-# which have these parameters assigned by a Network Server (e.g. TTN).
+# you can add 3 parameters to indicate full dev addr, appSKey and nwkSKey for a fully customized device
 # Ex: create_new_co2_temp_hum.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
 #
-# full addr is 32 bits (8 HEX digits), appSkay and nwkSKey are 128 bits (32 HEX digits)
+# full addr is 32 bits (8 HEX digits), appSkey and nwkSKey are 128 bits (32 HEX digits)
+
+# or, you can use the --dev-eui parameter to indicate a device EUI, typically for OTAA devices
+# that will have the device address, appSKey and nwkSKey assigned by a Network Server (e.g. TTN or Chirpstack).
+# Ex: create_new_co2_temp_hum.sh 1 --no-init --dev-eui AC1F09FFFE12DA3F
 
 OPT_DEV_ID=""
 OPT_NO_INIT=""
@@ -22,10 +25,12 @@ DELETE_DEVICE_ID_FILE=true
 DEV_FULL_ADDR=""
 APPSKEY=""
 NWKSKEY=""
+DEV_EUI=""
 
 OPT_DEV_FULL_ADDR=""
 OPT_APPSKEY=""
 OPT_NWKSKEY=""
+OPT_DEV_EUI=""
 
 POSITIONAL=()
 
@@ -54,7 +59,12 @@ while [[ $# -gt 0 ]]; do
       NWKSKEY=$2
       OPT_NWKSKEY="--nwkskey $2"
       shift 2
-      ;;             
+      ;;
+    --dev-eui)
+      DEV_EUI=$2
+      OPT_DEV_EUI="--dev-eui $2"
+      shift 2
+      ;;
     --no-delete)
       DELETE_DEVICE_ID_FILE=false
       shift 1
@@ -73,13 +83,16 @@ DEFAULT_CO2_NAME="CO2_${1}"
 DEV_IDX="$1"
 echo "Device idx: $DEV_IDX"
 
-if [[ -n $DEV_FULL_ADDR ]]; then
-echo "Device address: $DEV_FULL_ADDR"
-DEFAULT_CO2_YAML_FILE=${DEFAULT_CO2_NAME,,}_${DEV_FULL_ADDR,,}.yaml
+if [[ -n $DEV_EUI ]]; then
+  echo "Device EUI: $DEV_EUI"
+  DEFAULT_CO2_YAML_FILE=${DEFAULT_CO2_NAME,,}_${DEV_EUI,,}.yaml
+elif [[ -n $DEV_FULL_ADDR ]]; then
+  echo "Device address: $DEV_FULL_ADDR"
+  DEFAULT_CO2_YAML_FILE=${DEFAULT_CO2_NAME,,}_${DEV_FULL_ADDR,,}.yaml
 else
-DEV_ADDR="$2"
-echo "Device address: $DEV_ADDR"
-DEFAULT_CO2_YAML_FILE=${DEFAULT_CO2_NAME,,}_${DEV_ADDR,,}.yaml
+  DEV_ADDR="$2"
+  echo "Device address: $DEV_ADDR"
+  DEFAULT_CO2_YAML_FILE=${DEFAULT_CO2_NAME,,}_${DEV_ADDR,,}.yaml
 fi
 
 echo "Optional device id: $OPT_DEV_ID"
@@ -89,35 +102,50 @@ echo ${DEFAULT_CO2_YAML_FILE}
 
 echo "Optional appSKey: $APPSKEY"
 echo "Optional nwkSKey: $NWKSKEY"
+echo "Optional device EUI: $DEV_EUI"
 
-if [[ -n $DEV_FULL_ADDR ]]; then
-  if [[ -n $DEV_FULL_ADDR ]] && [[ -n $APPSKEY ]] && [[ -n $NWKSKEY ]]; then
-  #usually for OTAA mode where device id is set to ${DEV_FULL_ADDR}
-  if [[ ${#DEV_FULL_ADDR} -ne 8 ]]; then
-    echo "		device id: ${DEV_FULL_ADDR} not ok"
+if [[ -n $DEV_EUI ]]; then
+  if [[ ${#DEV_EUI} -ne 16 ]]; then
+    echo "Device EUI: ${DEV_EUI} not ok"
     exit
-  fi        
-  echo "		device id: ${DEV_FULL_ADDR} ok"
-  if [[ ${#APPSKEY} -ne 32 ]]; then
-    echo "		appSKey: ${APPSKEY} not ok"
-    exit
-  fi  
-  echo "		appSKey: ${APPSKEY} ok"  
-  if [[ ${#NWKSKEY} -ne 32 ]]; then
-    echo "		nwkSKey: ${NWKSKEY} not ok"
-    exit
-  fi  
-  echo "		nwkSKey: ${NWKSKEY} ok"  
-
-  echo "--> calling create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $OPT_DEV_ID $OPT_NO_INIT $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY"
-  /home/pi/scripts/create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $OPT_DEV_ID $OPT_NO_INIT $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY
-  else
-    echo "need all 3 parameters to be set: --dev-full-addr --appskey --nwkskey"
-    exit
-  fi  
+  fi 
+  echo "--> calling create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $OPT_DEV_ID $OPT_NO_INIT $OPT_DEV_EUI"
+  /home/pi/scripts/create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $OPT_DEV_ID $OPT_NO_INIT $OPT_DEV_EUI
 else
-echo "--> calling create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $2 $OPT_DEV_ID $OPT_NO_INIT"
-/home/pi/scripts/create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $2 $OPT_DEV_ID $OPT_NO_INIT
+  if [[ -n $DEV_FULL_ADDR ]]; then
+    if [[ ${#DEV_FULL_ADDR} -eq 8 ]]; then
+      echo "Device addr: ${DEV_FULL_ADDR} ok"
+    else
+      echo "Device addr: ${DEV_FULL_ADDR} not ok"
+      exit    
+    fi
+  fi  
+
+  if [[ -n $APPSKEY ]]; then
+    if [[ ${#APPSKEY} -eq 32 ]]; then
+      echo "appSKey: ${APPSKEY} ok"
+    else
+      echo "appSKey: ${APPSKEY} not ok"
+      exit    
+    fi    
+  fi  
+
+  if [[ -n $NWKSKEY ]]; then
+    if [[ ${#NWKSKEY} -eq 32 ]]; then
+      echo "nwkSKey: ${NWKSKEY} ok"
+    else
+      echo "nwkSKey: ${NWKSKEY} not ok"
+      exit    
+    fi    
+  fi  
+  
+  if [[ -n $DEV_FULL_ADDR ]]; then
+    echo "--> calling create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $OPT_DEV_ID $OPT_NO_INIT $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY"
+    /home/pi/scripts/create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $OPT_DEV_ID $OPT_NO_INIT $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY
+  else
+    echo "--> calling create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $DEV_ADDR $OPT_DEV_ID $OPT_NO_INIT"
+    /home/pi/scripts/create_full_co2_temp_hum_device_with_dev_addr.sh ${DEFAULT_CO2_NAME} $DEV_ADDR $OPT_DEV_ID $OPT_NO_INIT
+  fi
 fi
 
 DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`

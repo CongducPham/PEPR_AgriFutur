@@ -99,7 +99,7 @@ and will restore sensor's data from the various split files from device `62c7c65
 Example:
 
 	> cd sensor_backup
-	> /home/pi/scripts/restore_tensiometer_device_sensor_values.sh 1 B1 62c7c657127dbd0001154bbc tensiometer --sensors temperatureSensor_0 temperatureSensor_1 temperatureSensor_5 analogInput_6	
+	> /home/pi/scripts/restore_device_sensor_values.sh 1 B1 62c7c657127dbd0001154bbc tensiometer --sensors temperatureSensor_0 temperatureSensor_1 temperatureSensor_5 analogInput_6	
 
 The script will creates a new & empty tensiometer sensor device:
 
@@ -129,7 +129,7 @@ It is possible to indicate a specific device id so that the restore script will 
 Example:
 
 	> cd sensor-backup
-	> /home/pi/scripts/restore_tensiometer_device_sensor_values.sh 2 B1 62c7c657127dbd0001154bbc --dev-id 62c7c657127dbd0001154bbc --sensors temperatureSensor_0 temperatureSensor_5 analogInput_6
+	> /home/pi/scripts/restore_device_sensor_values.sh 2 B1 62c7c657127dbd0001154bbc --dev-id 62c7c657127dbd0001154bbc --sensors temperatureSensor_0 temperatureSensor_5 analogInput_6
 	
 In the example above, we force the new device to have the same device id. Note that the list of sensors indicated by `--sensors` MUST BE in the last position, after the optional `--dev-id`. **Make sure that on the gateway you are restoring the sensor data, there are no conflicting devices with same ids or same LoRaWAN DevAddr**. Therefore, it can be necessary to delete all devices before you restore from backup files.
 

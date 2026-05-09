@@ -72,13 +72,15 @@ to create a LoRaCAM-AI device named `LoRaCAM_AI_DEV_2DAA` with address `0x26012D
 
 You can take example from all these scripts to create your own scripts, according to your needs.
 
-**Note**: if you dynamically call these scripts from command line to create new devices, you should use the `sudo` command, e.g.:
+**Note**: if you dynamically call these scripts from command line to create new devices, you should use the `sudo` command:
 
 	> sudo ./create_new_capacitive.sh 1 AA
 
-**OTAA mode**: There is the possibility to set the device LoRaWAN address, NwkSKey and AppSKey to arbitrary values, in order to, for instance, configure a device that is activated by Over-The-Air-Activation (OTAA) method. Devices built with the PCBv5 with a RAK3172 LoRaWAN radio module can for instance be added into the gateway. All the previously listed `create_new_xxxxx.sh` scripts can take 3 additional parameters to indicate the full LoRaWAN device address, the AppSKey and the NwkSKey that will be typically assigned on the join procedure by a Network Server (e.g. TTN). For instance:
+**Fully customized device**: There is the possibility to set the device LoRaWAN address, NwkSKey and AppSKey to arbitrary values. All the previously listed `create_new_xxxxx.sh` scripts (except for `create_new_loracam_.sh`) can take 3 additional parameters to indicate the full LoRaWAN device address, the NwkSKey and the AppSKey. 
 
 	> sudo ./create_new_capacitive.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
+
+**OTAA device**: Devices built with the PCBv5 with a RAK3172 LoRaWAN radio module can use Over-The-Air-Activation (OTAA) method to get their device LoRaWAN address, NwkSKey and AppSKey from a Network Server (e.g. TTN or Chirpstack). To create device that are OTAA-enabled, refer to this specific [README_OTAA](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/README_OTAA.md).
 
 Integration into Home Assistant dashboard
 --------------
