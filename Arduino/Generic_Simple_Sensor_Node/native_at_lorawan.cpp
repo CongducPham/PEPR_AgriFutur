@@ -109,9 +109,10 @@ bool join_event=false;
 //DevEui is normally indicated on the radio module
 char* DevEuiStr="AC1F09FFFE12DA3F";
 //char* DevEuiStr="AC1F09FFFE12DA01";
-//AppEui can be the so-called JoinEui. Here is the default used by RAK
+//AppEui can be the so-called JoinEui and may not be required for some Network Server such as Chirpstack
+//Here is the default used by RAK
 char* AppEuiStr="AC1F09FFF8683172"; 
-//here is the default used by RAK: DEVEUI+APPEUI
+//AppKey can be generated, here is the default used by RAK: DEVEUI+APPEUI
 char* AppKeyStr="AC1F09FFFE12DA3FAC1F09FFF8683172";
 //char* AppKeyStr="23158D3BBC31E6AF670D195B5AED5525";
 #endif
@@ -368,12 +369,20 @@ bool lorawan_module_setup(uint16_t br) {
   // 0 = EU433, 1 = CN470, 2 = RU864, 3 = IN865, 4 = EU868, 5 = US915,
   // 6 = AU915, 7 = KR920, 8 = AS923-1, 9 = AS923-2, 10 = AS923-3, 11 = AS923-4
 #if defined EU868  
-  write_lorawan_module("AT+BAND=4\r\n\0");
+  write_lorawan_module("AT+BAND=4\r\n\0");  
 #elif defined AU915
   write_lorawan_module("AT+BAND=6\r\n\0");
   read_lorawan_module(okStr);
   // select only channel 8-15: 916.8 917.0 917.2 917.4 917.6 917.8 918.0 918.2
   write_lorawan_module("AT+CHE=2\r\n\0");
+
+#ifdef SINGLE_CHANNEL
+  //AT+CHS only apply for US915 AU915 CN470
+  //overwrite the AT+MASK and AT+CHE settings
+  write_lorawan_module("AT+CHS=916800000\r\n\0");
+  read_lorawan_module(okStr);
+#endif
+
 #elif defined EU433
   write_lorawan_module("AT+BAND=0\r\n\0");
 #elif defined AS923-2

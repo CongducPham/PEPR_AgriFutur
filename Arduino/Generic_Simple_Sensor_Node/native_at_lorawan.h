@@ -29,6 +29,8 @@
 #include "BoardSettings.h"
 
 #define ENABLE_OTAA
+//only enable first channel, only effective for US915 AU915 CN470
+//#define SINGLE_CHANNEL
 
 #define BOARD_BUILTIN_LED 13
 
