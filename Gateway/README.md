@@ -7,7 +7,7 @@ We are providing a customized WaziGate distribution for out-of-the-box deploymen
 
 The initial work on the customized gateway has been conducted in the [PRIMA INTEL-IRRIS project](http://intel-irris.eu). We provide [an SD card image](https://drive.google.com/file/d/1lKjcDOZHitAlJbjJMWUxTx2qgXJfLQfh/view?usp=sharing) that can be flashed and inserted in a Raspberry Pi. [Download the SD card image](https://drive.google.com/file/d/1lKjcDOZHitAlJbjJMWUxTx2qgXJfLQfh/view?usp=sharing), flash it on an 8GB SD card class 10 (or new A1 class) and plug it into a Raspberry Pi (3B/3B+/4B) equipped with a LoRa hat.
 
-<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate.jpg" width="300"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate-3D-enclosure-1.png" width="300"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate-3D-enclosure-2.png" width="300">
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate.png" width="280"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate-3D-enclosure-1.png" width="300"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate-3D-enclosure-2.png" width="300">
 
 The additional code on top of the general WaziGate framework to build the customized gateway distribution is provided in this folder, **although the SD card image has already everything installed**.
 
