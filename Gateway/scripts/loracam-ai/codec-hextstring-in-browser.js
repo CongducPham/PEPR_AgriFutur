@@ -36,7 +36,7 @@ function bytes2HexString(arrBytes) {
 `;
 
 const jsonBody = {
-  id= "67b7026e68f3190a22e91c7a",
+  id: "67b7026e68f3190a22e91c7a",
   name: "HEXSTRING",
   mime: "application/javascript",
   script: new_codec_script
