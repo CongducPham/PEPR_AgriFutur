@@ -1,3 +1,13 @@
+RFM95W/RFM96W breakout
+----------------------
+
+The RFM95W/RFM96W breakout board was developed in our early [LowCostLoRaGw project](https://github.com/CongducPham/LowCostLoRaGw/tree/master). It provides a simple solution to have a LoRa hat for the Raspberry Pi single-channel gateway.
+
+<img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/RFM95Breakout-pcb-top.png" width="200">
+
+You can download the zipped Gerber file `RFM95Breakout_2020-11-13-long.zip` in this folder and make them manufactured by a PCB manufacturer. You can look at the tutorial produced in the context of the INTEL-IRRIS project on how to order PCB: [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs, including PCBA](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB-update-PCBA.pdf). 
+
+
 PCB v4.1
 ----
 
