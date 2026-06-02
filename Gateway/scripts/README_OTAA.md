@@ -19,11 +19,13 @@ We assume that an OTAA device profile has been created using the Chirpstack web 
 
 Use the `create_chirpstack_otaa_device_with_dev_eui.sh` script and provide 3 arguments to enable the OTAA join procedure:
 
-- mandatory: the device EUI ( 8 bytes)
+- mandatory: the device EUI (8 bytes)
 - mandatory: the AppKey (16 bytes)
 - optional: the device name
 
-	> ./create_chirpstack_otaa_device_with_dev_eui.sh AC1F09FFFE12DA3F AC1F09FFFE12DA3FAC1F09FFF8683172 --dev-name rak3172-ird-pcbv5-test-AC1F09FFFE12DA3F
+	> ./create_chirpstack_otaa_device_with_dev_eui.sh AC1F09FFFE12DA3F AC1F09FFFE12DA3FAC1F09FFF8683172 --dev-name rak3172-ird-pcbv5-test-AC1F09FFFE12DA3F 
+
+**Note: the "OTAA" device profile id is hard-coded in the `create_chirpstack_otaa_device_with_dev_eui.sh`. It matches the "OTAA" profile created by default in the SD card image distribution.**
 
 For RAK3172 radio module the AppKey is by default set to DevEUI+AppEUI. AppEUI is also the so-called JoinEUI and is by default AC1F09FFF8683172. Therefore, if the device EUI is AC1F09FFFE12DA3F then the AppKey would be AC1F09FFFE12DA3FAC1F09FFF8683172. In the following screenshot you can see the new created OTAA device, as well as the "traditional" devices created in simple ABP mode.
 
