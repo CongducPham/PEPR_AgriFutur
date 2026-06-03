@@ -2,32 +2,26 @@
 
 # Bash scripting cheatsheet https://devhints.io/bash
 
-# Ex: create_new_sensecap2120.sh 1 --dev-eui AC1F09FFFE12DA3F
+# Ex: create_new_lorain.sh 1 --dev-eui AC1F09FFFE12DA3F
 
-# WARNING: the SenseCap2120 is by default an OTAA device. It is advised to carefully read
+# WARNING: the Lorain is by default an OTAA device. It is advised to carefully read
 # - https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/README_OTAA.md
-# - https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/sensecaps2120/README.md 
+# - https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/lorain-aquascope/README.md
+# - https://www.aqua-scope.com/manuals/?sku=RANLWE01&html=1&lang=en&type=m 
 
-# Prior to using this script, this Weather Station must be configured with the SenseCraft mobile application tool
-# See:
-#   - https://wiki.seeedstudio.com/Getting_Started_with_SenseCAP_S2120_8-in-1_LoRaWAN_Weather_Sensor/
-#   - https://github.com/Waziup/WaziGate-SenseCap-S2120-integration/blob/main/SenseCapS2120_ABP_instructions.pdf
-#   - https://github.com/Waziup/WaziGate-SenseCap-S2120-integration/blob/main/SenseCapS2120_OTAA_instructions.pdf
-
-# you can use the --dev-eui parameter to indicate a device EUI, typically for OTAA devices (recommended for SenseCap2120)
+# you can use the --dev-eui parameter to indicate a device EUI, typically for OTAA devices (recommended for Lorain)
 # that will have the device address, appSKey and nwkSKey assigned by a Network Server (e.g. TTN or Chirpstack).
-# Ex: create_new_sensecap2120.sh 1 --dev-eui AC1F09FFFE12DA3F
+# Ex: create_new_lorain.sh 1 --dev-eui AC1F09FFFE12DA3F
 
 # or, you can add 3 parameters to indicate full dev addr, appSKey and nwkSKey for a fully customized device
-# Ex: create_new_sensecap2120.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
+# Ex: create_new_lorain.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
 #
 # full addr is 32 bits (8 HEX digits), appSkey and nwkSKey are 128 bits (32 HEX digits)
-# these parameters must be set with the SenseCraft mobile application tool
 
 # you can add parameter to indicate a specific device id to be assigned to the created device
-# Ex: create_new_sensecap2120.sh 1 --dev-eui AC1F09FFFE12DA3F --dev-id 64425c0068f31909357de7c8
+# Ex: create_new_lorain.sh 1 --dev-eui AC1F09FFFE12DA3F --dev-id 64425c0068f31909357de7c8
 # you can add a parameter to not delete the LAST_CREATED_DEVICE.txt file
-# Ex: create_new_sensecap2120.sh 1 --dev-eui AC1F09FFFE12DA3F --no-delete
+# Ex: create_new_lorain.sh 1 --dev-eui AC1F09FFFE12DA3F --no-delete
 
 OPT_DEV_ID=""
 OPT_NO_INIT=""
@@ -91,27 +85,27 @@ done
 set -- "${POSITIONAL[@]}"
  
   
-DEFAULT_SENSECAP2120_NAME="SENSECAP2120_${1}"
+DEFAULT_LORAIN_NAME="LORAIN_${1}"
 
 DEV_IDX="$1"
 echo "Device idx: $DEV_IDX"
 
 if [[ -n $DEV_EUI ]]; then
   echo "Device EUI: $DEV_EUI"
-  DEFAULT_SENSECAP2120_YAML_FILE=${DEFAULT_SENSECAP2120_NAME,,}_${DEV_EUI,,}.yaml
+  DEFAULT_LORAIN_YAML_FILE=${DEFAULT_LORAIN_NAME,,}_${DEV_EUI,,}.yaml
 elif [[ -n $DEV_FULL_ADDR ]]; then
   echo "Device address: $DEV_FULL_ADDR"
-  DEFAULT_SENSECAP2120_YAML_FILE=${DEFAULT_SENSECAP2120_NAME,,}_${DEV_FULL_ADDR,,}.yaml
+  DEFAULT_LORAIN_YAML_FILE=${DEFAULT_LORAIN_NAME,,}_${DEV_FULL_ADDR,,}.yaml
 else
   DEV_ADDR="$2"
   echo "Device address: $DEV_ADDR"
-  DEFAULT_SENSECAP2120_YAML_FILE=${DEFAULT_SENSECAP2120_NAME,,}_${DEV_ADDR,,}.yaml
+  DEFAULT_LORAIN_YAML_FILE=${DEFAULT_LORAIN_NAME,,}_${DEV_ADDR,,}.yaml
 fi
 
 echo "Optional device id: $OPT_DEV_ID"
 echo "Optional init value: $OPT_NO_INIT"
-echo ${DEFAULT_SENSECAP2120_NAME}
-echo ${DEFAULT_SENSECAP2120_YAML_FILE}
+echo ${DEFAULT_LORAIN_NAME}
+echo ${DEFAULT_LORAIN_YAML_FILE}
 
 echo "Optional appSKey: $APPSKEY"
 echo "Optional nwkSKey: $NWKSKEY"
@@ -122,8 +116,8 @@ if [[ -n $DEV_EUI ]]; then
     echo "Device EUI: ${DEV_EUI} not ok"
     exit
   fi 
-  echo "--> calling create_sensecap2120_device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_EUI $OPT_DEV_ID $OPT_NO_INIT"
-  /home/pi/scripts/sensecaps2120/create_sensecap2120_device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_EUI $OPT_DEV_ID $OPT_NO_INIT
+  echo "--> calling create_lorain_device.sh ${DEFAULT_LORAIN_NAME} $OPT_DEV_EUI $OPT_DEV_ID $OPT_NO_INIT"
+  /home/pi/scripts/lorain-aquascope/create_lorain_device.sh ${DEFAULT_LORAIN_NAME} $OPT_DEV_EUI $OPT_DEV_ID $OPT_NO_INIT
 else
   if [[ -n $DEV_FULL_ADDR ]]; then
     if [[ ${#DEV_FULL_ADDR} -eq 8 ]]; then
@@ -152,8 +146,8 @@ else
     fi    
   fi  
   
-  echo "--> calling create_sensecap2120_device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY $OPT_DEV_ID $OPT_NO_INIT"
-  /home/pi/scripts/sensecaps2120/create_sensecap2120_device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY $OPT_DEV_ID $OPT_NO_INIT  
+  echo "--> calling create_lorain_device.sh ${DEFAULT_LORAIN_NAME} $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY $OPT_DEV_ID $OPT_NO_INIT"
+  /home/pi/scripts/lorain-aquascope/create_lorain_device.sh ${DEFAULT_LORAIN_NAME} $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY $OPT_DEV_ID $OPT_NO_INIT  
 fi
 
 DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
@@ -171,18 +165,18 @@ else
 	echo "Detected existing Home Assistant configuration file"	
 fi
 
-echo "Copy conf_block_sensecap2120.yaml into packages/${DEFAULT_SENSECAP2120_YAML_FILE}"
-cp ${HA_HOME}/conf_block_sensecap2120.yaml ${HA_HOME}/packages/${DEFAULT_SENSECAP2120_YAML_FILE} 
-sed -i "s/XXDEV/$DEVICE/g" ${HA_HOME}/packages/${DEFAULT_SENSECAP2120_YAML_FILE}
-sed -i "s/XXNAME/${DEFAULT_SENSECAP2120_NAME}/g" ${HA_HOME}/packages/${DEFAULT_SENSECAP2120_YAML_FILE}
-sed -i "s/xxname/${DEFAULT_SENSECAP2120_NAME,,}/g" ${HA_HOME}/packages/${DEFAULT_SENSECAP2120_YAML_FILE}
+echo "Copy conf_block_lorain.yaml into packages/${DEFAULT_LORAIN_YAML_FILE}"
+cp ${HA_HOME}/conf_block_lorain.yaml ${HA_HOME}/packages/${DEFAULT_LORAIN_YAML_FILE} 
+sed -i "s/XXDEV/$DEVICE/g" ${HA_HOME}/packages/${DEFAULT_LORAIN_YAML_FILE}
+sed -i "s/XXNAME/${DEFAULT_LORAIN_NAME}/g" ${HA_HOME}/packages/${DEFAULT_LORAIN_YAML_FILE}
+sed -i "s/xxname/${DEFAULT_LORAIN_NAME,,}/g" ${HA_HOME}/packages/${DEFAULT_LORAIN_YAML_FILE}
 
 echo "Adding into my_default_view.yaml"
-cat ${HA_HOME}/view_block_sensecap2120.yaml >> ${HA_HOME}/my_default_view.yaml
-sed -i "s/xxname/${DEFAULT_SENSECAP2120_NAME,,}/g" ${HA_HOME}/my_default_view.yaml 
+cat ${HA_HOME}/view_block_lorain.yaml >> ${HA_HOME}/my_default_view.yaml
+sed -i "s/xxname/${DEFAULT_LORAIN_NAME,,}/g" ${HA_HOME}/my_default_view.yaml 
 
-echo "Copy packages/${DEFAULT_SENSECAP2120_YAML_FILE} to homeassistant:/config/packages"
-docker cp ${HA_HOME}/packages/${DEFAULT_SENSECAP2120_YAML_FILE} homeassistant:/config/packages
+echo "Copy packages/${DEFAULT_LORAIN_YAML_FILE} to homeassistant:/config/packages"
+docker cp ${HA_HOME}/packages/${DEFAULT_LORAIN_YAML_FILE} homeassistant:/config/packages
 echo "Copy my_default_view.yaml to /opt/homeassistant/config/ui-lovelace.yaml"
 sudo cp ${HA_HOME}/my_default_view.yaml /opt/homeassistant/config/ui-lovelace.yaml
 echo "Done. Still need to restart Home Assistant and refresh your dashboard"
