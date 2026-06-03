@@ -2,7 +2,7 @@
 
 # Bash scripting cheatsheet https://devhints.io/bash
 
-# Ex: create_sensecap2120_device.sh 1 --dev-eui AC1F09FFFE12DA3F
+# Ex: create_sensecap2120_device.sh SENSECAP2021_1 --dev-eui AC1F09FFFE12DA3F
 # this script creates a Seeed Studio SenseCap2120 8-in-1 Weather Station device
 
 # WARNING: the SenseCap2120 is by default an OTAA device. It is advised to carefully read
@@ -12,19 +12,18 @@
 # Prior to using this script, this Weather Station must be configured with the SenseCraft mobile application tool
 # See:
 #   - https://wiki.seeedstudio.com/Getting_Started_with_SenseCAP_S2120_8-in-1_LoRaWAN_Weather_Sensor/
-#   - https://files.seeedstudio.com/products/SenseCAP/101990961_SenseCAP%20S2120/SenseCAP%20S2120%20LoRaWAN%208-in-1%20Weather%20Station%20User%20Guide.pdf
 #   - https://github.com/Waziup/WaziGate-SenseCap-S2120-integration/blob/main/SenseCapS2120_ABP_instructions.pdf
 #   - https://github.com/Waziup/WaziGate-SenseCap-S2120-integration/blob/main/SenseCapS2120_OTAA_instructions.pdf
 
-# you can add a parameter to indicate a specific device id to be assigned to the created device
-# Ex: create_sensecap2120_device.sh 1 --dev-eui AC1F09FFFE12DA3F --dev-id 64425c0068f31909357de7c8
-
 # you can use the --dev-eui parameter to indicate a device EUI, typically for OTAA devices (recommended for SenseCap2120)
 # that will have the device address, appSKey and nwkSKey assigned by a Network Server (e.g. TTN or Chirpstack).
-# Ex: create_sensecap2120_device.sh 1 --dev-eui AC1F09FFFE12DA3F
+# Ex: create_sensecap2120_device.sh SENSECAP2021_1 --dev-eui AC1F09FFFE12DA3F
+
+# you can add a parameter to indicate a specific device id to be assigned to the created device
+# Ex: create_sensecap2120_device.sh SENSECAP2021_1 --dev-eui AC1F09FFFE12DA3F --dev-id 64425c0068f31909357de7c8
 
 # or, you can add 3 parameters to indicate full dev addr, appSKey and nwkSKey for a customized device
-# Ex: create_sensecap2120_device.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
+# Ex: create_sensecap2120_device.sh SENSECAP2021_1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
 #
 # full addr is 32 bits (8 HEX digits), appSkey and nwkSKey are 128 bits (32 HEX digits)
 # these parameters must be set with the SenseCraft mobile application tool
@@ -85,7 +84,7 @@ done
 set -- "${POSITIONAL[@]}"
 
 # e.g. SENSECAP2120_1
-DEV_NAME="SENSECAP2120_${1}"
+DEV_NAME="${1}"
 
 echo "Device name: $DEV_NAME"
 echo "Optional device id: $DEV_ID"

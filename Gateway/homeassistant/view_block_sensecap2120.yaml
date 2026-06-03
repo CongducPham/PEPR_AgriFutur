@@ -1,0 +1,40 @@
+##start sensecap2120 block
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: SenseCap2120 Weather Station
+            entities:
+              - entity: sensor.xxname_wind_speed
+                secondary_info: last-updated
+                icon: mdi:weather-windy
+              - entity: sensor.xxname_wind_direction_sensor
+                secondary_info: last-updated
+                icon: mdi:compass-outline       
+              - entity: sensor.xxname_rain_gauge
+                secondary_info: last-updated
+                icon: mdi:weather-rainy                                      
+              - entity: sensor.xxname_barometric_pressure
+                secondary_info: last-updated
+                icon: mdi:gauge
+              - entity: sensor.xxname_air_temperature
+                secondary_info: last-updated
+                icon: mdi:thermometer
+              - entity: sensor.xxname_air_humidity
+                secondary_info: last-updated
+                icon: mdi:water-percent       
+              - entity: sensor.xxname_light_intensity
+                secondary_info: last-updated
+                icon: mdi:white-balance-sunny                                      
+              - entity: sensor.xxname_uv_index
+                secondary_info: last-updated
+                icon: mdi:weather-sunny-alert                
+          - type: grid
+            columns: 2
+            cards:
+              - type: picture
+                image: /local/sensors/sensecap2120.png
+              - type: history-graph
+                entities:
+                  - entity: sensor.xxname_air_temperature
+                  - entity: sensor.xxname_air_humidity        
+##end sensecap2120 - leave CR at end of this line

@@ -11,7 +11,7 @@
 # Ex: create_new_capacitive.sh 1 AA --no-delete
 
 # you can add 3 parameters to indicate full dev addr, appSKey and nwkSKey for a fully customized device
-# Ex: create_new_capacitive.sh CAPACITIVE_1 --no-init --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
+# Ex: create_new_capacitive.sh 1 --no-init --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
 #
 # full addr is 32 bits (8 HEX digits), appSkey and nwkSKey are 128 bits (32 HEX digits)
 
@@ -262,7 +262,6 @@ echo "--> removing configuration files"
 rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json 
 
 ### IIWA end ###
-fi 
 
 if $DELETE_DEVICE_ID_FILE; then
 

@@ -1,0 +1,34 @@
+## start sensecap2120
+sensor sensecap2120:
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/Wind%20Speed/value
+    name: XXNAME/Wind Speed
+    unit_of_measurement: "m/s"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/Wind%20Direction%20Sensor/value
+    name: XXNAME/Wind Direction Sensor    
+    unit_of_measurement: "degree"    
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/Rain%20Gauge/value
+    name: XXNAME/Rain Gauge     
+    unit_of_measurement: "mm/h" 
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/Barometric%20Pressure/value
+    name: XXNAME/Barometric Pressure
+    unit_of_measurement: "Pa"
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/Air%20Temperature/value
+    name: XXNAME/Air Temperature    
+    unit_of_measurement: "°C"    
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/Air%20Humidity/value
+    name: XXNAME/Air Humidity     
+    unit_of_measurement: "%RH" 
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/Light%20Intensity/value
+    name: XXNAME/Light Intensity
+    unit_of_measurement: "Lux"    
+  - platform: rest
+    resource: http://localhost/devices/XXDEV/sensors/UV%20Index/value
+    name: XXNAME/UV Index  
+## end sensecap2120

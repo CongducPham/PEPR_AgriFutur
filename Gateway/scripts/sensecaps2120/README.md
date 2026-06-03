@@ -30,9 +30,9 @@ You should see the new device on the Chirpstack device dashboard (http://localho
 
 Once the device has been created at the Chirpstack Network Server level, we now need to create the device at the WaziGate level, by associating it with the device EUI.
 
-Use the `create_sensecap2120_device.sh` for that purpose:
+Use the `create_new_sensecap2120_device.sh` for that purpose:
 
-	> ./create_sensecap2120_device.sh 1 --dev-eui AC1F09FFFE12DA3F
+	> ./create_new_sensecap2120_device.sh 1 --dev-eui AC1F09FFFE12DA3F
 	
 On the gateway dashboard, you should see a new `SENSECAP2120_1` device with no sensor attached. This is normal as logical sensors will be detected and created on reception of the first message from the SenseCap2120 device.
 
