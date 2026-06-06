@@ -1,3 +1,4 @@
+##start xxname
 ##start loracam block
       - type: vertical-stack
         cards:
@@ -15,3 +16,4 @@
           - type: picture
             image: /local/loracam-ai/last-YYNAME-image.bmp?v={{ states('sensor.time') }}
 ##end loracam block - leave CR at end of this line
+##end xxname

@@ -18,7 +18,8 @@
 # that will have the device address, appSKey and nwkSKey assigned by a Network Server (e.g. TTN or Chirpstack).
 # Ex: create_new_sensecap2120.sh 1 --dev-eui AC1F09FFFE12DA3F
 
-# or, you can add 3 parameters to indicate full dev addr, appSKey and nwkSKey for a fully customized device
+# or, you can add 3 parameters to indicate full dev addr, appSKey and nwkSKey for a device in ABP mode or when
+# these 3 parameters have already been assigned by a Network Server (device reboot is not supported in this case)
 # Ex: create_new_sensecap2120.sh 1 --dev-full-addr 260B4515 --appskey BEB72ECC54873DAB0AEE5478ADAB41B7 --nwkskey 262060AA21142DAF8D05902C54F34C58
 #
 # full addr is 32 bits (8 HEX digits), appSkey and nwkSKey are 128 bits (32 HEX digits)
@@ -123,7 +124,7 @@ if [[ -n $DEV_EUI ]]; then
     exit
   fi 
   echo "--> calling create_sensecap2120_device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_EUI $OPT_DEV_ID $OPT_NO_INIT"
-  /home/pi/scripts/sensecaps2120/create_sensecap2120_device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_EUI $OPT_DEV_ID $OPT_NO_INIT
+  /home/pi/scripts/sensecaps2120/create_sensecap2120-device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_EUI $OPT_DEV_ID $OPT_NO_INIT
 else
   if [[ -n $DEV_FULL_ADDR ]]; then
     if [[ ${#DEV_FULL_ADDR} -eq 8 ]]; then
@@ -153,7 +154,7 @@ else
   fi  
   
   echo "--> calling create_sensecap2120_device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY $OPT_DEV_ID $OPT_NO_INIT"
-  /home/pi/scripts/sensecaps2120/create_sensecap2120_device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY $OPT_DEV_ID $OPT_NO_INIT  
+  /home/pi/scripts/sensecaps2120/create_sensecap2120-device.sh ${DEFAULT_SENSECAP2120_NAME} $OPT_DEV_FULL_ADDR $OPT_APPSKEY $OPT_NWKSKEY $OPT_DEV_ID $OPT_NO_INIT  
 fi
 
 DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`

@@ -5,11 +5,13 @@
 # Ex: create_chirpstack_otaa_device_with_dev_eui.sh AC1F09FFFE12DA3F AC1F09FFFE12DA3FAC1F09FFF8683172
 # this script creates a Chirpstack device with OTAA profile
 
-# Note: the Chirpstack OTAA device profile id is hardcoded and match the "OTAA" profile created by
-# default in the SD card distribution
+# IMPORTANT: IT IS ASSUMED THAT A DEVICE PROFILE NAMED "OTAA" HAS BEEN CREATED
 
 # you can add a parameter to indicate the device name that will also be the device description
 # Ex: create_chirpstack_otaa_device_with_dev_eui.sh AC1F09FFFE12DA3F AC1F09FFFE12DA3FAC1F09FFF8683172 --dev-name rak3172-ird-pcbv5-test-AC1F09FFFE12DA3F
+
+# you can decide to use the Chirpstack web UI to create a device instead:
+# http://wazigate.local:8080/#/organizations/1/applications/1
 
 if [ $# -eq 0 ]
   then
@@ -28,7 +30,7 @@ while [[ $# -gt 0 ]]; do
     --dev-name)
       DEV_NAME="$2"
       shift 2
-      ;;
+      ;;     
     *)
       POSITIONAL+=("$1")
       shift
@@ -64,9 +66,19 @@ echo "AppKey: $APP_KEY ok"
 echo "--> Get token"
 TOK=`curl -X POST "http://localhost:8080/api/internal/login" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"email\":\"admin\",\"password\":\"admin\"}" | jq .jwt | tr -d '\"'`
 
-# Replace with the device profile for OTAA on your Chirpstack instance
-# this one match the "OTAA" profile created by default in the SD card distribution
-DEV_PROFILE_ID="d22bca25-c45b-4242-a339-ed27263c85ee"
+echo "--> Get OTAA device profile id"
+
+DEV_PROFILE_ID=`curl -X GET "http://localhost:8080/api/device-profiles?organizationID=1&limit=20" -H "accept: application/json" -H "Grpc-Metadata-Authorization: Bearer $TOK" | jq -r '.result[] | select(.name == "OTAA") | .id'`
+
+echo "--> Device profile id for OTAA is $DEV_PROFILE_ID"
+
+# should be DEV_PROFILE_ID="081fd654-0b94-40e0-bc9d-dfa3661475a7" for SD card
+# with HA Core 2025.3.3 Frontend 20250306.0 without HACS
+# Recommended for Raspberry Pi 3B/3B+/4B-1GB
+
+# should be DEV_PROFILE_ID="9d2952be-a242-4065-96ed-7f32fa94a359" for SD card
+# with HA Core 2026.6.0 and Frontend 20260527.4 with HACS
+# Can be used on Raspberry Pi 4B with at least 2GB of memory
 
 echo "--> Create device on Chirpstack"
 

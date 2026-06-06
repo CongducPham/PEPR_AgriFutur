@@ -24,7 +24,7 @@ Note the device EUI and the AppKey of the Lorain device in order to run the `cre
 - mandatory: the AppKey (16 bytes)
 - optional: the device name
 
-	> ./create_chirpstack_otaa_device_with_dev_eui.sh AC1F09FFFE12DA3F AC1F09FFFE12DA3FAC1F09FFF8683172 --dev-name sensecap2120-test-AC1F09FFFE12DA3F
+	> ./create_chirpstack_otaa_device_with_dev_eui.sh AC1F09FFFE12DA3F AC1F09FFFE12DA3FAC1F09FFF8683172 --dev-name lorain-test-AC1F09FFFE12DA3F
 
 **Note: the "OTAA" device profile id is hard-coded in the `create_chirpstack_otaa_device_with_dev_eui.sh`. It matches the "OTAA" profile created by default in the SD card image distribution.**
 

@@ -1,3 +1,4 @@
+##start xxname
 ##start air_temp_hum block
       - type: vertical-stack
         cards:
@@ -26,3 +27,4 @@
                   - entity: sensor.xxname_degree_celsius
                   - entity: sensor.xxname_relative_humidity
 ##end air_temp_hum block - leave CR at end of this line
+##end xxname

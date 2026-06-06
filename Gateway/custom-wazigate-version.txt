@@ -1,5 +1,11 @@
 Main version history
 
+Jun 4th, 2026
+-------------
+- A version of the SD card image has Home Assistant (Docker container) upgraded to Core 2026.6.0 and Frontend 20260527.4
+  - Needs an RPI4B/4GB
+  - For RPI3B/3B+ it is advised to keep the version with Home Assistant Core 2025.3.3 Frontend 20250306.0
+
 May 5, 2026
 -----------
 - major updates in device creation scripts to be more generic and support OTAA devices

@@ -5,7 +5,11 @@ Our customized gateway is now based on the [WaziGate framework](https://www.wazi
 
 We are providing a customized WaziGate distribution for out-of-the-box deployment of sensing systems. **It is referred to as Customized Gateway** as opposed to the general WaziGate framework provided by WAZIUP e.V. 
 
-The initial work on the customized gateway has been conducted in the [PRIMA INTEL-IRRIS project](http://intel-irris.eu). We provide [an SD card image](https://drive.google.com/file/d/1lKjcDOZHitAlJbjJMWUxTx2qgXJfLQfh/view?usp=sharing) that can be flashed and inserted in a Raspberry Pi. [Download the SD card image](https://drive.google.com/file/d/1lKjcDOZHitAlJbjJMWUxTx2qgXJfLQfh/view?usp=sharing), flash it on an 8GB SD card class 10 (or new A1 class) and plug it into a Raspberry Pi (3B/3B+/4B) equipped with a LoRa hat.
+The initial work on the customized gateway has been conducted in the [PRIMA INTEL-IRRIS project](http://intel-irris.eu). We provide an SD card image that can be flashed and inserted in a Raspberry Pi.
+
+- [SD card image with Home Assistant Core 2025.3.3 Frontend 20250306.0 without HACS](https://drive.google.com/uc?export=download&id=1eYufRkLl_w6NwfNE_jTM5xYSGyWmME60). Recommended for Raspberry Pi 3B/3B+/4B-1GB. Flash it on an 8GB or higher SD card class 10 (or new A1 class).
+
+- [SD card image with Home Assistant Core 2026.6.0 and Frontend 20260527.4 with HACS](https://drive.google.com/uc?export=download&id=1QkjPQQ7vJukuVwHa7iTYkBbGnfS-5Ugb). Can be used on Raspberry Pi 4B with at least 2GB of memory. Flash it on an 16GB or higher SD card class 10 (or new A1 class).
 
 <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate.png" width="280"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate-3D-enclosure-1.png" width="300"> <img src="https://github.com/CongducPham/PEPR_AgriFutur/blob/main/images/wazigate-3D-enclosure-2.png" width="300">
 

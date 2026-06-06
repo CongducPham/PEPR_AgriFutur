@@ -23,7 +23,9 @@ Use the `create_chirpstack_otaa_device_with_dev_eui.sh` script and provide 3 arg
 - mandatory: the AppKey (16 bytes)
 - optional: the device name
 
+```bash
 	> ./create_chirpstack_otaa_device_with_dev_eui.sh AC1F09FFFE12DA3F AC1F09FFFE12DA3FAC1F09FFF8683172 --dev-name rak3172-ird-pcbv5-test-AC1F09FFFE12DA3F 
+```
 
 **Note: the "OTAA" device profile id is hard-coded in the `create_chirpstack_otaa_device_with_dev_eui.sh`. It matches the "OTAA" profile created by default in the SD card image distribution.**
 

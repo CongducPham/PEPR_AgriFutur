@@ -50,23 +50,19 @@ else
 fi
 
 echo "Copy conf_block_loracam.yaml into packages/${DEFAULT_LORACAM_YAML_FILE}"
-
 cp ${HA_HOME}/conf_block_loracam.yaml ${HA_HOME}/packages/${DEFAULT_LORACAM_YAML_FILE} 
-
 sed -i "s/XXDEV/$DEVICE/g" ${HA_HOME}/packages/${DEFAULT_LORACAM_YAML_FILE}
-
 sed -i "s/XXNAME/${LORACAM_STATS_DEVNAME}_${LORACAM_STATS_DEVADDRSHORT}/g" ${HA_HOME}/packages/${DEFAULT_LORACAM_YAML_FILE}
-
 sed -i "s/xxname/${LORACAM_STATS_DEVNAME,,}_${LORACAM_STATS_DEVADDRSHORT,,}/g" ${HA_HOME}/packages/${DEFAULT_LORACAM_YAML_FILE}
-
 sed -i "s/YYNAME/${LORACAM_DEV_DEVNAME}_${LORACAM_DEV_DEVADDRSHORT}/g" ${HA_HOME}/packages/${DEFAULT_LORACAM_YAML_FILE}
-
 sed -i "s/yyname/${LORACAM_DEV_DEVNAME,,}_${LORACAM_DEV_DEVADDRSHORT,,}/g" ${HA_HOME}/packages/${DEFAULT_LORACAM_YAML_FILE}
 
 echo "Adding into my_default_view.yaml"
 cat ${HA_HOME}/view_block_loracam.yaml >> ${HA_HOME}/my_default_view.yaml
 sed -i "s/xxname/${LORACAM_STATS_DEVNAME,,}_${LORACAM_STATS_DEVADDRSHORT,,}/g" ${HA_HOME}/my_default_view.yaml 
 sed -i "s/yyname/${LORACAM_DEV_DEVNAME,,}_${LORACAM_DEV_DEVADDRSHORT,,}/g" ${HA_HOME}/my_default_view.yaml
+#following line is for new HA version, for older version, YYNAME does not exist in view_block_loracam.yaml
+sed -i "s/YYNAME/${DEFAULT_LORACAM_DEV_NAME}_${1}/g" ${HA_HOME}/my_default_view.yaml
 
 echo "Copy packages/${DEFAULT_LORACAM_YAML_FILE} to homeassistant:/config/packages"
 docker cp ${HA_HOME}/packages/${DEFAULT_LORACAM_YAML_FILE} homeassistant:/config/packages

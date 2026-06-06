@@ -1,3 +1,4 @@
+##start xxname
 ##start 3soil_temp block
       - type: vertical-stack
         cards:
@@ -27,3 +28,4 @@
                   - entity: sensor.xxname_soil_temperature_sensor_2
                   - entity: sensor.xxname_soil_temperature_sensor_3          
 ##end 3soil_temp block - leave CR at end of this line
+##end xxname

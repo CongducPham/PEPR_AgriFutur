@@ -1,3 +1,4 @@
+##start xxname
 ##start tensiometer block
       - type: vertical-stack
         cards:
@@ -56,3 +57,4 @@
                   '-2': /local/sensors/no_sensor.svg
                   '-1': /local/sensors/no_sensor.svg
 ##end tensiometer block  - leave CR at end of this line
+##end xxname

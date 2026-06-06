@@ -135,7 +135,7 @@ do
       DEV_DEVNAME=$(cat sensor-backup.log | grep backup | grep "loracam device" | grep $DEV_DEVADDRSHORT | awk -F'[ ]' '{print $6}')
       # remove address in device name, e.g. LoRaCAM_AI_DEV_2DAA --> LoRaCAM_AI_DEV 
       DEV_DEVNAME=${DEV_DEVNAME:0:-5}
-      STATS_DEVADDRSHORT=$DEVADDRSHORT
+      STATS_DEVADDRSHORT=$DEVADDR
       STATS_DEVID=$DEVICE
       # remove address in device name, e.g. LoRaCAM_AI_STATS_2EAA --> LoRaCAM_AI_STATS
       STATS_DEVNAME=${DEVNAME:0:-5}

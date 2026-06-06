@@ -36,7 +36,7 @@ Show the last value for a particular sensor for a particular device:
 
 Show all codecs defined on the gateway: 
   
-  > curl -X GET "http://localhost/codecs" -H  "accept: application/json"
+  > curl -X GET "http://localhost/codecs" -H  "accept: application/json" | jq
 
 Show all docker containers
 
