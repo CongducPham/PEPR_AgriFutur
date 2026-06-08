@@ -584,8 +584,7 @@ Vcc vcc(VccCorrection);
 // in this test mode, idlePeriodInMin is set to 1min, so transmission time interval in low voltage mode
 // will be increased to 4mins approx so that debugging will not take to long;
 // in this test mode, the voltage reported by the Arduino before, and during the radio transmission are transmitted in the radio frame
-
-// #define TEST_LOW_BAT
+//#define TEST_LOW_BAT
 
 // how many times we keep normal measure & transmission interval before switching in low voltage mode
 #define MAX_LOW_VOLTAGE_INDICATION 3
