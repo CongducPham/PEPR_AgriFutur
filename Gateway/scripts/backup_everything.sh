@@ -77,6 +77,8 @@ do
           DISPLAYED_ADDR=${DEVADDR: -2}
         else
           #it is full custom 4-byte device address
+          #can be an ABP device (commercial device)
+          #or an ABP device after OTAA activation realized by another gateway (Chirpstack)
           DISPLAYED_ADDR=${DEVADDR}
         fi  
       fi      

@@ -3,6 +3,10 @@ General documentation for the WaziGate Edge API:
 - https://github.com/Waziup/wazigate-edge
 - WaziGate MQTT access: https://github.com/Waziup/wazigate-edge
 
+On RPI, WaziGate configuration files are in /var/lib/WaziGate
+
+- see /var/lib/wazigate/docker-compose.yml
+
 Some useful command using `curl` in a terminal on the gateway:
 
 Show all devices:

@@ -150,23 +150,14 @@ do
         /home/pi/scripts/restore_loracam_sensor_values.sh $DEV_DEVNAME $DEV_DEVADDRSHORT $DEV_DEVID $STATS_DEVNAME $STATS_DEVADDRSHORT $STATS_DEVID
       fi       
     elif [[ -n "$SENSORS" ]]; then
+      echo "restore $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDR" | tee -a sensor-backup.log
       
-      if [[ ${#DEVADDR} -gt 8 ]]; then
-        echo "restore $DEVTYPE device $DEVICE named $DEVNAME devEUI $DEVADDR" | tee -a sensor-backup.log
-        echo "sorry... restoration of OTAA devices not supported yet"       
-      elif [[ ${#DEVADDR} -gt 2 ]]; then
-        echo "restore $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDR" | tee -a sensor-backup.log
-        echo "sorry... restoration of customized 4-byte device address not supported yet"     
+      echo "--> $SENSORS" | tee -a sensor-backup.log
+      if $DRY_RUN; then     
+        echo "DRY_RUN: restore_device_sensor_values.sh $DEVIDX $DEVADDR $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS"
       else
-        echo "restore $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDR" | tee -a sensor-backup.log
-      
-        echo "--> $SENSORS" | tee -a sensor-backup.log
-        if $DRY_RUN; then     
-          echo "DRY_RUN: restore_device_sensor_values.sh $DEVIDX $DEVADDR $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS"
-        else
-          /home/pi/scripts/restore_device_sensor_values.sh $DEVIDX $DEVADDR $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS
-        fi  
-      fi
+        /home/pi/scripts/restore_device_sensor_values.sh $DEVIDX $DEVADDR $DEVICE $DEVTYPE --dev-id $DEVICE --sensors $SENSORS
+      fi  
     else
       echo "no current scheme for $DEVTYPE $DEVICE $DEVNAME $DEVADDR" | tee -a sensor-backup.log
     fi

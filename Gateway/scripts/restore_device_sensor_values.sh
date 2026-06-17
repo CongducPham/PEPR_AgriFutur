@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
     --dev-id)
       OPT_DEV_ID="--dev-id $2"
       shift 2
-      ;;       
+      ;;  
     --sensors)
       # get the sensor list, which starts at 2nd after the --sensors argument
       # e.g. "temperatureSensor_0 temperatureSensor_5 analogInput_6"
@@ -51,6 +51,13 @@ DEVIDX="$1"
 DEVADDR="$2"
 FROM_DEV_ID="$3"
 DEVTYPE="$4"
+
+DEVEUI=""
+
+if [[ ${#DEVADDR} -eq 16 ]]; then
+  #probably the device EUI for OTAA device
+  DEVEUI=$DEVADDR
+fi  
 
 echo "${DEVIDX} ${DEVADDR} ${FROM_DEV_ID} ${DEVTYPE}"
 echo "Sensor list: $SENSORS"
@@ -81,12 +88,28 @@ elif [ $DEVTYPE == 'co2' ]; then
   CREATE_CMD="create_new_co2_temp_hum.sh"        
 fi
 
-if [[ -n "$CREATE_CMD" ]]; then
-  echo "--> calling /home/pi/scripts/${CREATE_CMD} ${DEVIDX} ${DEVADDR} $OPT_DEV_ID --no-init --no-delete"
-  #create new ${DEVTYPE} device with address 26011D${DEVADDR}
-  #e.g. "create_new_capacitive.sh 1 AA --no-init --no-delete" to create a capacitive devide named CAPACITIVE_1 and addr 26011DAA
-  #including integration into HA dashboard
-  /home/pi/scripts/${CREATE_CMD} ${DEVIDX} ${DEVADDR} $OPT_DEV_ID --no-init --no-delete
+if [[ -n "$CREATE_CMD" ]]; then  
+  if [[ -n "$DEVEUI" ]]; then
+    echo "--> calling /home/pi/scripts/${CREATE_CMD} ${DEVIDX} --dev-eui ${DEVEUI} $OPT_DEV_ID --no-init --no-delete"
+    #create new ${DEVTYPE} device with dev EUI ${DEVEUI}
+    #e.g. "create_new_capacitive.sh 1 --dev-eui AC1F09FFFE12DA3F --no-init --no-delete"
+    #including integration into HA dashboard
+    /home/pi/scripts/${CREATE_CMD} ${DEVIDX} --dev-eui ${DEVEUI} $OPT_DEV_ID --no-init --no-delete
+  else
+    if [[ ${#DEVADDR} -eq 8 ]]; then  
+      echo "--> calling /home/pi/scripts/${CREATE_CMD} ${DEVIDX} --dev-full-addr ${DEVADDR} $OPT_DEV_ID --no-init --no-delete"
+      #create new ${DEVTYPE} device with 4-byte address ${DEVADDR}
+      #e.g. "create_new_capacitive.sh 1 --dev-full-addr 260B4515 --no-init --no-delete"
+      #including integration into HA dashboard
+      /home/pi/scripts/${CREATE_CMD} ${DEVIDX} --dev-full-addr ${DEVADDR} $OPT_DEV_ID --no-init --no-delete    
+    else
+      echo "--> calling /home/pi/scripts/${CREATE_CMD} ${DEVIDX} ${DEVADDR} $OPT_DEV_ID --no-init --no-delete"
+      #create new ${DEVTYPE} device with address 26011D${DEVADDR}
+      #e.g. "create_new_capacitive.sh 1 AA --no-init --no-delete" for a capacitive device named CAPACITIVE_1 and addr 26011DAA
+      #including integration into HA dashboard
+      /home/pi/scripts/${CREATE_CMD} ${DEVIDX} ${DEVADDR} $OPT_DEV_ID --no-init --no-delete
+    fi
+  fi
 else
   echo "--> error, no corresponding device creation script for device type $DEV_TYPE"
   exit
