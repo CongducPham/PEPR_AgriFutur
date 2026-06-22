@@ -383,6 +383,8 @@ bool lorawan_module_setup(uint16_t br) {
 #endif  
 #elif defined EU433
   write_lorawan_module("AT+BAND=0\r\n\0");
+#elif defined AS923
+  write_lorawan_module("AT+BAND=8\r\n\0");  
 #elif defined AS923-2
   write_lorawan_module("AT+BAND=9\r\n\0");
 #endif    
