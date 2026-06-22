@@ -86,6 +86,8 @@ do
     
     SENSORS=""
     
+    #you can add other type of devices if you are developing your own sensor devices
+    #you can also customize the logical sensor list here to match your configuration
     if [ $DEVTYPE == 'capacitive' ]; then
       SENSORS="temperatureSensor_0 temperatureSensor_5 analogInput_6"
 
