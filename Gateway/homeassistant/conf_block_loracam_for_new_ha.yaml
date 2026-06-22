@@ -17,5 +17,10 @@ sensor loracam:
     resource: http://localhost/devices/XXDEV/sensors/analogOutput_13/value
     name: XXNAME/luminosity  
     unit_of_measurement: ""
-#for new HA version, the picture will be defined in the view_block_loracam_for_new_ha.yaml
+
+# workaround
+##camera:
+##  - platform: generic
+##    name: YYNAME
+##    still_image_url: "http://homeassistant.local:8123/local/loracam-ai/last-YYNAME-image.bmp"
 ## end loracam block

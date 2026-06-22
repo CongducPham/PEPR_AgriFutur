@@ -13,6 +13,13 @@
                 secondary_info: last-updated
               - entity: sensor.xxname_luminosity
                 secondary_info: last-updated
+##          - type: custom:config-template-card
+##            entities:
+##              - sensor.time
+##            card:
+##              type: picture
+##              image: /local/loracam-ai/last-YYNAME-image.bmp?v={{ states('sensor.time') }}                
+## ----------------------------------------------------------------------------------------------
           - type: picture
             image: /local/loracam-ai/last-YYNAME-image.bmp?v={{ states('sensor.time') }}
 ##end loracam block - leave CR at end of this line

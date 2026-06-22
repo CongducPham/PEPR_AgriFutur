@@ -8,22 +8,18 @@ frontend:
 # Text to speech
 tts:
   - platform: google_translate
+      
+homeassistant:
+  packages: !include_dir_named packages
 
 sensor:
   - platform: time_date
     display_options:
       - time
-      
-homeassistant:
-  packages: !include_dir_named packages
-  
+        
 lovelace:
-  resource_mode: yaml
-  dashboards:
-    lovelace:
-      mode: yaml
-      filename: ui-lovelace.yaml
-      title: Overview
-      icon: mdi:view-dashboard
-      show_in_sidebar: true
+  mode: yaml 
+  resources:
+    - url: /hacsfiles/config-template-card/config-template-card.js
+      type: module  
 
