@@ -58,9 +58,14 @@ TXOnlySerial debug_serial(2);
 ////////////////////////////////////////////////////////////////////
 // Frequency band - do not change in SX12XX_RadioSettings.h anymore
 // if using a native LoRaWAN module such as RAK3172, also select band in RadioSettings.h
+// use EU868 for EU countries, Algeria and Morocco
 #define EU868
+// use AU915 for Panama 
 // #define AU915
 // #define EU433
+// use AS923 for Lao
+// #define AS923
+// use AS923_2 for Vietnam
 // #define AS923_2
 
 ////////////////////////////
@@ -189,7 +194,7 @@ uint8_t node_addr = 8;
 
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE TIME IN MINUTES BETWEEN 2 READING & TRANSMISSION
-unsigned int idlePeriodInMin = 60;
+unsigned int idlePeriodInMin = 3;
 // WARNING: if you set idlePeriodInSec != 0 then idlePeriodInMin is not taken into account!
 // it is mainly for testing when you want a wake up time smaller than 1 minute 
 unsigned int idlePeriodInSec = 0;

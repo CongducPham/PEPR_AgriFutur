@@ -5,6 +5,8 @@
 
 # LoRaWAN band to use.
 #
+# https://docs.rakwireless.com/product-categories/software-apis-and-libraries/rui3/at-command-manual/#atche
+#
 # Valid values are:
 # * AS923    (AS923 without frequency offset) 923.2MHz for single-channel
 # * AS923-2  (AS923 with -1.80 MHz frequency offset) 921.4MHz for single-channel

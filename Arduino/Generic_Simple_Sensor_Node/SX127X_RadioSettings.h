@@ -149,6 +149,9 @@ const uint32_t DEFAULT_CHANNEL=CH_18_868;
 #elif defined AU915
 //hardcoded with the first LoRaWAN frequency
 const uint32_t DEFAULT_CHANNEL=916800000;
+#elif defined AS923
+//hardcoded with the first LoRaWAN frequency
+const uint32_t DEFAULT_CHANNEL=923200000;
 #elif defined AS923_2
 //hardcoded with the first LoRaWAN frequency
 const uint32_t DEFAULT_CHANNEL=921400000;
