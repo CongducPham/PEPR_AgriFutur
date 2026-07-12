@@ -19,7 +19,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: March 13th, 2026
+ * last update: July 10th, 2026
  *
  * Feb. 7th, 2025 --> remove unused options in the code, focus on INTEL-IRRIS PCB/PCBA v4.1 & v5 and WaziSense v2 platforms
  * NEW: Support for both SCD30 and SCD40 CO2 sensors
@@ -61,7 +61,7 @@ TXOnlySerial debug_serial(2);
 // use EU868 for EU countries, Algeria and Morocco
 #define EU868
 // use AU915 for Panama 
-// #define AU915
+//#define AU915
 // #define EU433
 // use AS923 for Lao
 // #define AS923
@@ -194,7 +194,7 @@ uint8_t node_addr = 8;
 
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE TIME IN MINUTES BETWEEN 2 READING & TRANSMISSION
-unsigned int idlePeriodInMin = 3;
+unsigned int idlePeriodInMin = 60;
 // WARNING: if you set idlePeriodInSec != 0 then idlePeriodInMin is not taken into account!
 // it is mainly for testing when you want a wake up time smaller than 1 minute 
 unsigned int idlePeriodInSec = 0;
@@ -829,6 +829,7 @@ void lowPower(unsigned long time_ms) {
                      |_|
 ******************************/
 
+// setup() function
 void setup() {
 #ifdef LOW_POWER
     bool low_power_status = IS_LOWPOWER;
@@ -891,8 +892,11 @@ void setup() {
     //////////////////////////////////////////////////////////////////
     // ADD YOUR SENSORS HERE
     // Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger=-1)
-    // WM1 or SH1
+
+/////////////////////// WATERMARK SENSOR ///////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////    
 #ifdef WITH_WATERMARK
+    // WM1
     sensor_ptrs[sensor_index] =
         new watermark("WM1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t)WM1_ANALOG_PIN, (uint8_t)WM1_PWR_PIN1,
                       (uint8_t)WM1_PWR_PIN2 /*use pin trigger as second power pin*/);
@@ -909,22 +913,39 @@ void setup() {
     sensor_index++;
 #endif
 #endif
+
+/////////////////////// CAPACITIVE SENSOR ///////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
 #ifdef WITH_CAPACITIVE
     sensor_ptrs[sensor_index] = new sen0308("SH", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t)SH1_ANALOG_PIN,
                                             (uint8_t)SH1_PWR_PIN /*no pin trigger*/);
     sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
     sensor_ptrs[sensor_index]->set_warmup_time(200);
     capacitive_sensor_index = sensor_index;
+#ifdef SOIL_TEMP_SENSOR
+    // we don't want to switch off the sensor because we need to read soil temperature
+    sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
+#endif    
     sensor_index++;
 #endif
+
 #ifdef SOIL_EC5_SENSOR
     // SH1 // IRD_PCB
     sensor_ptrs[sensor_index] = new rawAnalog("SH", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t)SH2_ANALOG_PIN,
                                               (uint8_t)SH2_PWR_PIN /*no pin trigger*/);
     sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
     sensor_ptrs[sensor_index]->set_warmup_time(200);
+#ifdef SOIL_TEMP_SENSOR
+    // we don't want to switch off the sensor because we need to read soil temperature
+    sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
+#endif     
     sensor_index++;
 #endif
+
+/////////////////////// SOIL_TEMP_SENSOR ////////////////////////////////////////////////
+/////////////////////// DO NOT CHANGE THE ORDER FOR SOIL_TEMP SENSOR DECLARATION////////
+
 #ifdef SOIL_TEMP_SENSOR
 // ST
 #if defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
@@ -935,7 +956,7 @@ void setup() {
                                             (uint8_t)TEMP_PWR_PIN /*no pin trigger*/);
 #endif
     sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
-#if defined AIR_TEMP_HUM_SENSOR || defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
+#if defined CO2_SCD30_SENSOR || defined CO2_SCD40_SENSOR || defined AIR_TEMP_HUM_SENSOR || defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
     // both sensors share the same power pin which is normally A1
     // we don't want to switch off the sensor because we need to read the air temp/hum after reading soil temperature
     sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
@@ -967,30 +988,53 @@ void setup() {
 #endif
 #endif
 #endif
+
+/////////////////////// CO2_SENSOR //////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 #ifdef CO2_SCD30_SENSOR
     // CO2  // IRD_PCB
     sensor_ptrs[sensor_index] =
         new CO2_SCD30((char*)"CO2", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, -1, (uint8_t)TEMP_PWR_PIN /*no pin trigger*/);
     sensor_ptrs[sensor_index]->set_n_sample(5);
+#ifdef SOIL_TEMP_SENSOR
+    // both sensors share the same power pin which is normally A1
+    // we don't want to switch on the sensor because the sensor is already ON for reading soil temperature
+    sensor_ptrs[sensor_index]->set_is_power_on_when_active(false);
+#endif    
     sensor_index++;
 #endif
+
 #ifdef CO2_SCD40_SENSOR
     // CO2  // IRD_PCB
     sensor_ptrs[sensor_index] =
         new CO2_SCD40((char*)"CO2", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, -1, (uint8_t)TEMP_PWR_PIN /*no pin trigger*/);
     sensor_ptrs[sensor_index]->set_n_sample(5);
+#ifdef SOIL_TEMP_SENSOR
+    // both sensors share the same power pin which is normally A1
+    // we don't want to switch on the sensor because the sensor is already ON for reading soil temperature
+    sensor_ptrs[sensor_index]->set_is_power_on_when_active(false);
+#endif    
     sensor_index++;
 #endif
+
+/////////////////////// DHT22_AM2305_SENSOR /////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 #ifdef DHT22_AM2305_TEMP_SENSOR
     sensor_ptrs[sensor_index] =
         new DHT22_Temperature((char*)"AT", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t)DHT22_AM2305_DIGITAL_PIN,
                               (uint8_t)DHT22_AM2305_PWR_PIN /*no pin trigger*/);
     sensor_ptrs[sensor_index]->set_n_sample(1);
     sensor_ptrs[sensor_index]->set_warmup_time(2000);
+#ifdef SOIL_TEMP_SENSOR
+    // both sensors share the same power pin which is normally A1
+    // we don't want to switch on the sensor because the sensor is already ON for reading soil temperature
+    sensor_ptrs[sensor_index]->set_is_power_on_when_active(false);
+#endif
     // we don't want to switch off the sensor because we need to read the humidity after reading temperature
     sensor_ptrs[sensor_index]->set_is_power_off_when_inactive(false);
     sensor_index++;
 #endif
+
 #ifdef DHT22_AM2305_HUM_SENSOR
     sensor_ptrs[sensor_index] =
         new DHT22_Humidity((char*)"AH", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t)DHT22_AM2305_DIGITAL_PIN,
@@ -1002,6 +1046,9 @@ void setup() {
     sensor_ptrs[sensor_index]->set_is_power_on_when_active(false);
     sensor_index++;
 #endif
+
+/////////////////////// SHT_SENSOR //////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 #ifdef SHT_TEMP_SENSOR
     sensor_ptrs[sensor_index] = new SHT_Temperature((char*)"AT", IS_NOT_ANALOG, IS_CONNECTED, low_power_status,
                                                     (uint8_t)SHT_SDA_PIN, (uint8_t)SHT_PWR_PIN, (uint8_t)SHT_SCL_PIN);
@@ -1026,10 +1073,11 @@ void setup() {
     sensor_ptrs[sensor_index]->set_is_power_on_when_active(false);
     sensor_index++;
 #endif
+/////////////////////////////////////////////////////////////////////////////////////////
 
     // we ajust to get the real number of sensors
     number_of_sensors = sensor_index;
-    //////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 
     // Print a start message
     PRINT_CSTSTR(BOOT_START_MSG);
@@ -1489,8 +1537,10 @@ uint8_t bat_level(uint16_t vbat) {
 #endif
 #endif  // SOLAR_BAT
 
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 // Device activity function, called by loop()
+// measure_and_send() function
+
 void measure_and_send(void) {
     long startSend;
     long endSend;
@@ -1537,7 +1587,7 @@ void measure_and_send(void) {
 
     ///////////////////////////////////////////////////////////////////////
     // main loop for sensors, actually, you don't have to edit anything here
-    // just add a predefined sensor if needed or provide a new sensor class instance for a handle a new physical sensor
+    // just add in setup() a predefined sensor if needed or provide a new sensor class instance for managing a new physical sensor
     for (int i = 0; i < number_of_sensors; i++) {
         if (sensor_ptrs[i]->get_is_connected() || sensor_ptrs[i]->has_fake_data()) {
             char float_str[10];
@@ -1671,8 +1721,8 @@ void measure_and_send(void) {
 
 #ifdef WITH_CAPACITIVE
             if (strncmp(sensor_ptrs[i]->get_nomenclature(), "SH", 2) == 0) {
-// the soil capacitive sensor
-// tmp_value=250.0; // for testing
+                // the soil capacitive sensor
+                // tmp_value=250.0; // for testing
 #if defined MONITOR_BAT_VOLTAGE && defined SEN0308_CALIBRATION_LOW_VOLTAGE
                 tmp_value = sensor_ptrs[i]->convert_value(tmp_value, (double)last_vcc, 0.0);
 #endif
