@@ -2,8 +2,7 @@
 
 ![https://store.rakwireless.com/products/rak5146-kit?variant=41577988161734](media/RAK5146%20PiHAT%20Kit%20for%20LoRaWAN.jpg)
 
-RAK2287/RАК5146 Pi HAT is a converter board with a Raspberry Pi form factor that enables the RAK2287 SPI or RAK5146 SPI LPWAN concentrator modules to be mounted on the top of the Raspberry Pi. More information about this board can be found on [RAKWireless Documentation Center.](https://docs.rakwireless.com/Product-Categories/WisHat/RAK2287-RAK5146-Pi-HAT/Datasheet/#specifications)
-
+RAK2287/RАК5146 Pi HAT is a converter board with a Raspberry Pi form factor that enables the RAK2287 SPI or RAK5146 SPI LPWAN concentrator modules to be mounted on the top of the Raspberry Pi. More information about the Pi Hat can be found on [RAK2287/RAK5146 Pi HAT Datasheet](https://docs.rakwireless.com/Product-Categories/WisHat/RAK2287-RAK5146-Pi-HAT/Datasheet/#specifications). For the RAK5146 mini-PCIe concentrator itself, read the [following documentation](https://docs.rakwireless.com/product-categories/wislink/rak5146/datasheet/).
 
 ## Quick start -  hardware setup
 

@@ -133,6 +133,19 @@ uint8_t local_aes_lorawan_create_pkt(uint8_t* message, uint8_t pl, uint8_t app_k
       // with application data so Frame_Port = 1..223
       unsigned char Frame_Port = 0x01; 
 
+      // LoRaWAN packet structure, header takes 16B
+      //
+      // uint8_t mhdr;
+      // uint32_t devAddr;
+      // uint8_t fctrl;
+      // uint16_t fcnt;
+      // uint8_t fopts[15];
+      // uint8_t foptsLen;
+      // uint8_t fport;
+      // uint8_t *frmPayload;
+      // uint8_t frmPayloadLen;
+      // uint32_t mic;
+
       //Build the Radio Package, LoRaWAN format
       //See LoRaWAN specification
       LORAWAN_Data[OFF_DAT_HDR] = Mac_Header;
