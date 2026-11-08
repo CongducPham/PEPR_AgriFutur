@@ -1,5 +1,9 @@
 Main version history
 
+Nov 6th, 2026
+-------------
+- addition of an MQTT Bridge service
+
 Jun 4th, 2026
 -------------
 - A version of the SD card image has Home Assistant (Docker container) upgraded to Core 2026.6.0 and Frontend 20260527.4

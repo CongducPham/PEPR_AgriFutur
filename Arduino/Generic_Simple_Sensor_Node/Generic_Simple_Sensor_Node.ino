@@ -61,7 +61,7 @@ TXOnlySerial debug_serial(2);
 // use EU868 for EU countries, Algeria and Morocco
 #define EU868
 // use AU915 for Panama 
-//#define AU915
+// #define AU915
 // #define EU433
 // use AS923 for Lao
 // #define AS923
@@ -82,56 +82,56 @@ TXOnlySerial debug_serial(2);
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-// uncomment to have a soil humidity capacitive sensor (SEN0308 or other type of capacitive)
-// must be commented for other types of sensor
+// UNCOMMENT to have a soil humidity capacitive sensor (SEN0308 or other type of capacitive)
+// MUST BE COMMENTED for other types of sensor
 #define WITH_CAPACITIVE
-// uncomment to use SEN0308 capacitive calibration for low voltage
+// UNCOMMENT to use SEN0308 capacitive calibration for low voltage
 #define SEN0308_CALIBRATION_LOW_VOLTAGE
 // uncomment to send millivolt with SEN0308 capacitive
 //#define SEN0308_TRANSMIT_MILLIVOLT
 ////////////////////////////////////////////////////////////////////
-// uncomment to have a soil tensiometer watermark sensor
+// UNCOMMENT to have a soil tensiometer watermark sensor
 //#define WITH_WATERMARK
 // only for watermark sensors, not relevant for capacitive sensors
 // if a soil temperature sensor is wired, the real soil temperature can be used
 #define WM_REF_TEMPERATURE 28.0
 // uncomment to force the watermark to have default device address for WaziGate
 //#define WM_AS_PRIMARY_SENSOR
-// uncomment to have 2 tensiometer watermark sensor on the same device
+// UNCOMMENT to have 2 tensiometer watermark sensor on the same device
 //#define TWO_WATERMARK
 ////////////////////////////////////////////////////////////////////
-// uncomment to have 1 soil temperature sensor ST using a one-wire DS18B20 sensor
+// UNCOMMENT to have 1 soil temperature sensor ST using a one-wire DS18B20 sensor
 // also needed for TWO_SOIL_TEMP_SENSOR and THREE_SOIL_TEMP_SENSOR
 //#define SOIL_TEMP_SENSOR
 // only for watermark sensors, not relevant for capacitive sensors
 #define LINK_SOIL_TEMP_TO_CENTIBAR
 ////////////////////////////////////////////////////////////////////
-// uncomment to have an additional decagon EC-5 sensor, ONLY ON IRD_PCB
+// UNCOMMENT to have an additional decagon EC-5 sensor, ONLY ON IRD_PCB
 //#define SOIL_EC5_SENSOR
 ////////////////////////////////////////////////////////////////////
-// uncomment to have an SCD30 CO2 sensor, ONLY ON IRD_PCB
+// UNCOMMENT to have an SCD30 CO2 sensor, ONLY ON IRD_PCB
 //#define CO2_SCD30_SENSOR
-// uncomment to have an SCD40 CO2 sensor, ONLY ON IRD_PCB
+// UNCOMMENT to have an SCD40 CO2 sensor, ONLY ON IRD_PCB
 // SCD40 is more compact and has lower cost but is a little bit less accurate than SCD30
 //#define CO2_SCD40_SENSOR
 ////////////////////////////////////////////////////////////////////
-// uncomment to have an ambiant air temp/hum sensor, then select which sensor model below
+// UNCOMMENT to have an ambiant air temp/hum sensor, then select which sensor model below
 //#define AIR_TEMP_HUM_SENSOR
 ////////////////////////////////////////////////////////////////////
-// uncomment to have an ambiant air temperature DHT22/AM2305 sensor, ONLY ON IRD_PCB
+// UNCOMMENT to have an ambiant air temperature DHT22/AM2305 sensor, ONLY ON IRD_PCB
 // DHT22 has lower cost but is less reliable than SHT30
 //#define DHT22_AM2305_TEMP_SENSOR
-// uncomment to have an ambiant air humidity DHT22/AM2305 sensor, ONLY ON IRD_PCB
+// UNCOMMENT to have an ambiant air humidity DHT22/AM2305 sensor, ONLY ON IRD_PCB
 //#define DHT22_AM2305_HUM_SENSOR
 ////////////////////////////////////////////////////////////////////
-// uncomment to have an ambiant air temperature SHT sensor, ONLY ON IRD_PCB
+// UNCOMMENT to have an ambiant air temperature SHT sensor, ONLY ON IRD_PCB
 //#define SHT_TEMP_SENSOR
-// uncomment to have an ambiant air humidity SHT sensor, ONLY ON IRD_PCB
+// UNCOMMENT to have an ambiant air humidity SHT sensor, ONLY ON IRD_PCB
 //#define SHT_HUM_SENSOR
 ////////////////////////////////////////////////////////////////////
-// uncomment to have a customized 2 soil temperature device, ONLY ON IRD_PCB
+// UNCOMMENT to have a customized 2 soil temperature device, ONLY ON IRD_PCB
 //#define TWO_SOIL_TEMP_SENSOR
-// uncomment to have a customized 3 soil temperature device, ONLY ON IRD_PCB
+// UNCOMMENT to have a customized 3 soil temperature device, ONLY ON IRD_PCB
 //#define THREE_SOIL_TEMP_SENSOR
 
 // uncomment to use LPP format to send to WAZIGATE for instance
@@ -249,7 +249,7 @@ unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xB1};
 // The default address in ABP mode for ambiant air temp/hum sensor devices is 26011DC1
 // if you need a different address for another watermark sensor device, use C2, C3,..., CF instead
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xC1};
-#elif defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
+#elif ((defined SOIL_TEMP_SENSOR) && (not defined WITH_CAPACITIVE)) || defined TWO_SOIL_TEMP_SENSOR || defined THREE_SOIL_TEMP_SENSOR
 // The default address in ABP mode for dedicated soil temperature sensor devices is 26011DD1
 // if you need a different address for another dedicated soil temperature sensor device, use D2, D3,..., DF instead
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xD1};
@@ -2360,6 +2360,8 @@ pl = local_aes_lorawan_create_pkt(message, pl, 0);
                   |_|    
 *****************************/
 
+////////////////////////////////////////////////////////////////
+// loop()) function
 void loop(void) {
     // time for next wake up
     nextTransmissionTime = millis() + ((idlePeriodInSec == 0) ? (unsigned long)idlePeriodInMin * 60 * 1000

@@ -1,0 +1,63 @@
+{
+  "local_mqtt": {
+    "host": "localhost",
+    "port": 1883,
+    "topic": "devices/#"
+  },
+  "remote_mqtt": {
+    "host": "broker.hivemq.com",
+    "port": 1883,
+    "keepalive": 60,
+    "qos": 0,
+    "username": "",
+    "password": "",
+    "use_tls": false
+  },
+  "wazigate": {
+    "url": "http://localhost",
+    "id": "wgw_dca632fffe7318ed_mqttbridge"
+  },
+  "bridge": {
+    "debounce_seconds": 0,
+    "rest_retries": 5,
+    "publish_unchanged_values": true
+  },
+  "logging": {
+    "level": "INFO"
+  },
+  "sensor_filter": {
+    "enabled": false,
+    "sensor_ids": [
+      "temperatureSensor_*",
+      "analogInput_*"
+    ],
+    "sensor_types": [
+      "capacitive",
+      "tensiometer",
+      "2tensiometer",
+      "air_temp_hum",
+      "2soil_temp",
+      "3soil_temp",
+      "co2",
+      "loracam_stats"
+    ],
+    "exclude_sensor_ids": [
+      "analogInput_99"
+    ]
+  },
+  "topic_mapping": {
+    "enabled": false,
+    "default_topic_template": "devices/{device_id}/sensors/{sensor_id}/value",
+    "devices": {
+      "69ac879668f319094e004fc4": {
+        "base_topic": "agrifutur/field1/tensiometer1",
+        "sensors": {
+          "temperatureSensor_0": "water_tension",
+          "temperatureSensor_1": "water_tension_scaled",
+          "temperatureSensor_5": "soil_temperature",
+          "analogInput_6": "battery"
+        }
+      }
+    }
+  }
+}
