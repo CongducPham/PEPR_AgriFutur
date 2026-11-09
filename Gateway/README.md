@@ -59,10 +59,26 @@ Multi-channel gateway
 
 LoRa communication can either be provided by a simple single channel radio module (first target for the cost-effective Raspberry Pi gateway) or by a multi-channel concentrator hat. Supported hats are the RAK2245 and the new RAK5146. If you have a RAK2245, it will be automatically detected (be sure to have a reliable, stable and robust 5V 2.5A power source). If you don't have a GPS antenna connected, you should edit `scripts/multi_chan_pkt_fwd/EU868/global_conf.json` file to remove the GPS section. Then run `config_conf.sh EU868` again. Replace `EU868` by your frequency plan. Additional vailable plans are `AS923-2`, `AU915` and `EU433`. If you have a RAK5146, then read this [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/rak5146/README.md)
 
-Pushing to TTN
-==============
+Connecting to Internet clouds
+=============================
 
-In the default configuration, the gateway uses a local Chirpstack instance as the LoRaWAN Network Server and then packets are forwarded to the WaziGate system to be stored in the local database and pushed into the system to appear on the WaziGate default dashboard. It is possible to bypass the whole WaziGate system, including the local Chirpstack Network to push data to the TheThingNetwork (TTN) Network Server. To do so, run the `scripts/config_band.sh` script by indicating the gateway id and the TTN end-point. See this dedicated [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/single_chan_pkt_fwd/README-run-as-pkt-forwarder-to-TTN.md). 
+In the default configuration working in full-edge mode, the gateway uses a local Chirpstack instance as the LoRaWAN Network Server and then packets are forwarded to the WaziGate system to be stored in the local database and pushed into the system to appear on the WaziGate default dashboard. If your gateway is connected to the Internet, you can push data to Internet clouds.
+
+Pushing to WaziCloud
+-----
+
+The customized gateway based on the WaziGate framework can push data to the WaziCloud. You will first need to create an account on the [Waziup dashboard](https://dashboard.waziup.io/). Then, follows instructions described in the `Registration with the Cloud` section of the [configuration documentation](https://lab.waziup.io/resources/waziup-e-v/wazigate/docs/bGuPUvE1_Sx#configuration) of the WaziGate gateway.
+
+Pushing to TTN
+-----
+
+It is possible to bypass the whole WaziGate system after the low-level LoRa packet forwarder. This would bypass the local Chirpstack Network Server to push data to the TheThingNetwork (TTN) Network Server instead. To do so, run the `scripts/config_band.sh` script by indicating the gateway id and the TTN end-point. See this dedicated [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/scripts/single_chan_pkt_fwd/README-run-as-pkt-forwarder-to-TTN.md). 
+
+Pushing to remote MQTT Brokers
+-----
+
+There is also an MQTT Bridge service that will allow you to republish data received on the customized gateway to a remote MQTT Broker. See this dedicated [README](https://github.com/CongducPham/PEPR_AgriFutur/blob/main/Gateway/mqtt-bridge/README.md). 
+
 
 More robust gateway
 ==============

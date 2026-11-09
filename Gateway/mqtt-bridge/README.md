@@ -20,7 +20,7 @@ You can test the MQTT Bridge service by reading the following sections.
 How the MQTT Bridge service works?
 ---------------------------
 
-When the WaziGate receives data via LoRa from a device, it will not call each `/device/sensors/value` endpoint one by one, and therefore it is not possible to receive data on each `/value` endpoint. When receiving payload via normal LoRa transmission, the LoRa binary payload is passed to the `/device/{id}` endpoint as a whole. The gateway will then use the devices codec to decrypt and assign the payload fields, e.g. sensor values, but the `/devices/{id}/sensors/{id}/value` endpoints are not called. Therefore, it is possible to receive the payload when subscribing to the `/devices/{id}` endpoint directly as the gateway will not trigger the individual `../sensors/{id}/value` endpoints.
+When the WaziGate receives data via LoRa from a device, it will not call each `/device/sensors/value` endpoint one by one, and therefore it is not possible to receive data on each `/value` endpoint. When receiving payload via normal LoRa transmission, the LoRa binary payload is passed to the `/device/{device_id}` endpoint as a whole. The gateway will then use the devices codec to decrypt and assign the payload fields, e.g. sensor values, but the `/devices/{devic_id}/sensors/{sensor_id}/value` endpoints are not called. Therefore, it is possible to receive the payload when subscribing to the `/devices/{device_id}` endpoint directly as the gateway will not trigger the individual `../sensors/{sensor_id}/value` endpoints.
 
 The MQTT Bridge service therefore subscribes to `/devices/#` as a trigger then use the REST API with the device ID extracted from the received topic as illustrated in the following logs:
 
@@ -168,10 +168,10 @@ you should see in the terminal window on your host computer something similar to
 wgw_b827ebfffeaaaaaa_mqttbridge/devices/6a2670b068f3190a4679a35c/sensors/temperatureSensor_0/value 255
 ```
 
-Output example
+Output examples
 -------
 
-Here is a typical log output when receiving a message from a device. Here it is a tensiometer device with a soil temperature sensor.
+Below is a typical log output when receiving a message from a device. It illustrates a tensiometer device with a soil temperature sensor.
 
 ```
 2026-11-07 18:28:08,035 [INFO] Gateway id: wgw_dca632fffe7318ed_mqttbridge
@@ -198,7 +198,7 @@ On a terminal, with:
 
 	> mosquitto_sub -v -h test.mosquitto.org -t "wgw_dca632fffe7318ed_mqttbridge/#"
 	
-Here is the output:
+Below is the output without topic mapping:
 
 ```
 wgw_dca632fffe7318ed_mqttbridge/devices/69ac879668f319094e004fc4/sensors/temperatureSensor_0/value 18.3
@@ -207,14 +207,40 @@ wgw_dca632fffe7318ed_mqttbridge/devices/69ac879668f319094e004fc4/sensors/tempera
 wgw_dca632fffe7318ed_mqttbridge/devices/69ac879668f319094e004fc4/sensors/analogInput_6/value 2.85
 ```
 
-With topic mapping enabled, the same device can have the following output:
+With topic mapping enabled for device `69ac879668f319094e004fc4`: 
+
+```
+  "topic_mapping": {
+    "enabled": true,
+    "default_topic_template": "devices/{device_id}/sensors/{sensor_id}/value",
+    "devices": {
+      "69ac879668f319094e004fc4": {
+        "base_topic": "agrifutur/field1/tensiometer1",
+        "sensors": {
+          "temperatureSensor_0": "water_tension",
+          "temperatureSensor_1": "water_tension_scaled",
+          "temperatureSensor_5": "soil_temperature",
+          "analogInput_6": "battery"
+        }
+      }
+    }
+  }
+```
+
+the republished output topics are shown below for device `69ac879668f319094e004fc4`:
 
 ```
 wgw_dca632fffe7318ed_mqttbridge/agrifutur/field1/tensiometer1/water_tension 19.1
 wgw_dca632fffe7318ed_mqttbridge/agrifutur/field1/tensiometer1/water_tension_scaled 345.8
 wgw_dca632fffe7318ed_mqttbridge/agrifutur/field1/tensiometer1/soil_temperature 14.3
 wgw_dca632fffe7318ed_mqttbridge/agrifutur/field1/tensiometer1/battery 2.85
+wgw_dca632fffe7318ed_mqttbridge/devices/69ac879468f319094e004fbf/sensors/temperatureSensor_0/value 821.5
+wgw_dca632fffe7318ed_mqttbridge/devices/69ac879468f319094e004fbf/sensors/analogInput_6/value 2.08
+wgw_dca632fffe7318ed_mqttbridge/devices/69ac879468f319094e004fbf/sensors/temperatureSensor_5/value 25.2
 ```
+
+As also shown above, devices that are not included in topic mapping use the default mapping which is the default WaziGate naming for resource `devices/{device_id}/sensors/{sensor_id}/value`.
+
 
 Note
 ----
