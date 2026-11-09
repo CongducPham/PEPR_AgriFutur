@@ -20,7 +20,7 @@ You can test the MQTT Bridge service by reading the following sections.
 How the MQTT Bridge service works?
 ---------------------------
 
-When the WaziGate receives data via LoRa from a device, it will not call each `/device/sensors/value` endpoint one by one, and therefore it is not possible to receive data on each `/value` endpoint. When receiving payload via normal LoRa transmission, the LoRa binary payload is passed to the `/device/{device_id}` endpoint as a whole. The gateway will then use the devices codec to decrypt and assign the payload fields, e.g. sensor values, but the `/devices/{devic_id}/sensors/{sensor_id}/value` endpoints are not called. Therefore, it is possible to receive the payload when subscribing to the `/devices/{device_id}` endpoint directly as the gateway will not trigger the individual `../sensors/{sensor_id}/value` endpoints.
+When the WaziGate receives data via LoRa from a device, it will not call each `/device/sensors/value` endpoint one by one, and therefore it is not possible to receive data on each `/value` endpoint. When receiving payload via normal LoRa transmission, the LoRa binary payload is passed to the `/device/{device_id}` endpoint as a whole. The gateway will then use the devices codec to decrypt and assign the payload fields, e.g. sensor values, but the `/devices/{device_id}/sensors/{sensor_id}/value` endpoints are not called. Therefore, it is possible to receive the payload when subscribing to the `/devices/{device_id}` endpoint directly as the gateway will not trigger the individual `../sensors/{sensor_id}/value` endpoints.
 
 The MQTT Bridge service therefore subscribes to `/devices/#` as a trigger then use the REST API with the device ID extracted from the received topic as illustrated in the following logs:
 
@@ -38,7 +38,7 @@ The MQTT Bridge service therefore subscribes to `/devices/#` as a trigger then u
 ...
 ```
 
-With the device ID, it is easy to use the REST API to get the list of attached sensors to that device ID in order to get the last value for each of these sensors. These value will then be republished on a remote MQTT broker by the MQTT Bridge service.
+With the device ID, it is easy to use the REST API to get the list of attached sensors to that device in order to get the last value for each of these sensors. These values will then be republished on a remote MQTT broker by the MQTT Bridge service.
 
 Configuration file for the MQTT Bridge service
 ------------------
@@ -61,9 +61,22 @@ wgw_b827ebfffeaaaaaa_mqttbridge/devices/6a2670b068f3190a4679a35c/sensors/tempera
 
 assuming the gateway ID is `b827ebfffeaaaaaa`. This `wgw_b827ebfffeaaaaaa_mqttbridge` prefix is referred to as the WaziGate ID for the MQTT Bridge service and is defined in `wazigate-mqtt-bridge.json` when running the `install.sh` script. 
 
-Therefore, if your remote MQTT broker is `test.mosquitto.org` for instance then you can use the following command to get notified of new messages:
+Therefore, if your remote MQTT broker is `test.mosquitto.org` for instance then you can use the following command to get notified of new messages for device `6a2670b068f3190a4679a35c` and its sensor `temperatureSensor_0`.
 
 	> mosquitto_sub -h test.mosquitto.org -t "wgw_b827ebfffeaaaaaa_mqttbridge/devices/6a2670b068f3190a4679a35c/sensors/temperatureSensor_0/value"
+
+If you want to integrate these data on a dashboard, then you can provide the MQTT broker and the topics for each sensors of your device:
+
+```
+wgw_b827ebfffeaaaaaa_mqttbridge/devices/6a2670b068f3190a4679a35c/sensors/temperatureSensor_0/value
+wgw_b827ebfffeaaaaaa_mqttbridge/devices/6a2670b068f3190a4679a35c/sensors/temperatureSensor_1/value
+wgw_b827ebfffeaaaaaa_mqttbridge/devices/6a2670b068f3190a4679a35c/sensors/temperatureSensor_5/value
+wgw_b827ebfffeaaaaaa_mqttbridge/devices/6a2670b068f3190a4679a35c/sensors/analogInput_6/value
+```
+
+If you just want to have MQTT notice, you can subscribe to the top-level topic `wgw_b827ebfffeaaaaaa_mqttbridge/#`:
+
+	> mosquitto_sub -h test.mosquitto.org -t "wgw_b827ebfffeaaaaaa_mqttbridge/#"
 
 You can freely edit the WaziGate ID for the MQTT Bridge service after installation as long as the subscribed topic matches.
 
